@@ -1819,6 +1819,7 @@ function renderLst(){
   const fh=document.getElementById('fl-has')?document.getElementById('fl-has').value:'';
   const fa=(document.getElementById('fl-asi')?document.getElementById('fl-asi').value:'').toLowerCase();
   let f=inc.filter(i=>{
+    if(i.est==='cerrada')return false;
     if(fe&&i.est!==fe)return false;
     if(ft&&!(i.tip||'').toUpperCase().startsWith(ft))return false;
     if(fr==='__sin'){if(i.res)return false;}else if(fr&&i.res!==fr)return false;
@@ -1836,7 +1837,7 @@ function renderLst(){
     if(va>vb)return _lstSort.dir==='asc'?1:-1;
     return 0;
   });
-  document.getElementById('lst-count').textContent=f.length+' registros (mostrando últimas 50 — ver resto en Histórico)';
+  document.getElementById('lst-count').textContent=f.length+' registros activos (cerradas en Histórico)';
   const fVisible=f.slice(0,50);
   // Alarma visual si hay incidencias prioritarias sin resolver
   const prioPendientes=getInc().filter(i=>i.est==='prioritario'&&!i.res);
@@ -1891,8 +1892,8 @@ function renderHist(){
   const fh=document.getElementById('fh-has')?document.getElementById('fh-has').value:'';
   const fa=(document.getElementById('fh-asi')?document.getElementById('fh-asi').value:'').toLowerCase();
   let f=inc.filter(i=>{
+    if(i.est!=='cerrada')return false; // Histórico = solo cerradas
     if(fe&&i.est!==fe)return false;
-    if(ft&&!(i.tip||'').toUpperCase().startsWith(ft.toUpperCase()))return false;
     if(fd&&i.fec<fd)return false;
     if(fh&&i.fec>fh)return false;
     if(fa&&!(i.asi||'').toLowerCase().includes(fa)&&!(i.ini||'').toLowerCase().includes(fa))return false;
@@ -1900,10 +1901,9 @@ function renderHist(){
     return true;
   });
   f.sort((a,b)=>(b.fec+b.hor).localeCompare(a.fec+a.hor));
-  const desde50=f.slice(50);
-  document.getElementById('hist-count').textContent=desde50.length+' registros (incidencias 51 en adelante)';
+  document.getElementById('hist-count').textContent=f.length+' incidencias cerradas';
   const ia=CU&&(CU.role==='admin'||CU.role==='superadmin');
-  document.getElementById('hist-tbody').innerHTML=desde50.length?desde50.map(i=>`
+  document.getElementById('hist-tbody').innerHTML=f.length?f.map(i=>`
     <tr>
       <td style="color:#3b82f6;font-weight:600">${i.id}</td>
       <td>${fmtFec(i.fec)}</td><td>${i.hor}</td>
@@ -1917,7 +1917,7 @@ function renderHist(){
         <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
         ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
       </td>
-    </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;color:#334155;padding:2rem">Sin registros históricos — todas las incidencias están en el Listado</td></tr>';
+    </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;color:#334155;padding:2rem">No hay incidencias cerradas</td></tr>';
 }
 function limpiarFiltrosHist(){
   ['srch-hist','fh-est','fh-tip','fh-des','fh-has','fh-asi'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
