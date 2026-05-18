@@ -472,6 +472,7 @@ select option{background:#111827;color:#e2e8f0}
       <button class="ntab active" onclick="showP('dashboard')"><i class="ti ti-dashboard"></i> Inicio</button>
       <button class="ntab" onclick="showP('nueva')"><i class="ti ti-plus"></i> Nueva</button>
       <button class="ntab" onclick="showP('listado')"><i class="ti ti-list"></i> Listado</button>
+      <button class="ntab" onclick="showP('historico')"><i class="ti ti-archive"></i> Histórico</button>
       <button class="ntab" onclick="showP('prioritario')"><i class="ti ti-alert-triangle"></i> Prioritarias<span class="prio-dot" id="prio-dot"></span></button>
       <button class="ntab ao" onclick="showP('mapa')"><i class="ti ti-map-2"></i> Mapa calor</button>
       <button class="ntab ao" onclick="showP('informes')"><i class="ti ti-file-analytics"></i> Informes</button>
@@ -760,6 +761,46 @@ select option{background:#111827;color:#e2e8f0}
         <th style="width:55px">Adj.</th><th style="width:68px">Acc.</th>
       </tr></thead>
       <tbody id="lst-tbody"></tbody></table>
+    </div></div>
+  </div>
+
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="panel" id="panel-historico">
+    <div class="sec-hdr"><div><h2><i class="ti ti-archive" style="color:#60a5fa"></i> Histórico de incidencias</h2><p id="hist-count">0 registros</p></div></div>
+    <div class="search-bar"><i class="ti ti-search"></i><input type="text" id="srch-hist" placeholder="Buscar por dirección, descripción, agente, indicativo..." oninput="renderHist()"></div>
+    <div class="filters-row">
+      <select class="fsel" id="fh-est" onchange="renderHist()"><option value="">Todos los estados</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option></select>
+      <select class="fsel" id="fh-tip" onchange="renderHist()">
+        <option value="">Todos los tipos</option>
+        <optgroup label="🟢 Verde"><option value="V">Todos Verde (V)</option><option value="V1">V1</option><option value="V2">V2</option><option value="V3">V3</option><option value="V4">V4</option><option value="V5">V5</option><option value="V6">V6</option><option value="V7">V7</option><option value="V8">V8</option><option value="V9">V9</option></optgroup>
+        <optgroup label="🟤 Marrón"><option value="M">Todos Marrón (M)</option><option value="M1">M1</option><option value="M2">M2</option><option value="M3">M3</option><option value="M4">M4</option><option value="M5">M5</option><option value="M6">M6</option><option value="M7">M7</option><option value="M8">M8</option><option value="M9">M9</option><option value="M10">M10</option><option value="M11">M11</option><option value="M12">M12</option><option value="M13">M13</option><option value="M14">M14</option><option value="M15">M15</option></optgroup>
+        <optgroup label="🟠 Naranja"><option value="N">Todos Naranja (N)</option><option value="N1">N1</option><option value="N2">N2</option><option value="N3">N3</option><option value="N4">N4</option><option value="N5">N5</option></optgroup>
+        <optgroup label="⚫ Gris"><option value="G">Todos Gris (G)</option><option value="G1">G1</option><option value="G2">G2</option></optgroup>
+        <optgroup label="🔴 Rojo"><option value="R">Todos Rojo (R)</option><option value="R1">R1</option><option value="R2">R2</option><option value="R3">R3</option><option value="R4">R4</option></optgroup>
+        <optgroup label="🔵 Azul"><option value="A">Todos Azul (A)</option><option value="A1">A1</option><option value="A2">A2</option><option value="A3">A3</option></optgroup>
+        <optgroup label="⬜ Blanco"><option value="0.0">0.0 – Otro</option></optgroup>
+      </select>
+      <input type="date" class="fsel" id="fh-des" title="Desde" onchange="renderHist()" style="font-size:.72rem">
+      <input type="date" class="fsel" id="fh-has" title="Hasta" onchange="renderHist()" style="font-size:.72rem">
+      <input type="text" class="fsel" id="fh-asi" placeholder="Indicativo..." oninput="renderHist()" style="width:110px">
+      <button class="btn-sec" onclick="limpiarFiltrosHist()" style="padding:.32rem .65rem;font-size:.72rem"><i class="ti ti-x"></i> Limpiar</button>
+    </div>
+    <div class="dash-wrap"><div style="overflow-x:auto">
+      <table><thead><tr>
+        <th style="width:75px">ID</th>
+        <th style="width:82px">Fecha</th>
+        <th style="width:60px">Hora</th>
+        <th style="width:86px">Tipo</th>
+        <th>Dirección</th>
+        <th>Descripción</th>
+        <th style="width:98px">Estado</th>
+        <th style="width:118px">Resolución</th>
+        <th style="width:92px">Iniciado por</th>
+        <th style="width:68px">Acc.</th>
+      </tr></thead>
+      <tbody id="hist-tbody"></tbody></table>
     </div></div>
   </div>
 
@@ -1622,6 +1663,7 @@ function showP(name){
   document.querySelectorAll('.ntab').forEach(t=>{if((t.getAttribute('onclick')||'').includes("'"+name+"'"))t.classList.add('active')});
   if(name==='dashboard')renderDash();
   if(name==='listado')renderLst();
+  if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
   if(name==='mapa')setTimeout(()=>initMap(),150);
   if(name==='usuarios')renderUsers();
@@ -1696,7 +1738,7 @@ function renderDash(){
     if(street)streetCount[street]=(streetCount[street]||0)+1;
   });
   const topStreets=Object.entries(streetCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  document.getElementById('widget-streets').innerHTML=topStreets.length?`<div class="widget-list">${topStreets.map(([s,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(s)}">${escHtml(s)}</div><div class="wi-count">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
+  document.getElementById('widget-streets').innerHTML=topStreets.length?`<div class="widget-list">${topStreets.map(([s,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(s)}">${escHtml(s)}</div><div class="wi-count" onclick="filtrarHistoricoDir('${escHtml(s)}')" title="Ver incidencias de esta calle" style="cursor:pointer;text-decoration:underline;color:#60a5fa">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
 
   // Widget: Top agents/indicativos (last 7 days)
   const agentCount={};
@@ -1705,7 +1747,7 @@ function renderDash(){
     if(a)agentCount[a]=(agentCount[a]||0)+1;
   });
   const topAgents=Object.entries(agentCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  document.getElementById('widget-agents').innerHTML=topAgents.length?`<div class="widget-list">${topAgents.map(([a,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(a)}">${escHtml(a)}</div><div class="wi-count">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
+  document.getElementById('widget-agents').innerHTML=topAgents.length?`<div class="widget-list">${topAgents.map(([a,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(a)}">${escHtml(a)}</div><div class="wi-count" onclick="filtrarHistoricoAgente('${escHtml(a)}')" title="Ver incidencias de este agente" style="cursor:pointer;text-decoration:underline;color:#60a5fa">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
 
   document.getElementById('dash-tbody').innerHTML=inc.length?inc.slice().reverse().map(i=>{
     const p=i.est==='prioritario';
@@ -1794,7 +1836,8 @@ function renderLst(){
     if(va>vb)return _lstSort.dir==='asc'?1:-1;
     return 0;
   });
-  document.getElementById('lst-count').textContent=f.length+' registros';
+  document.getElementById('lst-count').textContent=f.length+' registros (mostrando últimas 50 — ver resto en Histórico)';
+  const fVisible=f.slice(0,50);
   // Alarma visual si hay incidencias prioritarias sin resolver
   const prioPendientes=getInc().filter(i=>i.est==='prioritario'&&!i.res);
   let alarmBar=document.getElementById('lst-alarm-strip');
@@ -1815,7 +1858,7 @@ function renderLst(){
     else el.textContent='';
   });
   const ia=CU&&(CU.role==='admin'||CU.role==='superadmin');
-  document.getElementById('lst-tbody').innerHTML=f.length?f.map(i=>{
+  document.getElementById('lst-tbody').innerHTML=fVisible.length?fVisible.map(i=>{
     const isPrioAlert=i.est==='prioritario'&&!i.res;
     return`
     <tr class="${isPrioAlert?'alarm-row':''}">
@@ -1834,6 +1877,61 @@ function renderLst(){
         ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
       </td>
     </tr>`}).join(''):'<tr><td colspan="12" style="text-align:center;color:#334155;padding:2rem">Sin resultados — prueba a limpiar los filtros</td></tr>';
+}
+
+// ════════════════════════════════════════════════
+//  HISTÓRICO
+// ════════════════════════════════════════════════
+function renderHist(){
+  const inc=getInc();
+  const q=(document.getElementById('srch-hist').value||'').toLowerCase();
+  const fe=document.getElementById('fh-est').value;
+  const ft=document.getElementById('fh-tip').value;
+  const fd=document.getElementById('fh-des')?document.getElementById('fh-des').value:'';
+  const fh=document.getElementById('fh-has')?document.getElementById('fh-has').value:'';
+  const fa=(document.getElementById('fh-asi')?document.getElementById('fh-asi').value:'').toLowerCase();
+  let f=inc.filter(i=>{
+    if(fe&&i.est!==fe)return false;
+    if(ft&&!(i.tip||'').toUpperCase().startsWith(ft.toUpperCase()))return false;
+    if(fd&&i.fec<fd)return false;
+    if(fh&&i.fec>fh)return false;
+    if(fa&&!(i.asi||'').toLowerCase().includes(fa)&&!(i.ini||'').toLowerCase().includes(fa))return false;
+    if(q&&!(i.dir.toLowerCase().includes(q)||i.des.toLowerCase().includes(q)||i.ini.toLowerCase().includes(q)||(i.asi||'').toLowerCase().includes(q)||(i.id||'').toLowerCase().includes(q)))return false;
+    return true;
+  });
+  f.sort((a,b)=>(b.fec+b.hor).localeCompare(a.fec+a.hor));
+  const desde50=f.slice(50);
+  document.getElementById('hist-count').textContent=desde50.length+' registros (incidencias 51 en adelante)';
+  const ia=CU&&(CU.role==='admin'||CU.role==='superadmin');
+  document.getElementById('hist-tbody').innerHTML=desde50.length?desde50.map(i=>`
+    <tr>
+      <td style="color:#3b82f6;font-weight:600">${i.id}</td>
+      <td>${fmtFec(i.fec)}</td><td>${i.hor}</td>
+      <td style="font-size:.7rem"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${tipoBadgeColor(i.tip)};margin-right:4px;vertical-align:middle"></span>${tipoL(i.tip)}</td>
+      <td title="${i.dir}">${i.dir}</td>
+      <td title="${i.des}">${i.des}</td>
+      <td><span class="sbadge s-${i.est}">${i.est}</span></td>
+      <td>${i.res?`<span class="rbadge-res ${resCls(i.res)}">${resL(i.res)}</span>`:'—'}</td>
+      <td>${i.ini}</td>
+      <td>
+        <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
+        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
+      </td>
+    </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;color:#334155;padding:2rem">Sin registros históricos — todas las incidencias están en el Listado</td></tr>';
+}
+function limpiarFiltrosHist(){
+  ['srch-hist','fh-est','fh-tip','fh-des','fh-has','fh-asi'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  renderHist();
+}
+function filtrarHistoricoDir(calle){
+  showP('historico');
+  const el=document.getElementById('srch-hist');
+  if(el){el.value=calle;renderHist();}
+}
+function filtrarHistoricoAgente(agente){
+  showP('historico');
+  const el=document.getElementById('fh-asi');
+  if(el){el.value=agente;renderHist();}
 }
 
 // ════════════════════════════════════════════════
