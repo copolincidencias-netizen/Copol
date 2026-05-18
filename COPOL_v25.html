@@ -1924,14 +1924,14 @@ function limpiarFiltrosHist(){
   renderHist();
 }
 function filtrarHistoricoDir(calle){
-  showP('historico');
-  const el=document.getElementById('srch-hist');
-  if(el){el.value=calle;renderHist();}
+  showP('listado');
+  const el=document.getElementById('srch');
+  if(el){el.value=calle;renderLst();}
 }
 function filtrarHistoricoAgente(agente){
-  showP('historico');
-  const el=document.getElementById('fh-asi');
-  if(el){el.value=agente;renderHist();}
+  showP('listado');
+  const el=document.getElementById('fl-asi');
+  if(el){el.value=agente;renderLst();}
 }
 
 // ════════════════════════════════════════════════
