@@ -415,6 +415,14 @@ select option{background:#111827;color:#e2e8f0}
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="COPOL">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 
@@ -472,7 +480,6 @@ select option{background:#111827;color:#e2e8f0}
       <button class="ntab active" onclick="showP('dashboard')"><i class="ti ti-dashboard"></i> Inicio</button>
       <button class="ntab" onclick="showP('nueva')"><i class="ti ti-plus"></i> Nueva</button>
       <button class="ntab" onclick="showP('listado')"><i class="ti ti-list"></i> Listado</button>
-      <button class="ntab" onclick="showP('historico')"><i class="ti ti-archive"></i> Histórico</button>
       <button class="ntab" onclick="showP('prioritario')"><i class="ti ti-alert-triangle"></i> Prioritarias<span class="prio-dot" id="prio-dot"></span></button>
       <button class="ntab ao" onclick="showP('mapa')"><i class="ti ti-map-2"></i> Mapa calor</button>
       <button class="ntab ao" onclick="showP('informes')"><i class="ti ti-file-analytics"></i> Informes</button>
@@ -764,44 +771,6 @@ select option{background:#111827;color:#e2e8f0}
     </div></div>
   </div>
 
-  </div>
-
-  <!-- HISTÓRICO -->
-  <div class="panel" id="panel-historico">
-    <div class="sec-hdr"><div><h2><i class="ti ti-archive" style="color:#60a5fa"></i> Histórico de incidencias</h2><p id="hist-count">0 registros</p></div></div>
-    <div class="search-bar"><i class="ti ti-search"></i><input type="text" id="srch-hist" placeholder="Buscar por dirección, descripción, agente, indicativo..." oninput="renderHist()"></div>
-    <div class="filters-row">
-      <select class="fsel" id="fh-est" onchange="renderHist()"><option value="">Todos los estados</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option></select>
-      <select class="fsel" id="fh-tip" onchange="renderHist()">
-        <option value="">Todos los tipos</option>
-        <optgroup label="🟢 Verde"><option value="V">Todos Verde (V)</option><option value="V1">V1</option><option value="V2">V2</option><option value="V3">V3</option><option value="V4">V4</option><option value="V5">V5</option><option value="V6">V6</option><option value="V7">V7</option><option value="V8">V8</option><option value="V9">V9</option></optgroup>
-        <optgroup label="🟤 Marrón"><option value="M">Todos Marrón (M)</option><option value="M1">M1</option><option value="M2">M2</option><option value="M3">M3</option><option value="M4">M4</option><option value="M5">M5</option><option value="M6">M6</option><option value="M7">M7</option><option value="M8">M8</option><option value="M9">M9</option><option value="M10">M10</option><option value="M11">M11</option><option value="M12">M12</option><option value="M13">M13</option><option value="M14">M14</option><option value="M15">M15</option></optgroup>
-        <optgroup label="🟠 Naranja"><option value="N">Todos Naranja (N)</option><option value="N1">N1</option><option value="N2">N2</option><option value="N3">N3</option><option value="N4">N4</option><option value="N5">N5</option></optgroup>
-        <optgroup label="⚫ Gris"><option value="G">Todos Gris (G)</option><option value="G1">G1</option><option value="G2">G2</option></optgroup>
-        <optgroup label="🔴 Rojo"><option value="R">Todos Rojo (R)</option><option value="R1">R1</option><option value="R2">R2</option><option value="R3">R3</option><option value="R4">R4</option></optgroup>
-        <optgroup label="🔵 Azul"><option value="A">Todos Azul (A)</option><option value="A1">A1</option><option value="A2">A2</option><option value="A3">A3</option></optgroup>
-        <optgroup label="⬜ Blanco"><option value="0.0">0.0 – Otro</option></optgroup>
-      </select>
-      <input type="date" class="fsel" id="fh-des" title="Desde" onchange="renderHist()" style="font-size:.72rem">
-      <input type="date" class="fsel" id="fh-has" title="Hasta" onchange="renderHist()" style="font-size:.72rem">
-      <input type="text" class="fsel" id="fh-asi" placeholder="Indicativo..." oninput="renderHist()" style="width:110px">
-      <button class="btn-sec" onclick="limpiarFiltrosHist()" style="padding:.32rem .65rem;font-size:.72rem"><i class="ti ti-x"></i> Limpiar</button>
-    </div>
-    <div class="dash-wrap"><div style="overflow-x:auto">
-      <table><thead><tr>
-        <th style="width:75px">ID</th>
-        <th style="width:82px">Fecha</th>
-        <th style="width:60px">Hora</th>
-        <th style="width:86px">Tipo</th>
-        <th>Dirección</th>
-        <th>Descripción</th>
-        <th style="width:98px">Estado</th>
-        <th style="width:118px">Resolución</th>
-        <th style="width:92px">Iniciado por</th>
-        <th style="width:68px">Acc.</th>
-      </tr></thead>
-      <tbody id="hist-tbody"></tbody></table>
-    </div></div>
   </div>
 
   <!-- PRIORITARIO -->
@@ -1819,7 +1788,6 @@ function renderLst(){
   const fh=document.getElementById('fl-has')?document.getElementById('fl-has').value:'';
   const fa=(document.getElementById('fl-asi')?document.getElementById('fl-asi').value:'').toLowerCase();
   let f=inc.filter(i=>{
-    if(i.est==='cerrada')return false;
     if(fe&&i.est!==fe)return false;
     if(ft&&!(i.tip||'').toUpperCase().startsWith(ft))return false;
     if(fr==='__sin'){if(i.res)return false;}else if(fr&&i.res!==fr)return false;
@@ -1837,8 +1805,8 @@ function renderLst(){
     if(va>vb)return _lstSort.dir==='asc'?1:-1;
     return 0;
   });
-  document.getElementById('lst-count').textContent=f.length+' registros activos (cerradas en Histórico)';
-  const fVisible=f.slice(0,50);
+  document.getElementById('lst-count').textContent=f.length+' registros';
+  const fVisible=f;
   // Alarma visual si hay incidencias prioritarias sin resolver
   const prioPendientes=getInc().filter(i=>i.est==='prioritario'&&!i.res);
   let alarmBar=document.getElementById('lst-alarm-strip');
@@ -3891,6 +3859,15 @@ window.addEventListener('DOMContentLoaded',function(){
     if(dot) dot.style.background = ok ? '#f97316' : '#64748b';
   }, 500);
 });
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(r=>console.log('SW registrado'))
+      .catch(e=>console.log('SW error:',e));
+  });
+}
 </script>
 </body>
 </html>

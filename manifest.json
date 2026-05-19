@@ -1,0 +1,25 @@
+{
+  "name": "COPOL — Sistema de Gestión de Incidencias Policiales",
+  "short_name": "COPOL",
+  "description": "Sistema de Gestión de Incidencias Policiales",
+  "start_url": "/Copol/COPOL_v25.html",
+  "scope": "/Copol/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
