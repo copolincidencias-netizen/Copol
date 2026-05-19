@@ -57,7 +57,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 #login-err{color:#f87171;font-size:.8rem;margin-bottom:.65rem;display:none;background:#ef444411;border:1px solid #ef444433;border-radius:6px;padding:.45rem .7rem}
 
 /* ── APP ── */
-#app{display:none;flex-direction:column;min-height:100vh;position:relative}
+#app{display:none;flex-direction:column;height:100vh;position:relative;overflow:hidden}
 .topbar{background:#111827;border-bottom:1px solid #1e293b;padding:.65rem 1.25rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 1px 12px rgba(0,0,0,.3)}
 .tlogo{display:flex;align-items:center;gap:.6rem;margin-right:.5rem}
 .tlogo-icon{width:32px;height:32px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:8px;display:flex;align-items:center;justify-content:center}
@@ -78,8 +78,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 .logout-btn:hover{color:#ef4444;border-color:#ef444433}
 
 /* ── PANELS ── */
-.panel{display:none;flex:1;padding:1.1rem}
-.panel.active{display:block;flex:1}
+.panel{display:none;flex:1;padding:1.1rem;overflow-y:auto}
+.panel.active{display:flex;flex-direction:column}
 .sec-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;gap:.5rem;flex-wrap:wrap}
 .sec-hdr h2{font-size:1.05rem;font-weight:700;color:#f1f5f9}
 .sec-hdr p{font-size:.74rem;color:#475569;margin-top:.1rem}
@@ -769,8 +769,6 @@ select option{background:#111827;color:#e2e8f0}
       </tr></thead>
       <tbody id="lst-tbody"></tbody></table>
     </div></div>
-  </div>
-
   </div>
 
   <!-- PRIORITARIO -->
