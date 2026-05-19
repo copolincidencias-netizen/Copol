@@ -58,13 +58,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 
 /* ── APP ── */
 #app{display:none;flex-direction:column;min-height:100vh;position:relative}
-.topbar{background:#111827;border-bottom:1px solid #1e293b;padding:.65rem 1.25rem;display:flex;align-items:center;gap:.5rem;flex-wrap:nowrap;overflow-x:auto;position:sticky;top:0;z-index:100;box-shadow:0 1px 12px rgba(0,0,0,.3)}
+.topbar{background:#111827;border-bottom:1px solid #1e293b;padding:.65rem 1.25rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 1px 12px rgba(0,0,0,.3)}
 .tlogo{display:flex;align-items:center;gap:.6rem;margin-right:.5rem}
 .tlogo-icon{width:32px;height:32px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:8px;display:flex;align-items:center;justify-content:center}
 .tlogo-icon i{color:#fff;font-size:16px}
 .tlogo span{font-weight:700;font-size:.9rem;color:#f1f5f9}
 .tlogo small{font-size:.58rem;color:#475569;display:block;letter-spacing:1px;text-transform:uppercase}
-.navtabs{display:flex;gap:.15rem;background:#0a0e1a;padding:.22rem;border-radius:9px;flex-wrap:wrap}
+.navtabs{display:flex;gap:.15rem;background:#0a0e1a;padding:.22rem;border-radius:9px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
 .ntab{padding:.35rem .7rem;border-radius:6px;font-size:.72rem;font-weight:500;cursor:pointer;color:#64748b;border:none;background:none;display:flex;align-items:center;gap:.28rem;white-space:nowrap;position:relative;transition:.18s}
 .ntab:hover{color:#94a3b8;background:#1e293b}
 .ntab.active{background:#1d4ed8;color:#fff}
@@ -522,14 +522,6 @@ select option{background:#111827;color:#e2e8f0}
         <div class="widget-hdr"><i class="ti ti-chart-bar" style="color:#60a5fa"></i> Incidencias últimas 24 h</div>
         <div id="widget-24h"></div>
       </div>
-      <div class="widget-card">
-        <div class="widget-hdr"><i class="ti ti-map-pin" style="color:#f87171"></i> Top 5 calles esta semana</div>
-        <div id="widget-streets"></div>
-      </div>
-      <div class="widget-card">
-        <div class="widget-hdr"><i class="ti ti-user-shield" style="color:#34d399"></i> Top agentes / indicativos</div>
-        <div id="widget-agents"></div>
-      </div>
     </div>
 
     <div class="dash-wrap">
@@ -552,7 +544,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="form-card">
       <div class="fg2">
         <div class="fg"><label>Iniciado por</label><input type="text" id="f-ini" placeholder="Nombre del agente"></div>
-        <div class="fg"><label>Asignado a / Indicativo</label><input type="text" id="f-asi" placeholder="Indicativo o nombre"></div>
+        <div class="fg"><label>Asignado a / Indicativo</label><input type="text" id="f-asi" placeholder="P-02..." value="P-02"></div>
         <div class="fg"><label>Origen del comunicado</label><input type="text" id="f-ori" placeholder="Central, Ciudadano, Patrulla, 112..."></div>
         <div class="fg"><label>Fecha</label><input type="date" id="f-fec"></div>
         <div class="fg"><label>Hora del incidente</label><input type="time" id="f-hor"></div>
@@ -1711,7 +1703,7 @@ function renderDash(){
     if(street)streetCount[street]=(streetCount[street]||0)+1;
   });
   const topStreets=Object.entries(streetCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  document.getElementById('widget-streets').innerHTML=topStreets.length?`<div class="widget-list">${topStreets.map(([s,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(s)}">${escHtml(s)}</div><div class="wi-count" onclick="filtrarHistoricoDir('${escHtml(s)}')" title="Ver incidencias de esta calle" style="cursor:pointer;text-decoration:underline;color:#60a5fa">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
+  document.getElementById('widget-streets').innerHTML=topStreets.length?`<div class="widget-list">${topStreets.map(([s,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(s)}">${escHtml(s)}</div><div class="wi-count">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
 
   // Widget: Top agents/indicativos (last 7 days)
   const agentCount={};
@@ -1720,7 +1712,7 @@ function renderDash(){
     if(a)agentCount[a]=(agentCount[a]||0)+1;
   });
   const topAgents=Object.entries(agentCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  document.getElementById('widget-agents').innerHTML=topAgents.length?`<div class="widget-list">${topAgents.map(([a,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(a)}">${escHtml(a)}</div><div class="wi-count" onclick="filtrarHistoricoAgente('${escHtml(a)}')" title="Ver incidencias de este agente" style="cursor:pointer;text-decoration:underline;color:#60a5fa">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
+  document.getElementById('widget-agents').innerHTML=topAgents.length?`<div class="widget-list">${topAgents.map(([a,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(a)}">${escHtml(a)}</div><div class="wi-count">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
 
   document.getElementById('dash-tbody').innerHTML=inc.length?inc.slice().reverse().map(i=>{
     const p=i.est==='prioritario';
@@ -1772,7 +1764,7 @@ function confirmarCierre(){
 //  LISTADO
 // ════════════════════════════════════════════════
 // Sort state for listado
-let _lstSort={col:'id',dir:'desc'};
+let _lstSort={col:'fec',dir:'desc'};
 function sortLst(col){
   if(_lstSort.col===col)_lstSort.dir=_lstSort.dir==='asc'?'desc':'asc';
   else{_lstSort.col=col;_lstSort.dir='desc';}
@@ -1801,12 +1793,19 @@ function renderLst(){
     if(q&&!(i.dir.toLowerCase().includes(q)||i.des.toLowerCase().includes(q)||i.ini.toLowerCase().includes(q)||(i.asi||'').toLowerCase().includes(q)||(i.ori||'').toLowerCase().includes(q)||(i.id||'').toLowerCase().includes(q)))return false;
     return true;
   });
-  // Sort
+  // Sort por fecha+hora descendente
   f.sort((a,b)=>{
     const va=(a[_lstSort.col]||'').toString().toLowerCase();
     const vb=(b[_lstSort.col]||'').toString().toLowerCase();
     if(va<vb)return _lstSort.dir==='asc'?-1:1;
     if(va>vb)return _lstSort.dir==='asc'?1:-1;
+    // Criterio secundario: hora descendente
+    if(_lstSort.col==='fec'){
+      const ha=(a.hor||'').toString();
+      const hb=(b.hor||'').toString();
+      if(ha<hb)return 1;
+      if(ha>hb)return -1;
+    }
     return 0;
   });
   document.getElementById('lst-count').textContent=f.length+' registros';
@@ -2535,7 +2534,8 @@ function showFMsg(t,msg){
   if(t==='ok')setTimeout(()=>document.getElementById('form-msg').innerHTML='',3000);
 }
 function limpiarForm(){
-  ['f-asi','f-ori','f-has','f-hlleg','f-hfi','f-dir','f-des','f-lat','f-lon','f-notas'].forEach(id=>document.getElementById(id).value='');
+  ['f-ori','f-has','f-hlleg','f-hfi','f-dir','f-des','f-lat','f-lon','f-notas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-asi').value='P-02';
   document.getElementById('f-ini').value=CU?CU.name:'';
   document.getElementById('geo-status').textContent='';
   document.getElementById('f-fec').value=todayDate();
