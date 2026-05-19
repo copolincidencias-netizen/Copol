@@ -79,7 +79,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 
 /* ── PANELS ── */
 .panel{display:none;flex:1;padding:1.1rem}
-.panel.active{display:block}
+.panel.active{display:block;flex:1}
 .sec-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;gap:.5rem;flex-wrap:wrap}
 .sec-hdr h2{font-size:1.05rem;font-weight:700;color:#f1f5f9}
 .sec-hdr p{font-size:.74rem;color:#475569;margin-top:.1rem}
@@ -504,6 +504,9 @@ select option{background:#111827;color:#e2e8f0}
       <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px"></i> Salir</button>
     </div>
   </div>
+
+  <!-- CONTENEDOR PANELES -->
+  <div style="flex:1;display:flex;flex-direction:column;min-height:0">
 
   <!-- DASHBOARD -->
   <div class="panel active" id="panel-dashboard">
@@ -1183,6 +1186,7 @@ select option{background:#111827;color:#e2e8f0}
       </div>
     </div>
   </div>
+  </div><!-- fin contenedor paneles -->
 </div>
 
 <!-- PÁGINA IMPRESIÓN MAPA (estilo referencia policial) -->
