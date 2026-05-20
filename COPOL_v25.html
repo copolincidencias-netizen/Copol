@@ -2371,6 +2371,61 @@ function setGeoStatus(t,msg){
 function clearGeo(){document.getElementById('geo-status').textContent=''}
 
 // ════════════════════════════════════════════════
+//  CLOUDINARY — Almacenamiento de adjuntos
+// ════════════════════════════════════════════════
+const CLOUDINARY={
+  cloudName:'dagoby02h',
+  uploadPreset:'copol_unsigned', // preset sin firma (lo creamos)
+  apiKey:'739418743959685'
+};
+
+async function subirACloudinary(file){
+  // Convertir a blob si es base64
+  let blob;
+  if(file.data&&file.data.startsWith('data:')){
+    const res=await fetch(file.data);
+    blob=await res.blob();
+  } else {
+    blob=file;
+  }
+  const fd=new FormData();
+  fd.append('file', blob, file.name||'archivo');
+  fd.append('upload_preset', CLOUDINARY.uploadPreset);
+  fd.append('folder', 'copol');
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`,{method:'POST',body:fd});
+  if(!r.ok) throw new Error('Error subiendo a Cloudinary: '+r.status);
+  const d=await r.json();
+  return{
+    name: file.name||d.original_filename,
+    type: file.type||d.resource_type,
+    size: d.bytes,
+    url: d.secure_url,
+    publicId: d.public_id,
+    cloudinary: true
+  };
+}
+
+async function subirTodosLosAdjuntos(files){
+  const resultados=[];
+  for(const f of files){
+    try{
+      if(f.cloudinary||f.url){
+        resultados.push(f); // Ya está en Cloudinary
+      } else {
+        showFMsg('ok','Subiendo adjunto: '+f.name+'...');
+        const r=await subirACloudinary(f);
+        resultados.push(r);
+      }
+    }catch(e){
+      console.warn('Error subiendo adjunto:',e);
+      // Si falla Cloudinary, guardar base64 como fallback
+      resultados.push(f);
+    }
+  }
+  return resultados;
+}
+
+// ════════════════════════════════════════════════
 //  GESTIÓN DE ARCHIVOS ADJUNTOS
 // ════════════════════════════════════════════════
 function handleFiles(files){for(const f of files)addFile(f)}
@@ -2500,9 +2555,12 @@ function getNextId(){
   });
   return'INC-'+String(Math.max(0,...nums)+1).padStart(3,'0');
 }
-function guardar(){
+async function guardar(){
   const req=['f-ini','f-fec','f-hor','f-dir','f-des'];
   for(const r of req){if(!document.getElementById(r).value.trim()){showFMsg('err','Rellena todos los campos obligatorios');return}}
+  showFMsg('ok','Guardando incidencia...');
+  // Subir adjuntos a Cloudinary antes de guardar
+  const filesSubidos = pendingFiles.length>0 ? await subirTodosLosAdjuntos(pendingFiles) : [];
   const newInc={
     id:getNextId(),
     ini:document.getElementById('f-ini').value.trim(),
@@ -2522,7 +2580,7 @@ function guardar(){
     res:document.getElementById('f-res').value,
     notas:document.getElementById('f-notas').value.trim(),
     by:CU.user,
-    files:[...pendingFiles]
+    files:filesSubidos
   };
   saveOneInc(newInc);
   updatePrioDot();
@@ -2637,14 +2695,17 @@ function verAdj(id){
   const i=getInc().find(x=>x.id===id);if(!i||!i.files||!i.files.length)return;
   document.getElementById('modal-adj-title').textContent='Archivos adjuntos — '+id;
   document.getElementById('modal-adj-content').innerHTML=i.files.map(f=>{
-    if(f.type&&f.type.startsWith('image/'))return`<div class="attach-card"><a href="${f.data}" target="_blank" download="${f.name}"><img src="${f.data}" alt="${f.name}"></a><div class="ac-info"><div class="ac-name">${f.name}${f.compressed?' <span style="color:#10b981" title="Comprimida">▼</span>':''}</div></div></div>`;
-    if(f.type&&f.type.startsWith('video/'))return`<div class="attach-card"><video src="${f.data}" controls style="width:100%;height:75px;object-fit:cover"></video><div class="ac-info"><div class="ac-name">${f.name}</div></div></div>`;
+    const src=f.url||f.data||''; // Cloudinary URL o base64 legacy
+    if((f.type&&f.type.startsWith('image/'))||f.url&&/\.(jpg|jpeg|png|gif|webp)/i.test(f.url))
+      return`<div class="attach-card"><a href="${src}" target="_blank" download="${f.name}"><img src="${src}" alt="${f.name}"></a><div class="ac-info"><div class="ac-name">${f.name}${f.compressed?' <span style="color:#10b981" title="Comprimida">▼</span>':''}</div></div></div>`;
+    if((f.type&&f.type.startsWith('video/'))||f.url&&/\.(mp4|mov|avi)/i.test(f.url))
+      return`<div class="attach-card"><video src="${src}" controls style="width:100%;height:75px;object-fit:cover"></video><div class="ac-info"><div class="ac-name">${f.name}</div></div></div>`;
     if(f.type&&f.type.startsWith('audio/')){
       const dur=f.duration?(' · '+Math.floor(f.duration/60)+':'+String(f.duration%60).padStart(2,'0')):'';
-      return`<div class="attach-card-file" style="width:240px;flex-direction:column;align-items:stretch;gap:.3rem"><div style="display:flex;align-items:center;gap:.4rem"><i class="ti ti-microphone" style="color:#a78bfa"></i><div style="flex:1"><div class="fn">${f.name}</div><div class="fs">${dur}</div></div></div><audio src="${f.data}" controls style="width:100%;height:30px"></audio></div>`;
+      return`<div class="attach-card-file" style="width:240px;flex-direction:column;align-items:stretch;gap:.3rem"><div style="display:flex;align-items:center;gap:.4rem"><i class="ti ti-microphone" style="color:#a78bfa"></i><div style="flex:1"><div class="fn">${f.name}</div><div class="fs">${dur}</div></div></div><audio src="${src}" controls style="width:100%;height:30px"></audio></div>`;
     }
     const sz=f.size?(f.size>1048576?(f.size/1048576).toFixed(1)+'MB':(f.size/1024).toFixed(0)+'KB'):'';
-    return`<div class="attach-card-file"><a href="${f.data}" download="${f.name}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:inherit"><i class="ti ${f.name&&f.name.endsWith('.pdf')?'ti-file-type-pdf':'ti-file-text'}"></i><div><div class="fn">${f.name}</div><div class="fs">${sz}</div></div></a></div>`;
+    return`<div class="attach-card-file"><a href="${src}" target="_blank" download="${f.name}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:inherit"><i class="ti ${f.name&&f.name.endsWith('.pdf')?'ti-file-type-pdf':'ti-file-text'}"></i><div><div class="fn">${f.name}</div><div class="fs">${sz}${f.cloudinary?' · ☁️':''}</div></div></a></div>`;
   }).join('');
   document.getElementById('modal-adj').classList.add('open');
 }
