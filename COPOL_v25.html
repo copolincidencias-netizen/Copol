@@ -2686,17 +2686,21 @@ function verAdj(id){
   const i=getInc().find(x=>x.id===id);if(!i||!i.files||!i.files.length)return;
   document.getElementById('modal-adj-title').textContent='Archivos adjuntos — '+id;
   document.getElementById('modal-adj-content').innerHTML=i.files.map(f=>{
-    const src=f.url||f.data||''; // Cloudinary URL o base64 legacy
+    const src=f.url||f.data||'';
+    // Para PDFs en Cloudinary, usar URL de descarga directa
+    const srcFinal=f.cloudinary&&f.url&&f.url.includes('/upload/')
+      ?f.url.replace('/upload/','/upload/fl_attachment/')
+      :src;
     if((f.type&&f.type.startsWith('image/'))||f.url&&/\.(jpg|jpeg|png|gif|webp)/i.test(f.url))
-      return`<div class="attach-card"><a href="${src}" target="_blank" download="${f.name}"><img src="${src}" alt="${f.name}"></a><div class="ac-info"><div class="ac-name">${f.name}${f.compressed?' <span style="color:#10b981" title="Comprimida">▼</span>':''}</div></div></div>`;
+      return`<div class="attach-card"><a href="${srcFinal}" target="_blank" download="${f.name}"><img src="${srcFinal}" alt="${f.name}"></a><div class="ac-info"><div class="ac-name">${f.name}${f.compressed?' <span style="color:#10b981" title="Comprimida">▼</span>':''}</div></div></div>`;
     if((f.type&&f.type.startsWith('video/'))||f.url&&/\.(mp4|mov|avi)/i.test(f.url))
-      return`<div class="attach-card"><video src="${src}" controls style="width:100%;height:75px;object-fit:cover"></video><div class="ac-info"><div class="ac-name">${f.name}</div></div></div>`;
+      return`<div class="attach-card"><video src="${srcFinal}" controls style="width:100%;height:75px;object-fit:cover"></video><div class="ac-info"><div class="ac-name">${f.name}</div></div></div>`;
     if(f.type&&f.type.startsWith('audio/')){
       const dur=f.duration?(' · '+Math.floor(f.duration/60)+':'+String(f.duration%60).padStart(2,'0')):'';
-      return`<div class="attach-card-file" style="width:240px;flex-direction:column;align-items:stretch;gap:.3rem"><div style="display:flex;align-items:center;gap:.4rem"><i class="ti ti-microphone" style="color:#a78bfa"></i><div style="flex:1"><div class="fn">${f.name}</div><div class="fs">${dur}</div></div></div><audio src="${src}" controls style="width:100%;height:30px"></audio></div>`;
+      return`<div class="attach-card-file" style="width:240px;flex-direction:column;align-items:stretch;gap:.3rem"><div style="display:flex;align-items:center;gap:.4rem"><i class="ti ti-microphone" style="color:#a78bfa"></i><div style="flex:1"><div class="fn">${f.name}</div><div class="fs">${dur}</div></div></div><audio src="${srcFinal}" controls style="width:100%;height:30px"></audio></div>`;
     }
     const sz=f.size?(f.size>1048576?(f.size/1048576).toFixed(1)+'MB':(f.size/1024).toFixed(0)+'KB'):'';
-    return`<div class="attach-card-file"><a href="${src}" target="_blank" download="${f.name}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:inherit"><i class="ti ${f.name&&f.name.endsWith('.pdf')?'ti-file-type-pdf':'ti-file-text'}"></i><div><div class="fn">${f.name}</div><div class="fs">${sz}${f.cloudinary?' · ☁️':''}</div></div></a></div>`;
+    return`<div class="attach-card-file"><a href="${srcFinal}" target="_blank" download="${f.name}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:inherit"><i class="ti ${f.name&&f.name.endsWith('.pdf')?'ti-file-type-pdf':'ti-file-text'}"></i><div><div class="fn">${f.name}</div><div class="fs">${sz}${f.cloudinary?' · ☁️':''}</div></div></a></div>`;
   }).join('');
   document.getElementById('modal-adj').classList.add('open');
 }
