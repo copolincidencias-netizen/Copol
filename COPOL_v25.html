@@ -1980,14 +1980,6 @@ function handleModalDrop(e){
   handleModalFiles(e.dataTransfer.files);
 }
 function addModalFile(f){
-  if(f.type&&f.type.startsWith('image/')&&f.size>200*1024){
-    compressImage(f).then(c=>{modalPendingFiles.push(c);renderModalPF()}).catch(()=>{
-      const reader=new FileReader();
-      reader.onload=ev=>{modalPendingFiles.push({name:f.name,type:f.type,size:f.size,data:ev.target.result});renderModalPF()};
-      reader.readAsDataURL(f);
-    });
-    return;
-  }
   const reader=new FileReader();
   reader.onload=ev=>{modalPendingFiles.push({name:f.name,type:f.type,size:f.size,data:ev.target.result});renderModalPF()};
   reader.readAsDataURL(f);
@@ -2030,7 +2022,13 @@ function guardarEstado(){
     i.des=document.getElementById('modal-des').value.trim()||i.des;
     if(est==='cerrada'&&!i.hfi)i.hfi=nowTime();
     if(notaNueva){const ts='['+tsAnot()+' - '+((CU&&CU.name)||'Usuario')+'] '+notaNueva;i.notas=i.notas?(i.notas+'\n'+ts):ts;}
-    if(modalPendingFiles.length){i.files=[...(i.files||[]),...modalPendingFiles];modalPendingFiles=[];}
+    if(modalPendingFiles.length){
+      subirTodosLosAdjuntos(modalPendingFiles).then(subidos=>{
+        i.files=[...(i.files||[]),...subidos];
+        modalPendingFiles=[];
+        saveOneInc(i);
+      });
+    }
     saveOneInc(i);
     if(estadoPrevio!==est)logAudit('cambio_estado',id,estadoPrevio+' → '+est);
     if(notaNueva)logAudit('anotacion',id,notaNueva.slice(0,80));
@@ -2392,7 +2390,9 @@ async function subirACloudinary(file){
   fd.append('file', blob, file.name||'archivo');
   fd.append('upload_preset', CLOUDINARY.uploadPreset);
   fd.append('folder', 'copol');
-  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`,{method:'POST',body:fd});
+  const esPDF = file.name&&file.name.toLowerCase().endsWith('.pdf');
+  const tipo = esPDF ? 'raw' : 'auto';
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/${tipo}/upload`,{method:'POST',body:fd});
   if(!r.ok) throw new Error('Error subiendo a Cloudinary: '+r.status);
   const d=await r.json();
   return{
