@@ -2435,20 +2435,11 @@ function handleDrop(e){
   handleFiles(e.dataTransfer.files);
 }
 function addFile(f){
-  if(f.type&&f.type.startsWith('image/')&&f.size>200*1024){
-    // Compress images larger than 200KB
-    compressImage(f).then(compressed=>{
-      pendingFiles.push(compressed);renderPF();
-    }).catch(()=>{
-      // Fallback: store original
-      const reader=new FileReader();
-      reader.onload=ev=>{pendingFiles.push({name:f.name,type:f.type,size:f.size,data:ev.target.result});renderPF()};
-      reader.readAsDataURL(f);
-    });
-    return;
-  }
   const reader=new FileReader();
-  reader.onload=ev=>{pendingFiles.push({name:f.name,type:f.type,size:f.size,data:ev.target.result});renderPF()};
+  reader.onload=ev=>{
+    pendingFiles.push({name:f.name,type:f.type,size:f.size,data:ev.target.result});
+    renderPF();
+  };
   reader.readAsDataURL(f);
 }
 
