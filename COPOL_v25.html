@@ -1099,11 +1099,11 @@ select option{background:#111827;color:#e2e8f0}
         </div>
         <div class="fg" style="grid-column:1/-1"><label>Tipo de incidencia</label>
           <select id="modal-tip" class="modal-sel">
-            <optgroup label="🟢 Verde — Seguridad Ciudadana">
-              <option value="V1">V1 – Robo / Hurto</option><option value="V2">V2 – Robo con violencia</option><option value="V3">V3 – Daños</option><option value="V4">V4 – Amenazas</option><option value="V5">V5 – Agresión</option><option value="V6">V6 – Desorden público</option><option value="V7">V7 – Ocupación ilegal</option><option value="V8">V8 – Tráfico de drogas</option><option value="V9">V9 – Otros seguridad</option>
+            <optgroup label="🟢 Verde — Convivencia">
+              <option value="V1">V1 – Venta ambulante</option><option value="V2">V2 – Ruidos molestos</option><option value="V3">V3 – Consumo alcohol/drogas VP</option><option value="V4">V4 – Infraccion OO.MM.</option><option value="V5">V5 – Normas de convivencia</option><option value="V6">V6 – Resolucion conflictos privados</option><option value="V7">V7 – Actuaciones locales publicos</option><option value="V8">V8 – Anomalias via publica</option><option value="V9">V9 – Otros convivencia</option>
             </optgroup>
-            <optgroup label="🟤 Marrón — Convivencia">
-              <option value="M1">M1 – Ruidos</option><option value="M2">M2 – Molestias vecinos</option><option value="M3">M3 – Animales</option><option value="M4">M4 – Mendicidad</option><option value="M5">M5 – Botellón</option><option value="M6">M6 – Acampada ilegal</option><option value="M7">M7 – Venta ambulante</option><option value="M8">M8 – Conflicto vecinal</option><option value="M9">M9 – Grafiti</option><option value="M10">M10 – Residuos</option><option value="M11">M11 – Ocupación vía pública</option><option value="M12">M12 – Prostitución</option><option value="M13">M13 – Menores</option><option value="M14">M14 – Violencia doméstica</option><option value="M15">M15 – Otros convivencia</option>
+            <optgroup label="🟤 Marrón — Seguridad Ciudadana">
+              <option value="M1">M1 – Hurtos</option><option value="M2">M2 – Robos con fuerza</option><option value="M3">M3 – Robos con violencia/intimidacion</option><option value="M4">M4 – Sustraccion de vehiculo</option><option value="M5">M5 – Reyertas/agresiones</option><option value="M6">M6 – Atentado a empleado publico</option><option value="M7">M7 – Violencia de genero y familiar</option><option value="M8">M8 – Delitos animales/medio ambiente</option><option value="M9">M9 – Accidentes laborales</option><option value="M10">M10 – Otros delitos</option><option value="M11">M11 – Fallecidos delito/causa desconocida</option><option value="M12">M12 – Amenazas y atentados terroristas</option><option value="M13">M13 – Manifestaciones/concentraciones</option><option value="M14">M14 – Infracciones Ley Seg. Ciudadana</option><option value="M15">M15 – Colaboracion cuerpos/servicios</option>
             </optgroup>
             <optgroup label="🟠 Naranja — Medio ambiente">
               <option value="N1">N1 – Contaminación</option><option value="N2">N2 – Vertidos</option><option value="N3">N3 – Incendio</option><option value="N4">N4 – Emergencia sanitaria</option><option value="N5">N5 – Otros medio ambiente</option>
@@ -1197,7 +1197,7 @@ select option{background:#111827;color:#e2e8f0}
         <div class="turno-btn turno-dia selected" id="tb-dia" onclick="selectTurno('dia')"><span class="ticon">☀️</span><div class="tname">Día completo</div><div class="thours">00:00 — 23:59</div></div>
         <div class="turno-btn turno-manana" id="tb-manana" onclick="selectTurno('manana')"><span class="ticon">🌅</span><div class="tname">Turno mañana</div><div class="thours">07:00 — 15:00</div></div>
         <div class="turno-btn turno-tarde" id="tb-tarde" onclick="selectTurno('tarde')"><span class="ticon">🌇</span><div class="tname">Turno tarde</div><div class="thours">15:00 — 23:00</div></div>
-        <div class="turno-btn turno-noche" id="tb-noche" onclick="selectTurno('noche')"><span class="ticon">🌙</span><div class="tname">Turno noche</div><div class="thours">23:00 — 08:00</div></div>
+        <div class="turno-btn turno-noche" id="tb-noche" onclick="selectTurno('noche')"><span class="ticon">🌙</span><div class="tname">Turno noche</div><div class="thours">22:00 — 08:00</div></div>
       </div>
       <div id="print-preview-info" style="background:#0d1321;border-radius:8px;padding:.62rem .9rem;font-size:.78rem;color:#64748b;margin-bottom:.9rem"></div>
       <div class="btn-row">
@@ -1501,11 +1501,11 @@ const TIPO_LABELS={
   robo:'Robo/Hurto',accidente:'Accidente',violencia:'Violencia',desaparicion:'Desaparición',orden_publico:'Orden público',otro:'Otro'
 };
 var TIPOS = {
-  // CONVIVENCIA (Verde)
+  // CONVIVENCIA (Verde - V)
   'V1':'Venta ambulante','V2':'Ruidos molestos','V3':'Consumo alcohol/drogas VP',
   'V4':'Infraccion OO.MM.','V5':'Normas de convivencia','V6':'Resolucion conflictos privados',
   'V7':'Actuaciones locales publicos','V8':'Anomalias via publica','V9':'Colaboracion servicios (V)',
-  // SEGURIDAD CIUDADANA (Marron)
+  // SEGURIDAD CIUDADANA (Marrón - M)
   'M1':'Hurtos','M2':'Robos con fuerza','M3':'Robos con violencia/intimidacion',
   'M4':'Sustraccion de vehiculo','M5':'Reyertas/agresiones','M6':'Atentado a empleado publico',
   'M7':'Violencia de genero y familiar','M8':'Delitos animales/medio ambiente',
@@ -2318,19 +2318,37 @@ function updatePrintPreview(){
 document.addEventListener('change',e=>{if(e.target.id==='print-date')updatePrintPreview()});
 
 function filterByTurno(inc,fecha,turno){
+  if(turno==='dia'){
+    return fecha?inc.filter(i=>i.fec===fecha):inc;
+  }
+  if(turno==='noche'){
+    // Turno noche: 22:00 del día seleccionado hasta 08:00 del día siguiente
+    if(!fecha) return inc.filter(i=>{const h=i.hor||'00:00';return h>='22:00'||h<'08:00';});
+    // Calcular fecha siguiente sin depender de UTC
+    const partes=fecha.split('-');
+    const d=new Date(parseInt(partes[0]),parseInt(partes[1])-1,parseInt(partes[2])+1);
+    const fechaSig=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return inc.filter(i=>{
+      const h=i.hor||'00:00';
+      if(i.fec===fecha&&h>='22:00')return true;  // 22:00-23:59 del día seleccionado
+      if(i.fec===fechaSig&&h<'08:00')return true; // 00:00-07:59 del día siguiente
+      return false;
+    });
+  }
+  const r={manana:['07:00','15:00'],tarde:['15:00','22:00']}[turno];
+  if(!r)return fecha?inc.filter(i=>i.fec===fecha):inc;
   let f=fecha?inc.filter(i=>i.fec===fecha):inc;
-  if(turno==='dia')return f;
-  const r={manana:['07:00','15:00'],tarde:['15:00','23:00'],noche:['23:00','08:00']}[turno];
-  if(!r)return f;
-  return f.filter(i=>{const h=i.hor||'00:00';if(turno==='noche')return h>='23:00'||h<'08:00';return h>=r[0]&&h<r[1]});
+  return f.filter(i=>{const h=i.hor||'00:00';return h>=r[0]&&h<r[1];});
 }
 
 function executePrint(){
   const fecha=document.getElementById('print-date').value;
   const inc=filterByTurno(getInc(),fecha,selectedTurno);
-  const n={dia:'Día completo',manana:'Turno mañana (07:00-15:00)',tarde:'Turno tarde (15:00-23:00)',noche:'Turno noche (23:00-08:00)'};
+  const fechaSig=selectedTurno==='noche'&&fecha?(()=>{const p=fecha.split('-');const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])+1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})():'';
+  const n={dia:'Día completo',manana:'Turno mañana (07:00-15:00)',tarde:'Turno tarde (15:00-22:00)',noche:'Turno noche (22:00-08:00)'};
   document.getElementById('print-title').textContent='COPOL — Listado de incidencias — '+n[selectedTurno];
-  document.getElementById('print-subtitle').textContent='Fecha: '+(fecha||'Todas')+' | Generado: '+new Date().toLocaleString('es-ES')+' | Agente: '+(CU?CU.name:'');
+  const fechaLabel=selectedTurno==='noche'&&fecha&&fechaSig?fecha+' → '+fechaSig:(fecha||'Todas');
+  document.getElementById('print-subtitle').textContent='Fecha: '+fechaLabel+' | Generado: '+new Date().toLocaleString('es-ES')+' | Agente: '+(CU?CU.name:'');
   const tb=document.getElementById('lst-tbody'),bk=tb.innerHTML;
   tb.innerHTML=inc.map(i=>`
     <tr>
