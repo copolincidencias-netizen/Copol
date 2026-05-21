@@ -1097,6 +1097,31 @@ select option{background:#111827;color:#e2e8f0}
             <option value="neg">Negativo</option><option value="pos_nso">Positivo sin solución</option><option value="otro">Otros</option>
           </select>
         </div>
+        <div class="fg" style="grid-column:1/-1"><label>Tipo de incidencia</label>
+          <select id="modal-tip" class="modal-sel">
+            <optgroup label="🟢 Verde — Seguridad Ciudadana">
+              <option value="V1">V1 – Robo / Hurto</option><option value="V2">V2 – Robo con violencia</option><option value="V3">V3 – Daños</option><option value="V4">V4 – Amenazas</option><option value="V5">V5 – Agresión</option><option value="V6">V6 – Desorden público</option><option value="V7">V7 – Ocupación ilegal</option><option value="V8">V8 – Tráfico de drogas</option><option value="V9">V9 – Otros seguridad</option>
+            </optgroup>
+            <optgroup label="🟤 Marrón — Convivencia">
+              <option value="M1">M1 – Ruidos</option><option value="M2">M2 – Molestias vecinos</option><option value="M3">M3 – Animales</option><option value="M4">M4 – Mendicidad</option><option value="M5">M5 – Botellón</option><option value="M6">M6 – Acampada ilegal</option><option value="M7">M7 – Venta ambulante</option><option value="M8">M8 – Conflicto vecinal</option><option value="M9">M9 – Grafiti</option><option value="M10">M10 – Residuos</option><option value="M11">M11 – Ocupación vía pública</option><option value="M12">M12 – Prostitución</option><option value="M13">M13 – Menores</option><option value="M14">M14 – Violencia doméstica</option><option value="M15">M15 – Otros convivencia</option>
+            </optgroup>
+            <optgroup label="🟠 Naranja — Medio ambiente">
+              <option value="N1">N1 – Contaminación</option><option value="N2">N2 – Vertidos</option><option value="N3">N3 – Incendio</option><option value="N4">N4 – Emergencia sanitaria</option><option value="N5">N5 – Otros medio ambiente</option>
+            </optgroup>
+            <optgroup label="⚫ Gris — Colaboración">
+              <option value="G1">G1 – Colaboración otros cuerpos</option><option value="G2">G2 – Servicios especiales</option>
+            </optgroup>
+            <optgroup label="🔴 Rojo — Urgencias">
+              <option value="R1">R1 – Accidente grave</option><option value="R2">R2 – Persona herida</option><option value="R3">R3 – Emergencia crítica</option><option value="R4">R4 – Otros urgencias</option>
+            </optgroup>
+            <optgroup label="🔵 Azul — Movilidad Vial">
+              <option value="A1">A1 – Infracciones trafico</option><option value="A2">A2 – Alteraciones trafico</option><option value="A3">A3 – Colaboracion trafico</option>
+            </optgroup>
+            <optgroup label="⬜ Blanco — Otros">
+              <option value="0.0">0.0 – Otro</option>
+            </optgroup>
+          </select>
+        </div>
         <div class="fg" style="grid-column:1/-1"><label>Descripción</label><textarea id="modal-des" class="modal-sel" rows="2" style="resize:vertical;font-family:inherit;font-size:.875rem" placeholder="Descripción del incidente..."></textarea></div>
       </div>
 
@@ -1643,7 +1668,7 @@ function showP(name){
 // ════════════════════════════════════════════════
 function renderDash(){
   const all=getInc();
-  const inc=all.filter(i=>i.est==='abierta'||i.est==='prioritario'||(i.est==='asignada'&&!i.asi));
+  const inc=all.filter(i=>i.est==='abierta'||i.est==='prioritario'||i.est==='asignada');
   const prioN=inc.filter(i=>i.est==='prioritario').length;
   document.getElementById('dash-count').textContent=inc.length+' incidencias';
   document.getElementById('dash-sub').textContent='Mostrando '+inc.length+' incidencias activas y pendientes';
@@ -1957,6 +1982,7 @@ function abrirModalEst(id){
   document.getElementById('modal-des').value=i.des||'';
   document.getElementById('modal-estado').value=i.est;
   document.getElementById('modal-resolucion').value=i.res||'';
+  document.getElementById('modal-tip').value=i.tip||'';
   document.getElementById('modal-notas-new').value='';
   document.getElementById('modal-est-msg').innerHTML='';
   const hist=document.getElementById('modal-notas-hist');
@@ -2001,10 +2027,17 @@ async function guardarEstado(){
   const est=document.getElementById('modal-estado').value;
   const res=document.getElementById('modal-resolucion').value;
   const notaNueva=document.getElementById('modal-notas-new').value.trim();
+  // Anotación obligatoria al cerrar
+  if(est==='cerrada'&&!notaNueva){
+    document.getElementById('modal-est-msg').innerHTML='<div class="alert-err"><i class="ti ti-alert-triangle"></i> Para cerrar una incidencia es obligatorio añadir una anotación.</div>';
+    document.getElementById('modal-notas-new').focus();
+    return;
+  }
   const inc=getInc();const i=inc.find(x=>x.id===id);
   if(i){
     const estadoPrevio=i.est;
     i.est=est;i.res=res;
+    i.tip=document.getElementById('modal-tip').value||i.tip;
     i.ini=document.getElementById('modal-ini').value.trim()||i.ini;
     i.asi=document.getElementById('modal-asi').value.trim();
     i.ori=document.getElementById('modal-ori').value.trim();
