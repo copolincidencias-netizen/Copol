@@ -138,6 +138,10 @@ tr:hover td{background:#1e293b18}
 .geo-btn{background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:8px;padding:.62rem .9rem;color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:.32rem}
 .geo-btn:hover{opacity:.9}
 .geo-status{font-size:.7rem;margin-top:.28rem;min-height:.9rem}
+.btn-voz{background:none;border:1px solid #334155;border-radius:6px;color:#94a3b8;cursor:pointer;padding:.15rem .45rem;font-size:.8rem;transition:.2s;line-height:1;margin-left:.3rem}
+.btn-voz:hover{border-color:#3b82f6;color:#3b82f6}
+.btn-voz.escuchando{border-color:#ef4444;color:#ef4444;animation:pulso-mic .8s infinite}
+@keyframes pulso-mic{0%,100%{opacity:1}50%{opacity:.4}}
 .geo-ok{color:#34d399}.geo-err{color:#f87171}.geo-loading{color:#60a5fa}
 
 /* ── DROPZONE ── */
@@ -560,6 +564,7 @@ select option{background:#111827;color:#e2e8f0}
           <label>Dirección <span style="color:#475569;font-size:.68rem;font-weight:400">(geocodificación automática)</span></label>
           <div class="geo-row">
             <div style="flex:1"><input type="text" id="f-dir" placeholder="Calle Mayor 1, Madrid" oninput="clearGeo()"></div>
+            <button class="geo-btn" onclick="iniciarVoz('f-dir')" id="voz-f-dir" title="Dictar dirección"><i class="ti ti-microphone"></i></button>
             <button class="geo-btn" onclick="geocodificar()"><i class="ti ti-map-pin"></i> Obtener coords</button>
           </div>
           <div class="geo-status" id="geo-status"></div>
@@ -567,7 +572,18 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg"><label>Latitud</label><input type="number" id="f-lat" placeholder="40.4168" step="any"></div>
         <div class="fg"><label>Longitud</label><input type="number" id="f-lon" placeholder="-3.7038" step="any"></div>
         <div class="fg"><label>Estado</label>
-          <select id="f-est"><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option></select>
+          <select id="f-est" onchange="togglePrioField('f-prioridad',this.value)">
+            <option value="abierta">Abierta</option>
+            <option value="asignada">Asignada</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+        </div>
+        <div class="fg" id="f-prioridad-wrap">
+          <label>Tipo de asignación</label>
+          <select id="f-prioridad">
+            <option value="no_prioritaria">No Prioritaria</option>
+            <option value="prioritaria">Prioritaria</option>
+          </select>
         </div>
         <div class="fg full" style="grid-column:1/-1">
           <label>Tipo de incidencia <span style="color:#475569;font-size:.68rem;font-weight:400">(código oficial)</span></label>
@@ -635,8 +651,14 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg"><label>Resolución</label>
           <select id="f-res"><option value="">Sin resolución</option><option value="pos_sol">Positivo solucionado</option><option value="neg">Negativo</option><option value="pos_nso">Positivo sin solución</option><option value="otro">Otros</option></select>
         </div>
-        <div class="fg full"><label>Descripción breve</label><textarea id="f-des" rows="3" placeholder="Resumen del incidente..."></textarea></div>
-        <div class="fg full"><label>Anotaciones / Observaciones</label><textarea id="f-notas" rows="2" placeholder="Notas internas, observaciones adicionales..."></textarea></div>
+        <div class="fg full">
+          <label style="display:flex;align-items:center;gap:.5rem">Descripción breve <button type="button" onclick="iniciarVoz('f-des')" id="voz-f-des" class="btn-voz" title="Dictar descripción"><i class="ti ti-microphone"></i></button></label>
+          <textarea id="f-des" rows="3" placeholder="Resumen del incidente..."></textarea>
+        </div>
+        <div class="fg full">
+          <label style="display:flex;align-items:center;gap:.5rem">Anotaciones / Observaciones <button type="button" onclick="iniciarVoz('f-notas')" id="voz-f-notas" class="btn-voz" title="Dictar notas"><i class="ti ti-microphone"></i></button></label>
+          <textarea id="f-notas" rows="2" placeholder="Notas internas, observaciones adicionales..."></textarea>
+        </div>
         <div class="fg full">
           <label>Adjuntar archivos <span style="color:#475569;font-size:.68rem;font-weight:400">(fotos, vídeos, documentos, audio)</span></label>
           <div class="drop-zone" id="drop-zone"
@@ -685,7 +707,8 @@ select option{background:#111827;color:#e2e8f0}
     <div class="sec-hdr"><div><h2>Listado de incidencias</h2><p id="lst-count">0 registros</p></div></div>
     <div class="search-bar"><i class="ti ti-search"></i><input type="text" id="srch" placeholder="Buscar por dirección, descripción, agente, indicativo..." oninput="renderLst()"></div>
     <div class="filters-row">
-      <select class="fsel" id="fl-est" onchange="renderLst()"><option value="">Todos los estados</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option></select>
+      <select class="fsel" id="fl-est" onchange="renderLst()"><option value="">Todos los estados</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select>
+      <select class="fsel" id="fl-prioridad" onchange="renderLst()"><option value="">Toda prioridad</option><option value="prioritaria">⚡ Prioritaria</option><option value="no_prioritaria">No Prioritaria</option></select>
       <select class="fsel" id="fl-tip" onchange="renderLst()">
   <option value="">Todos los tipos</option>
   <optgroup label="🟢 Verde — Convivencia">
@@ -758,10 +781,12 @@ select option{background:#111827;color:#e2e8f0}
         <th style="width:75px;cursor:pointer" onclick="sortLst('id')">ID <span class="sort-ind" data-col="id"></span></th>
         <th style="width:82px;cursor:pointer" onclick="sortLst('fec')">Fecha <span class="sort-ind" data-col="fec"></span></th>
         <th style="width:60px;cursor:pointer" onclick="sortLst('hor')">Hora <span class="sort-ind" data-col="hor"></span></th>
+        <th style="width:90px;cursor:pointer" onclick="sortLst('asi')">Asignado <span class="sort-ind" data-col="asi"></span></th>
         <th style="width:86px;cursor:pointer" onclick="sortLst('tip')">Tipo <span class="sort-ind" data-col="tip"></span></th>
         <th style="cursor:pointer" onclick="sortLst('dir')">Dirección <span class="sort-ind" data-col="dir"></span></th>
         <th>Descripción</th>
-        <th style="width:98px;cursor:pointer" onclick="sortLst('est')">Estado <span class="sort-ind" data-col="est"></span></th>
+        <th style="width:88px;cursor:pointer" onclick="sortLst('est')">Estado <span class="sort-ind" data-col="est"></span></th>
+        <th style="width:90px;cursor:pointer" onclick="sortLst('prioridad')">Prioridad <span class="sort-ind" data-col="prioridad"></span></th>
         <th style="width:118px">Resolución</th>
         <th style="width:92px;cursor:pointer" onclick="sortLst('ini')">Iniciado por <span class="sort-ind" data-col="ini"></span></th>
         <th style="width:115px">Anotaciones</th>
@@ -791,7 +816,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="sec-hdr"><div><h2>Mapa de calor</h2><p>Tiles estilo Google Maps (CARTO Voyager) · Concentración por proximidad</p></div></div>
     <div class="map-ctrl">
       <div class="map-ctrl-grid">
-        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option></select></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Tipo</label><select class="map-sel" id="mp-tip" onchange="updateMap()">
   <option value="">Todos los tipos</option>
   <optgroup label="🟢 Verde — Convivencia">
@@ -879,7 +904,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="report-flt"><div class="flt-grid">
       <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Desde</label><input type="date" class="map-inp" id="r-des"></div>
       <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="r-has"></div>
-      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="r-est"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option></select></div>
+      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="r-est"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select></div>
       <button class="btn-map" onclick="genInforme()"><i class="ti ti-file-analytics"></i> Generar informe</button>
       <button id="btn-ia-narrar" class="btn-map" onclick="iaNarrarInforme()" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);display:none"><i class="ti ti-sparkles"></i> Narrar con IA</button>
     </div></div>
@@ -948,7 +973,7 @@ select option{background:#111827;color:#e2e8f0}
             <option value="abierta">Abierta</option>
             <option value="asignada">Asignada</option>
             <option value="cerrada">Cerrada</option>
-            <option value="prioritario">Prioritario</option>
+            
           </select>
         </div>
         <div class="fg" style="min-width:220px;flex:1 1 auto">
@@ -1086,9 +1111,16 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg"><label>Latitud</label><input type="number" id="modal-lat" class="modal-sel" step="any" placeholder="40.4168"></div>
         <div class="fg"><label>Longitud</label><input type="number" id="modal-lon" class="modal-sel" step="any" placeholder="-3.7038"></div>
         <div class="fg"><label>Estado</label>
-          <select id="modal-estado" class="modal-sel">
+          <select id="modal-estado" class="modal-sel" onchange="togglePrioField('modal-prioridad',this.value)">
             <option value="abierta">Abierta</option><option value="asignada">Asignada</option>
-            <option value="cerrada">Cerrada</option><option value="prioritario">Prioritario</option>
+            <option value="cerrada">Cerrada</option>
+          </select>
+        </div>
+        <div class="fg" id="modal-prioridad-wrap">
+          <label>Tipo de asignación</label>
+          <select id="modal-prioridad" class="modal-sel">
+            <option value="no_prioritaria">No Prioritaria</option>
+            <option value="prioritaria">Prioritaria</option>
           </select>
         </div>
         <div class="fg"><label>Resolución</label>
@@ -1641,7 +1673,7 @@ function doLogout(){
   mapInst=null;heatLay=null;
 }
 function updatePrioDot(){
-  const n=getInc().filter(i=>i.est==='prioritario').length;
+  const n=getInc().filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada').length;
   document.getElementById('prio-dot').style.display=n>0?'block':'none';
 }
 
@@ -1668,8 +1700,8 @@ function showP(name){
 // ════════════════════════════════════════════════
 function renderDash(){
   const all=getInc();
-  const inc=all.filter(i=>i.est==='abierta'||i.est==='prioritario'||i.est==='asignada');
-  const prioN=inc.filter(i=>i.est==='prioritario').length;
+  const inc=all.filter(i=>i.est==='abierta'||i.est==='asignada');
+  const prioN=inc.filter(i=>i.prioridad==='prioritaria').length;
   document.getElementById('dash-count').textContent=inc.length+' incidencias';
   document.getElementById('dash-sub').textContent='Mostrando '+inc.length+' incidencias activas y pendientes';
   const strip=document.getElementById('alarm-strip-dash');
@@ -1742,7 +1774,7 @@ function renderDash(){
   document.getElementById('widget-agents').innerHTML=topAgents.length?`<div class="widget-list">${topAgents.map(([a,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(a)}">${escHtml(a)}</div><div class="wi-count">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
 
   document.getElementById('dash-tbody').innerHTML=inc.length?inc.slice().reverse().map(i=>{
-    const p=i.est==='prioritario';
+    const p=i.prioridad==='prioritaria';
     return`<tr class="${p?'alarm-row':''}">
       <td>${p?`<i class="ti ti-alarm alarm-icon" title="Prioritario"></i> `:''}${fmtFec(i.fec)}</td>
       <td>${i.has||'—'}</td><td>${i.ori||'—'}</td>
@@ -1798,13 +1830,14 @@ function sortLst(col){
   renderLst();
 }
 function limpiarFiltros(){
-  ['srch','fl-est','fl-tip','fl-res','fl-des','fl-has','fl-asi'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  ['srch','fl-est','fl-tip','fl-res','fl-des','fl-has','fl-asi','fl-prioridad'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   renderLst();
 }
 function renderLst(){
   const inc=getInc();
   const q=(document.getElementById('srch').value||'').toLowerCase();
   const fe=document.getElementById('fl-est').value;
+  const fpr=document.getElementById('fl-prioridad')?document.getElementById('fl-prioridad').value:'';
   const ft=document.getElementById('fl-tip').value;
   const fr=document.getElementById('fl-res')?document.getElementById('fl-res').value:'';
   const fd=document.getElementById('fl-des')?document.getElementById('fl-des').value:'';
@@ -1812,6 +1845,7 @@ function renderLst(){
   const fa=(document.getElementById('fl-asi')?document.getElementById('fl-asi').value:'').toLowerCase();
   let f=inc.filter(i=>{
     if(fe&&i.est!==fe)return false;
+    if(fpr&&(i.prioridad||'')!==fpr)return false;
     if(ft&&!(i.tip||'').toUpperCase().startsWith(ft))return false;
     if(fr==='__sin'){if(i.res)return false;}else if(fr&&i.res!==fr)return false;
     if(fd&&i.fec<fd)return false;
@@ -1838,7 +1872,7 @@ function renderLst(){
   document.getElementById('lst-count').textContent=f.length+' registros';
   const fVisible=f;
   // Alarma visual si hay incidencias prioritarias sin resolver
-  const prioPendientes=getInc().filter(i=>i.est==='prioritario'&&!i.res);
+  const prioPendientes=getInc().filter(i=>i.prioridad==='prioritaria'&&!i.res);
   let alarmBar=document.getElementById('lst-alarm-strip');
   if(!alarmBar){
     alarmBar=document.createElement('div');
@@ -1858,15 +1892,17 @@ function renderLst(){
   });
   const ia=CU&&(CU.role==='admin'||CU.role==='superadmin');
   document.getElementById('lst-tbody').innerHTML=fVisible.length?fVisible.map(i=>{
-    const isPrioAlert=i.est==='prioritario'&&!i.res;
+    const isPrioAlert=i.prioridad==='prioritaria'&&!i.res;
     return`
     <tr class="${isPrioAlert?'alarm-row':''}">
       <td style="color:#3b82f6;font-weight:600">${isPrioAlert?`<i class="ti ti-alarm alarm-icon" style="font-size:13px;margin-right:3px"></i>`:''}${i.id}</td>
       <td>${fmtFec(i.fec)}</td><td>${i.hor}</td>
+      <td style="font-size:.78rem;color:#94a3b8">${i.asi||'—'}</td>
       <td style="font-size:.7rem"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${tipoBadgeColor(i.tip)};margin-right:4px;vertical-align:middle"></span>${tipoL(i.tip)}</td>
       <td title="${i.dir}">${i.dir}</td>
       <td title="${i.des}">${i.des}</td>
       <td><span class="sbadge s-${i.est}">${i.est}</span></td>
+      <td style="font-size:.75rem">${i.prioridad==='prioritaria'?'<span style="color:#f87171;font-weight:600">⚡ Prioritaria</span>':'<span style="color:#94a3b8">No prioritaria</span>'}</td>
       <td>${i.res?`<span class="rbadge-res ${resCls(i.res)}">${resL(i.res)}</span>`:'—'}</td>
       <td>${i.ini}</td>
       <td title="${i.notas||''}" style="color:${i.notas?'#94a3b8':'#334155'}">${i.notas?i.notas.split('\n')[0].slice(0,30)+'…':'—'}</td>
@@ -1875,7 +1911,7 @@ function renderLst(){
         <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
         ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
       </td>
-    </tr>`}).join(''):'<tr><td colspan="12" style="text-align:center;color:#334155;padding:2rem">Sin resultados — prueba a limpiar los filtros</td></tr>';
+    </tr>`}).join(''):'<tr><td colspan="14" style="text-align:center;color:#334155;padding:2rem">Sin resultados — prueba a limpiar los filtros</td></tr>';
 }
 
 // ════════════════════════════════════════════════
@@ -1936,7 +1972,7 @@ function filtrarHistoricoAgente(agente){
 //  PRIORITARIO
 // ════════════════════════════════════════════════
 function renderPrio(){
-  const inc=getInc().filter(i=>i.est==='prioritario');
+  const inc=getInc().filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada');
   document.getElementById('prio-count').textContent=inc.length+' activas';
   document.getElementById('prio-alarm-strip').style.display=inc.length>0?'flex':'none';
   const ia=CU&&CU.role==='admin';
@@ -1948,7 +1984,7 @@ function renderPrio(){
       <td>${i.asi||'<span style="color:#475569;font-style:italic">Sin asignar</span>'}</td>
       <td title="${i.dir}">${i.dir}</td>
       <td title="${i.des}">${i.des}</td>
-      <td><span class="sbadge s-prioritario">Prioritario</span></td>
+      <td><span class="sbadge s-${i.est}">${i.est}</span></td>
       <td>
         <button class="abtn ac" title="Cerrar" onclick="abrirCierre('${i.id}')"><i class="ti ti-circle-check"></i></button>
         <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
@@ -1981,6 +2017,8 @@ function abrirModalEst(id){
   document.getElementById('modal-lon').value=i.lon||'';
   document.getElementById('modal-des').value=i.des||'';
   document.getElementById('modal-estado').value=i.est;
+  togglePrioField('modal-prioridad',i.est);
+  document.getElementById('modal-prioridad').value=i.prioridad||'no_prioritaria';
   document.getElementById('modal-resolucion').value=i.res||'';
   document.getElementById('modal-tip').value=i.tip||'';
   document.getElementById('modal-notas-new').value='';
@@ -1999,6 +2037,8 @@ function abrirModalEst(id){
     '<span style="font-size:.7rem;color:#334155">Sin archivos adjuntos</span>';
   renderModalPF();
   document.getElementById('modal-est').classList.add('open');
+  // Mostrar/ocultar campo prioridad según estado actual
+  setTimeout(()=>togglePrioField('modal-prioridad',i.est),50);
 }
 function handleModalFiles(files){for(const f of files)addModalFile(f)}
 function handleModalDrop(e){
@@ -2038,6 +2078,7 @@ async function guardarEstado(){
     const estadoPrevio=i.est;
     i.est=est;i.res=res;
     i.tip=document.getElementById('modal-tip').value||i.tip;
+    i.prioridad=document.getElementById('modal-prioridad').value||'no_prioritaria';
     i.ini=document.getElementById('modal-ini').value.trim()||i.ini;
     i.asi=document.getElementById('modal-asi').value.trim();
     i.ori=document.getElementById('modal-ori').value.trim();
@@ -2151,11 +2192,11 @@ function updateMap(){
     var cat = (i.tip||'').charAt(0).toUpperCase();
     var col = TIPO_COLORS[cat]||'#475569';
     // Borde mas grueso si es prioritario
-    var border = i.est==='prioritario'?'3px solid #fbbf24':'2px solid #fff';
+    var border = i.prioridad==='prioritaria'?'3px solid #fbbf24':'2px solid #fff';
     var shadow = 'rgba(0,0,0,.35)';
     var icon = L.divIcon({
       className:'',
-      html:'<div style="background:'+col+';color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:'+border+';box-shadow:0 2px 8px '+shadow+';cursor:pointer;position:relative">'+(n+1)+(i.est==='prioritario'?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #fff"></span>':'')+'</div>',
+      html:'<div style="background:'+col+';color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:'+border+';box-shadow:0 2px 8px '+shadow+';cursor:pointer;position:relative">'+(n+1)+(i.prioridad==='prioritaria'?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #fff"></span>':'')+'</div>',
       iconSize:[26,26],iconAnchor:[13,13]
     });
     var popup = '<div style="font-size:12px;min-width:210px;font-family:sans-serif">' +
@@ -2198,7 +2239,7 @@ async function printMapa(){
 
   // Lista de incidencias panel derecho
   document.getElementById('mpp-list').innerHTML=inc.map((i,n)=>{
-    const cls=i.est==='prioritario'?'prio':i.est==='asignada'?'asig':i.est==='cerrada'?'cerr':'';
+    const cls=i.prioridad==='prioritaria'?'prio':i.est==='asignada'?'asig':i.est==='cerrada'?'cerr':'';
     return`<li>
       <span class="inc-num-p ${cls}">${n+1}</span>
       <div class="inc-info-p">
@@ -2211,7 +2252,7 @@ async function printMapa(){
   // Resumen estadístico
   const estados={},tipos={};
   inc.forEach(i=>{estados[i.est]=(estados[i.est]||0)+1;tipos[i.tip]=(tipos[i.tip]||0)+1});
-  const colEst={prioritario:'#ef4444',abierta:'#3b82f6',asignada:'#a78bfa',cerrada:'#10b981'};
+  const colEst={abierta:'#3b82f6',asignada:'#a78bfa',cerrada:'#10b981'};
   document.getElementById('mpp-resumen').innerHTML=
     `<div class="mpp-res-item"><span class="dot" style="background:#f59e0b"></span><strong>${inc.length}</strong>&nbsp;ubicaciones totales</div>`+
     Object.entries(estados).map(([e,n])=>
@@ -2372,7 +2413,48 @@ async function geocodificar(){
   const dir=document.getElementById('f-dir').value.trim();
   if(!dir){setGeoStatus('err','Introduce una dirección primero');return}
   setGeoStatus('loading','Buscando en Madrid...');
-  // Extraer número que escribió el usuario para conservarlo
+
+  // Detectar confluencias: "Calle A con Calle B" o "Calle A / Calle B"
+  const confluenciaMatch=dir.match(/^(.+?)\s+(?:con|\/)\s+(.+)$/i);
+  if(confluenciaMatch){
+    const calle1=confluenciaMatch[1].trim();
+    const calle2=confluenciaMatch[2].trim();
+    setGeoStatus('loading','Buscando confluencia en Madrid...');
+    try{
+      // Buscar las dos calles por separado y encontrar el punto más cercano entre ambas
+      const [r1,r2]=await Promise.all([
+        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(calle1+', Madrid')}&limit=5&lang=en`).then(r=>r.json()),
+        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(calle2+', Madrid')}&limit=5&lang=en`).then(r=>r.json())
+      ]);
+      const f1=(r1.features||[]).filter(f=>f.properties&&f.properties.city&&f.properties.city.toLowerCase()==='madrid');
+      const f2=(r2.features||[]).filter(f=>f.properties&&f.properties.city&&f.properties.city.toLowerCase()==='madrid');
+      const best1=(f1.filter(f=>f.properties.type==='street')[0])||f1[0];
+      const best2=(f2.filter(f=>f.properties.type==='street')[0])||f2[0];
+      if(best1&&best2){
+        // Punto medio entre las dos calles como aproximación a la intersección
+        const [lon1,lat1]=best1.geometry.coordinates;
+        const [lon2,lat2]=best2.geometry.coordinates;
+        const lat=(parseFloat(lat1)+parseFloat(lat2))/2;
+        const lon=(parseFloat(lon1)+parseFloat(lon2))/2;
+        document.getElementById('f-lat').value=lat.toFixed(6);
+        document.getElementById('f-lon').value=lon.toFixed(6);
+        const p1=best1.properties||{};
+        const p2=best2.properties||{};
+        const n1=p1.name||p1.street||calle1;
+        const n2=p2.name||p2.street||calle2;
+        const dist=best1.properties||{};
+        const dirCompleta=n1+' con '+n2+', '+(p1.district||p2.district||'')+(p1.postcode?', '+p1.postcode:'')+', Madrid';
+        document.getElementById('f-dir').value=dirCompleta.replace(', ,',',').replace('  ',' ');
+        setGeoStatus('ok','✓ Confluencia: '+dirCompleta+' ['+lat.toFixed(4)+', '+lon.toFixed(4)+']');
+        return;
+      }else{
+        setGeoStatus('err','No se encontró alguna de las calles en Madrid. Verifica los nombres.');
+        return;
+      }
+    }catch(e){setGeoStatus('err','Error de red. Introduce las coordenadas manualmente.');return}
+  }
+
+  // Búsqueda normal (no es confluencia)
   const numMatch=dir.match(/\b(\d+)\b/);
   const numUsuario=numMatch?numMatch[1]:'';
   const query=dir.toLowerCase().includes('madrid')?dir:dir+', Madrid';
@@ -2380,10 +2462,8 @@ async function geocodificar(){
     const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10&lang=en`);
     const d=await r.json();
     const features=(d&&d.features)||[];
-    // Filtrar estrictamente por city=Madrid capital
     const madridCapital=features.filter(f=>f.properties&&f.properties.city&&f.properties.city.toLowerCase()==='madrid');
     const pool=madridCapital.length?madridCapital:features;
-    // Priorizar type=street, luego house, luego cualquier otro
     const streets=pool.filter(f=>f.properties.type==='street');
     const houses=pool.filter(f=>f.properties.type==='house');
     const best=(streets.length?streets:houses.length?houses:pool)[0];
@@ -2392,7 +2472,6 @@ async function geocodificar(){
       document.getElementById('f-lat').value=parseFloat(lat).toFixed(6);
       document.getElementById('f-lon').value=parseFloat(lon).toFixed(6);
       const p=best.properties||{};
-      // Para type=street el nombre va en p.name; para type=house la calle va en p.street
       const calle=p.type==='street'?(p.name||''):(p.street||p.name||'');
       const numero=p.housenumber||numUsuario||'';
       const partes=[];
@@ -2414,6 +2493,12 @@ function setGeoStatus(t,msg){
   el.textContent=msg;
 }
 function clearGeo(){document.getElementById('geo-status').textContent=''}
+
+function togglePrioField(fieldId,estado){
+  // El campo prioridad siempre está visible
+  const wrap=document.getElementById(fieldId+'-wrap');
+  if(wrap)wrap.style.display='';
+}
 
 // ════════════════════════════════════════════════
 //  CLOUDINARY — Almacenamiento de adjuntos
@@ -2616,6 +2701,7 @@ async function guardar(){
     lat:parseFloat(document.getElementById('f-lat').value)||40.4168,
     lon:parseFloat(document.getElementById('f-lon').value)||-3.7038,
     est:document.getElementById('f-est').value,
+    prioridad:document.getElementById('f-prioridad').value||'no_prioritaria',
     tip:document.getElementById('f-tip').value,
     res:document.getElementById('f-res').value,
     notas:document.getElementById('f-notas').value.trim(),
@@ -2663,7 +2749,7 @@ function genInforme(){
       <div class="sum-grid">
         <div class="sum-item"><div class="num">${inc.length}</div><div class="lbl">Total incidencias</div></div>
         <div class="sum-item"><div class="num">${inc.filter(i=>i.est==='cerrada').length}</div><div class="lbl">Cerradas</div></div>
-        <div class="sum-item"><div class="num">${inc.filter(i=>i.est==='prioritario').length}</div><div class="lbl">Prioritarias</div></div>
+        <div class="sum-item"><div class="num">${inc.filter(i=>i.prioridad==='prioritaria').length}</div><div class="lbl">Prioritarias</div></div>
         <div class="sum-item"><div class="num">${totalFiles}</div><div class="lbl">Archivos adjuntos</div></div>
       </div>
     </div>
@@ -3109,7 +3195,7 @@ setInterval(()=>{
   if(!CU)return;
   const all=getInc();
   // Prioridad alta - notify only new ones
-  all.filter(i=>i.est==='prioritario').forEach(i=>{
+  all.filter(i=>i.prioridad==='prioritaria').forEach(i=>{
     if(!_notifiedIds.has(i.id)){
       _notifiedIds.add(i.id);
       notificarPrioritario(i);
@@ -3129,7 +3215,7 @@ setInterval(()=>{
     }catch(e){}
   });
   // UI update
-  const n=all.filter(i=>i.est==='prioritario').length;
+  const n=all.filter(i=>i.prioridad==='prioritaria').length;
   document.getElementById('prio-dot').style.display=n>0?'block':'none';
 },30000);
 
@@ -3223,7 +3309,7 @@ function generarInformeTurno(){
   // Estadisticas rapidas
   var total=filtered.length;
   var cerradas=filtered.filter(function(i){return i.est==='cerrada';}).length;
-  var prioritarias=filtered.filter(function(i){return i.est==='prioritario';}).length;
+  var prioritarias=filtered.filter(function(i){return i.prioridad==='prioritaria';}).length;
   var abiertas=filtered.filter(function(i){return i.est==='abierta'||i.est==='asignada';}).length;
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
@@ -3268,7 +3354,7 @@ function mostrarEstadisticasAgente(){
     if(!agentes[a]) agentes[a]={total:0,cerradas:0,prioritarias:0,tipos:{}};
     agentes[a].total++;
     if(i.est==='cerrada') agentes[a].cerradas++;
-    if(i.est==='prioritario') agentes[a].prioritarias++;
+    if(i.prioridad==='prioritaria') agentes[a].prioritarias++;
     agentes[a].tipos[i.tip]=(agentes[a].tipos[i.tip]||0)+1;
   });
 
@@ -3542,7 +3628,7 @@ function iaAplicarSugerencia(tipo,prioridad,res){
   const sel=document.getElementById('f-tip');
   for(let opt of sel.options){if(opt.value===tipo){sel.value=tipo;break}}
   // Set estado
-  if(prioridad==='alta')document.getElementById('f-est').value='prioritario';
+  if(prioridad==='alta')document.getElementById('f-est').value='asignada';
   // Set resolución
   if(res)document.getElementById('f-res').value=res;
   document.getElementById('ia-sugerencia').style.display='none';
@@ -3972,7 +4058,63 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <script>
-if('serviceWorker' in navigator){
+// ════════════════════════════════════════════════
+//  RECONOCIMIENTO DE VOZ
+// ════════════════════════════════════════════════
+let _vozRec=null;
+let _vozActivo=null;
+
+function iniciarVoz(campoId){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    showFMsg('err','El reconocimiento de voz solo está disponible en Chrome.');
+    return;
+  }
+  const btn=document.getElementById('voz-'+campoId);
+  const campo=document.getElementById(campoId);
+  // Si ya está escuchando ese campo, parar
+  if(_vozActivo===campoId&&_vozRec){
+    _vozRec.stop();
+    return;
+  }
+  // Si hay otro activo, pararlo primero
+  if(_vozRec){_vozRec.stop();}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  _vozRec=new SR();
+  _vozRec.lang='es-ES';
+  _vozRec.continuous=false;
+  _vozRec.interimResults=true;
+  _vozActive=campoId;
+  _vozActivo=campoId;
+  // Marcar botón como activo
+  document.querySelectorAll('.btn-voz').forEach(b=>b.classList.remove('escuchando'));
+  if(btn)btn.classList.add('escuchando');
+  const textoOriginal=campo.value;
+  _vozRec.onresult=ev=>{
+    let interim='',final='';
+    for(let i=0;i<ev.results.length;i++){
+      if(ev.results[i].isFinal)final+=ev.results[i][0].transcript;
+      else interim+=ev.results[i][0].transcript;
+    }
+    campo.value=textoOriginal+(textoOriginal&&(final||interim)?' ':'')+((final||interim));
+  };
+  _vozRec.onend=()=>{
+    if(btn)btn.classList.remove('escuchando');
+    _vozActivo=null;
+    _vozRec=null;
+    // Si hay texto final, quitar el interimResults
+    if(campo.value!==textoOriginal&&campo.tagName!=='TEXTAREA'){
+      clearGeo();
+    }
+  };
+  _vozRec.onerror=ev=>{
+    if(btn)btn.classList.remove('escuchando');
+    _vozActivo=null;
+    _vozRec=null;
+    if(ev.error==='not-allowed')showFMsg('err','Permiso de micrófono denegado. Actívalo en la configuración del navegador.');
+    else if(ev.error!=='aborted')showFMsg('err','Error de reconocimiento: '+ev.error);
+  };
+  _vozRec.start();
+}
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js')
       .then(r=>console.log('SW registrado'))
