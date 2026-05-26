@@ -3980,34 +3980,28 @@ ${JSON.stringify(summary)}`;
 }
 
 async function iaQuick(mode){
-  const inc=iaGetFilteredInc();
   const ctx=document.getElementById('ia-contexto')?.value||'';
   const des=document.getElementById('ia-desde')?.value||'';
   const has=document.getElementById('ia-hasta')?.value||'';
   const est=document.getElementById('ia-estado')?.value||'';
+
+  // Para prioritarias: ignorar todos los filtros, coger TODAS las prioritarias no cerradas
+  let inc;
+  if(mode==='prioritarias'){
+    inc=getInc().filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada');
+  } else {
+    inc=iaGetFilteredInc();
+  }
 
   const compact = inc.map(i=>({
     id:i.id, fecha:i.fec, hora:i.hor, estado:i.est,
     prioridad:i.prioridad||'no_prioritaria',
     tipo:i.tip, tipo_nombre:tipoL(i.tip),
     direccion:i.dir, descripcion:i.des,
-    asignado:i.asi, origen:i.ori,
+    asignado:i.asi||'sin asignar', origen:i.ori,
     llegada:i.hlleg||'', fin:i.hfi||'',
     resolucion:i.res||''
   }));
-
-  // Para modo prioritarias: ignorar filtro de estado, filtrar solo por prioridad y fechas
-  const compactPrio = inc
-    .filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada')
-    .map(i=>({
-      id:i.id, fecha:i.fec, hora:i.hor, estado:i.est,
-      prioridad:'prioritaria',
-      tipo:i.tip, tipo_nombre:tipoL(i.tip),
-      direccion:i.dir, descripcion:i.des,
-      asignado:i.asi||'sin asignar', origen:i.ori,
-      llegada:i.hlleg||'', fin:i.hfi||'',
-      resolucion:i.res||''
-    }));
 
   let task='';
   if(mode==='resumen_turno') task='Genera un resumen operativo del periodo, con cifras clave y 3 conclusiones.';
@@ -4018,7 +4012,7 @@ async function iaQuick(mode){
   if(mode==='clasificar_texto') task='Clasifica el último mensaje del usuario como tipo de incidencia y prioridad sugerida.';
   if(mode==='redactar_parte') task='Redacta un parte breve (estilo policial) basado en incidencias del periodo.';
 
-  const datosIA = mode==='prioritarias' ? compactPrio : compact;
+  const datosIA = compact;
 
   iaChatAppend('user','[Acción rápida] '+task);
 
