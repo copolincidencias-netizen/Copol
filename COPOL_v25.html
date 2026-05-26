@@ -817,6 +817,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="map-ctrl">
       <div class="map-ctrl-grid">
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Prioridad</label><select class="map-sel" id="mp-prio" onchange="updateMap()"><option value="">Todas</option><option value="prioritaria">⚡ Prioritaria</option><option value="no_prioritaria">No Prioritaria</option></select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Tipo</label><select class="map-sel" id="mp-tip" onchange="updateMap()">
   <option value="">Todos los tipos</option>
   <optgroup label="🟢 Verde — Convivencia">
@@ -2138,12 +2139,14 @@ function initMap(){
 function updateMap(){
   if(!mapInst)return;
   const est=document.getElementById('mp-est').value;
+  const prio=document.getElementById('mp-prio')?document.getElementById('mp-prio').value:'';
   const tip=document.getElementById('mp-tip').value;
   const des=document.getElementById('mp-des').value;
   const has=document.getElementById('mp-has').value;
   const radius=parseFloat(document.getElementById('prox-radius').value)||30;
   let inc=getInc();
   if(est)inc=inc.filter(i=>i.est===est);
+  if(prio)inc=inc.filter(i=>(i.prioridad||'no_prioritaria')===prio);
   // Filtro tipo: por letra (categoria) o codigo exacto
   if(tip){
     inc=inc.filter(i=>{
@@ -2410,12 +2413,21 @@ function executePrint(){
 //  GEOCODIFICACIÓN AUTOMÁTICA
 // ════════════════════════════════════════════════
 async function geocodificar(){
-  const dir=document.getElementById('f-dir').value.trim();
-  if(!dir){setGeoStatus('err','Introduce una dirección primero');return}
+  const dirOriginal=document.getElementById('f-dir').value.trim();
+  if(!dirOriginal){setGeoStatus('err','Introduce una dirección primero');return}
   setGeoStatus('loading','Buscando en Madrid...');
 
+  // Limpiar dirección: quitar piso, puerta, escalera, letra, etc.
+  const dirLimpia=dirOriginal
+    .replace(/,?\s*(piso|planta|pta?\.?|puerta|escalera|esc\.?|bloque|bl\.?|portal|letra|bajo|entresuelo|entlo?\.?|duplicado|bis|tr\.?|triplicado)\s*[a-zA-Z0-9]*/gi,'')
+    .replace(/,?\s*\d+(º|ª|°)\s*(piso|planta|izq\.?|izquierda|dcha?\.?|derecha|centro|ctr\.?|[a-zA-Z])\b/gi,'')
+    .replace(/,?\s*(izq\.?|izquierda|dcha?\.?|derecha|centro)\b/gi,'')
+    .replace(/\s*,\s*,/g,',')
+    .replace(/,\s*$/,'')
+    .trim();
+
   // Detectar confluencias: "Calle A con Calle B" o "Calle A / Calle B"
-  const confluenciaMatch=dir.match(/^(.+?)\s+(?:con|\/)\s+(.+)$/i);
+  const confluenciaMatch=dirLimpia.match(/^(.+?)\s+(?:con|\/)\s+(.+)$/i);
   if(confluenciaMatch){
     const calle1=confluenciaMatch[1].trim();
     const calle2=confluenciaMatch[2].trim();
@@ -2455,9 +2467,9 @@ async function geocodificar(){
   }
 
   // Búsqueda normal (no es confluencia)
-  const numMatch=dir.match(/\b(\d+)\b/);
+  const numMatch=dirLimpia.match(/\b(\d+)\b/);
   const numUsuario=numMatch?numMatch[1]:'';
-  const query=dir.toLowerCase().includes('madrid')?dir:dir+', Madrid';
+  const query=dirLimpia.toLowerCase().includes('madrid')?dirLimpia:dirLimpia+', Madrid';
   try{
     const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10&lang=en`);
     const d=await r.json();
@@ -2471,17 +2483,9 @@ async function geocodificar(){
       const [lon,lat]=best.geometry.coordinates;
       document.getElementById('f-lat').value=parseFloat(lat).toFixed(6);
       document.getElementById('f-lon').value=parseFloat(lon).toFixed(6);
-      const p=best.properties||{};
-      const calle=p.type==='street'?(p.name||''):(p.street||p.name||'');
-      const numero=p.housenumber||numUsuario||'';
-      const partes=[];
-      if(calle)partes.push(numero?calle+' '+numero:calle);
-      if(p.district)partes.push(p.district);
-      if(p.postcode)partes.push(p.postcode);
-      partes.push('Madrid');
-      const dirCompleta=partes.join(', ');
-      document.getElementById('f-dir').value=dirCompleta;
-      setGeoStatus('ok','✓ '+dirCompleta+' ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']');
+      // Mantener la dirección original completa (con piso/puerta) en el campo
+      // Solo actualizar si el campo sigue igual (no lo ha cambiado el usuario)
+      setGeoStatus('ok','✓ '+dirLimpia+' ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']');
     }else{
       setGeoStatus('err','No encontrada en Madrid capital. Prueba con el nombre completo de la vía.');
     }
@@ -3984,6 +3988,7 @@ async function iaQuick(mode){
 
   const compact = inc.map(i=>({
     id:i.id, fecha:i.fec, hora:i.hor, estado:i.est,
+    prioridad:i.prioridad||'no_prioritaria',
     tipo:i.tip, tipo_nombre:tipoL(i.tip),
     direccion:i.dir, descripcion:i.des,
     asignado:i.asi, origen:i.ori,
@@ -3991,14 +3996,19 @@ async function iaQuick(mode){
     resolucion:i.res||''
   }));
 
+  // Para modo prioritarias, filtrar solo las que tienen prioridad=prioritaria
+  const compactPrio = compact.filter(i=>i.prioridad==='prioritaria'&&i.estado!=='cerrada');
+
   let task='';
   if(mode==='resumen_turno') task='Genera un resumen operativo del periodo, con cifras clave y 3 conclusiones.';
   if(mode==='zonas_calientes') task='Detecta zonas calientes (calles repetidas, patrones) y sugiere vigilancia.';
-  if(mode==='prioritarias') task='Lista incidencias prioritarias y abiertas más relevantes con acciones sugeridas.';
+  if(mode==='prioritarias') task='Lista las incidencias marcadas como PRIORITARIAS (campo prioridad=prioritaria) con acciones sugeridas. Son estas:';
   if(mode==='recomendaciones') task='Propón recomendaciones tácticas para patrullas según patrones detectados.';
   if(mode==='top_calles') task='Devuelve Top 10 calles con más incidencias y breve análisis.';
   if(mode==='clasificar_texto') task='Clasifica el último mensaje del usuario como tipo de incidencia y prioridad sugerida.';
   if(mode==='redactar_parte') task='Redacta un parte breve (estilo policial) basado en incidencias del periodo.';
+
+  const datosIA = mode==='prioritarias' ? compactPrio : compact;
 
   iaChatAppend('user','[Acción rápida] '+task);
 
@@ -4012,7 +4022,7 @@ Filtros:
 Contexto: ${ctx||'ninguno'}
 
 Incidencias JSON:
-${JSON.stringify(compact)}
+${JSON.stringify(datosIA)}
 
 Responde en texto claro con apartados y viñetas si procede. Máx 250 palabras.`;
 
