@@ -3996,8 +3996,18 @@ async function iaQuick(mode){
     resolucion:i.res||''
   }));
 
-  // Para modo prioritarias, filtrar solo las que tienen prioridad=prioritaria
-  const compactPrio = compact.filter(i=>i.prioridad==='prioritaria'&&i.estado!=='cerrada');
+  // Para modo prioritarias: ignorar filtro de estado, filtrar solo por prioridad y fechas
+  const compactPrio = inc
+    .filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada')
+    .map(i=>({
+      id:i.id, fecha:i.fec, hora:i.hor, estado:i.est,
+      prioridad:'prioritaria',
+      tipo:i.tip, tipo_nombre:tipoL(i.tip),
+      direccion:i.dir, descripcion:i.des,
+      asignado:i.asi||'sin asignar', origen:i.ori,
+      llegada:i.hlleg||'', fin:i.hfi||'',
+      resolucion:i.res||''
+    }));
 
   let task='';
   if(mode==='resumen_turno') task='Genera un resumen operativo del periodo, con cifras clave y 3 conclusiones.';
@@ -4125,6 +4135,8 @@ function iniciarVoz(campoId){
   };
   _vozRec.start();
 }
+
+if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js')
       .then(r=>console.log('SW registrado'))
