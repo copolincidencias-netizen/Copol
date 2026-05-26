@@ -2493,8 +2493,42 @@ async function geocodificar(){
       if(p.postcode)partes.push(p.postcode);
       partes.push('Madrid');
       const dirNormalizada=partes.join(', ');
-      // Extraer datos adicionales del usuario (piso, puerta, etc.) — lo que se eliminó para geocodificar
-      const datosExtra=dirOriginal.replace(dirLimpia,'').replace(/^[\s,]+|[\s,]+$/g,'').trim();
+      // Extraer datos adicionales (piso, puerta, etc.) de dirOriginal
+      // Detecta tanto "Piso 3 A" como "3 A", "3º A", "3ºA", "3-A", etc. después del número de calle
+      let datosExtra='';
+      // Primero intentar con palabras clave explícitas
+      const reExplicita=/\b(piso|planta|pta?\.?|puerta|escalera|esc\.?|bloque|bl\.?|portal|letra|bajo|entresuelo|entlo?\.?|duplicado|bis|triplicado|izq\.?|izquierda|dcha?\.?|derecha|centro)\b.*/i;
+      const matchExplicita=dirOriginal.match(reExplicita);
+      if(matchExplicita){
+        datosExtra=matchExplicita[0].trim();
+      } else {
+        // Si no hay palabras clave, buscar lo que va después del número de calle
+        // Ej: "Chopera 2 3 A" → número de calle es 2, datos extra son "3 A"
+        const reNumCalle=/^(.*?\d+)\s+(.+)$/;
+        const matchNum=dirLimpia.match(reNumCalle);
+        if(matchNum){
+          // Ver si en dirOriginal hay algo más después de lo que está en dirLimpia
+          const posLimpia=dirOriginal.toLowerCase().indexOf(dirLimpia.toLowerCase().trim().slice(-6));
+          if(posLimpia!==-1){
+            const resto=dirOriginal.slice(posLimpia+6).trim().replace(/^[,\s]+/,'');
+            if(resto)datosExtra=resto;
+          }
+        }
+        // Fallback: buscar patrón número+letra o número+ordinal después del número de calle
+        if(!datosExtra){
+          const reExtra=/\b\d+\s*[ºª°]?\s*[a-zA-Z]\b(?!.*(?:madrid|calle|paseo|avenida|plaza))/i;
+          // Quitar el número de calle del original y buscar en el resto
+          const sinNumCalle=dirOriginal.replace(/^[^0-9]*\d+\s*/,'');
+          const matchExtra=sinNumCalle.match(/^\s*([^,]+)/);
+          if(matchExtra&&matchExtra[1].trim()&&matchExtra[1].trim().toLowerCase()!=='madrid'){
+            const extra=matchExtra[1].trim();
+            // Solo añadir si no es parte de la dirección normalizada
+            if(!dirNormalizada.toLowerCase().includes(extra.toLowerCase())){
+              datosExtra=extra;
+            }
+          }
+        }
+      }
       const dirFinal=datosExtra?dirNormalizada+', '+datosExtra:dirNormalizada;
       document.getElementById('f-dir').value=dirFinal;
       setGeoStatus('ok','✓ '+dirFinal+' ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']');
