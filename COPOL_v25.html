@@ -3988,7 +3988,7 @@ async function iaQuick(mode){
   // Para prioritarias: ignorar todos los filtros, coger TODAS las prioritarias no cerradas
   let inc;
   if(mode==='prioritarias'){
-    inc=getInc().filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada');
+    inc=getInc().filter(i=>i.prioridad==='prioritaria');
   } else {
     inc=iaGetFilteredInc();
   }
