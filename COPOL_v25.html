@@ -564,7 +564,7 @@ select option{background:#111827;color:#e2e8f0}
           <label>Dirección <span style="color:#475569;font-size:.68rem;font-weight:400">(geocodificación automática)</span></label>
           <div class="geo-row">
             <div style="flex:1"><input type="text" id="f-dir" placeholder="Calle Mayor 1, Madrid" oninput="clearGeo()"></div>
-            <button class="geo-btn" onclick="iniciarVoz('f-dir')" id="voz-f-dir" title="Dictar dirección"><i class="ti ti-microphone"></i></button>
+            <button class="geo-btn btn-voz" onclick="iniciarVoz('f-dir')" id="voz-f-dir" title="Dictar dirección"><i class="ti ti-microphone"></i></button>
             <button class="geo-btn" onclick="geocodificar()"><i class="ti ti-map-pin"></i> Obtener coords</button>
           </div>
           <div class="geo-status" id="geo-status"></div>
