@@ -2483,9 +2483,21 @@ async function geocodificar(){
       const [lon,lat]=best.geometry.coordinates;
       document.getElementById('f-lat').value=parseFloat(lat).toFixed(6);
       document.getElementById('f-lon').value=parseFloat(lon).toFixed(6);
-      // Mantener la dirección original completa (con piso/puerta) en el campo
-      // Solo actualizar si el campo sigue igual (no lo ha cambiado el usuario)
-      setGeoStatus('ok','✓ '+dirLimpia+' ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']');
+      // Construir dirección normalizada con Photon
+      const p=best.properties||{};
+      const calle=p.type==='street'?(p.name||''):(p.street||p.name||'');
+      const numero=p.housenumber||numUsuario||'';
+      const partes=[];
+      if(calle)partes.push(numero?calle+' '+numero:calle);
+      if(p.district)partes.push(p.district);
+      if(p.postcode)partes.push(p.postcode);
+      partes.push('Madrid');
+      const dirNormalizada=partes.join(', ');
+      // Extraer datos adicionales del usuario (piso, puerta, etc.) — lo que se eliminó para geocodificar
+      const datosExtra=dirOriginal.replace(dirLimpia,'').replace(/^[\s,]+|[\s,]+$/g,'').trim();
+      const dirFinal=datosExtra?dirNormalizada+', '+datosExtra:dirNormalizada;
+      document.getElementById('f-dir').value=dirFinal;
+      setGeoStatus('ok','✓ '+dirFinal+' ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']');
     }else{
       setGeoStatus('err','No encontrada en Madrid capital. Prueba con el nombre completo de la vía.');
     }
