@@ -413,6 +413,14 @@ select option{background:#111827;color:#e2e8f0}
 
 @media print{
   #print-header{display:block!important}
+  #panel-listado{overflow:visible!important;height:auto!important}
+  #panel-listado .dash-wrap{overflow:visible!important;height:auto!important}
+  #panel-listado table{width:100%;font-size:7.5pt;border-collapse:collapse}
+  #panel-listado thead{display:table-header-group}
+  #panel-listado tbody tr{page-break-inside:avoid}
+  #panel-listado th,#panel-listado td{padding:2px 4px!important;border:0.5px solid #ccc!important;word-break:break-word}
+  #panel-listado .sec-hdr,#panel-listado .search-bar,#panel-listado .filters-row,#panel-listado .btn-s,#panel-listado .abtn{display:none!important}
+  @page{size:A4 landscape;margin:10mm}
 }
 #print-header{display:none}
 </style>
