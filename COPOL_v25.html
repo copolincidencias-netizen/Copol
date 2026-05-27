@@ -2366,7 +2366,7 @@ function filterByTurno(inc,fecha,turno){
     return fecha?inc.filter(i=>i.fec===fecha):inc;
   }
   if(turno==='noche'){
-    // Turno noche: 22:00 del día seleccionado hasta 08:00 del día siguiente
+    // Turno noche: 00:00-07:59 del día seleccionado + 22:00-23:59 del día seleccionado + 00:00-07:59 del día siguiente
     if(!fecha) return inc.filter(i=>{const h=i.hor||'00:00';return h>='22:00'||h<'08:00';});
     // Calcular fecha siguiente sin depender de UTC
     const partes=fecha.split('-');
@@ -2374,8 +2374,9 @@ function filterByTurno(inc,fecha,turno){
     const fechaSig=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return inc.filter(i=>{
       const h=i.hor||'00:00';
-      if(i.fec===fecha&&h>='22:00')return true;  // 22:00-23:59 del día seleccionado
-      if(i.fec===fechaSig&&h<'08:00')return true; // 00:00-07:59 del día siguiente
+      if(i.fec===fecha&&h<'08:00')return true;   // 00:00-07:59 del día seleccionado (madrugada)
+      if(i.fec===fecha&&h>='22:00')return true;   // 22:00-23:59 del día seleccionado (noche)
+      if(i.fec===fechaSig&&h<'08:00')return true; // 00:00-07:59 del día siguiente (madrugada)
       return false;
     });
   }
