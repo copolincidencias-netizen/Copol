@@ -2399,23 +2399,73 @@ function executePrint(){
   const inc=filterByTurno(getInc(),fecha,selectedTurno);
   const fechaSig=selectedTurno==='noche'&&fecha?(()=>{const p=fecha.split('-');const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])+1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})():'';
   const n={dia:'Día completo',manana:'Turno mañana (07:00-15:00)',tarde:'Turno tarde (15:00-22:00)',noche:'Turno noche (22:00-08:00)'};
-  document.getElementById('print-title').textContent='COPOL — Listado de incidencias — '+n[selectedTurno];
   const fechaLabel=selectedTurno==='noche'&&fecha&&fechaSig?fecha+' → '+fechaSig:(fecha||'Todas');
-  document.getElementById('print-subtitle').textContent='Fecha: '+fechaLabel+' | Generado: '+new Date().toLocaleString('es-ES')+' | Agente: '+(CU?CU.name:'');
-  const tb=document.getElementById('lst-tbody'),bk=tb.innerHTML;
-  tb.innerHTML=inc.map(i=>`
+  const titulo='COPOL — Listado de incidencias — '+n[selectedTurno];
+  const subtitulo='Fecha: '+fechaLabel+' | Generado: '+new Date().toLocaleString('es-ES')+' | Agente: '+(CU?CU.name:'');
+
+  // Ordenar por fecha y hora
+  inc.sort((a,b)=>(a.fec+a.hor).localeCompare(b.fec+b.hor));
+
+  const filas=inc.map(i=>`
     <tr>
-      <td style="color:#1d4ed8;font-weight:600">${i.id}</td><td>${fmtFec(i.fec)}</td><td>${i.hor}</td>
-      <td>${tipoL(i.tip)}</td><td>${i.dir}</td><td>${i.des}</td><td>${i.est}</td>
-      <td>${resL(i.res)||'—'}</td><td>${i.ini}</td>
-      <td>${i.notas?i.notas.split('\n').map(l=>l.slice(0,42)).join(' | '):'—'}</td>
-      <td>${(i.files&&i.files.length)?i.files.length:'—'}</td><td>—</td>
+      <td style="color:#1d4ed8;font-weight:600">${i.id}</td>
+      <td>${fmtFec(i.fec)}</td>
+      <td>${i.hor}</td>
+      <td>${i.asi||'—'}</td>
+      <td>${tipoL(i.tip)}</td>
+      <td>${i.dir}</td>
+      <td>${i.des}</td>
+      <td>${i.est}</td>
+      <td>${i.prioridad==='prioritaria'?'⚡ Prioritaria':'No prioritaria'}</td>
+      <td>${resL(i.res)||'—'}</td>
+      <td>${i.ini}</td>
+      <td>${i.notas?i.notas.split('\n').map(l=>l.slice(0,50)).join(' | '):'—'}</td>
     </tr>`).join('');
+
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>${titulo}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:8pt;color:#111;background:#fff;padding:8mm}
+    h1{font-size:12pt;margin-bottom:2mm}
+    p{font-size:8pt;color:#555;margin-bottom:4mm}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    th{background:#1d4ed8;color:#fff;padding:3px 4px;text-align:left;font-size:7.5pt;word-break:break-word}
+    td{padding:2px 4px;border:0.5px solid #ccc;font-size:7.5pt;word-break:break-word;vertical-align:top}
+    tr:nth-child(even){background:#f8fafc}
+    tr{page-break-inside:avoid}
+    thead{display:table-header-group}
+    @page{size:A4 landscape;margin:8mm}
+    .total{margin-top:4mm;font-size:8pt;color:#555}
+  </style>
+  </head><body>
+  <h1>${titulo}</h1>
+  <p>${subtitulo}</p>
+  <table>
+    <thead><tr>
+      <th style="width:60px">ID</th>
+      <th style="width:55px">Fecha</th>
+      <th style="width:38px">Hora</th>
+      <th style="width:55px">Asignado</th>
+      <th style="width:80px">Tipo</th>
+      <th style="width:130px">Dirección</th>
+      <th style="width:170px">Descripción</th>
+      <th style="width:50px">Estado</th>
+      <th style="width:65px">Prioridad</th>
+      <th style="width:70px">Resolución</th>
+      <th style="width:80px">Iniciado por</th>
+      <th>Anotaciones</th>
+    </tr></thead>
+    <tbody>${filas}</tbody>
+  </table>
+  <p class="total">Total: ${inc.length} incidencias</p>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+
   closeModal('modal-print');
-  setTimeout(()=>{
-    window.print();
-    setTimeout(()=>{tb.innerHTML=bk;},800);
-  },200);
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
 }
 
 // ════════════════════════════════════════════════
