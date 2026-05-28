@@ -1701,7 +1701,7 @@ function showP(name){
   if(name==='mapa')setTimeout(()=>initMap(),150);
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
-  if(name==='directorio')renderDir();
+  if(name==='agenteia'){loadIAHistory();}
 }
 
 // ════════════════════════════════════════════════
@@ -1710,7 +1710,7 @@ function showP(name){
 function renderDash(){
   const all=getInc();
   const inc=all.filter(i=>i.est==='abierta'||i.est==='asignada');
-  const prioN=inc.filter(i=>i.prioridad==='prioritaria').length;
+  const prioN=all.filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada').length;
   document.getElementById('dash-count').textContent=inc.length+' incidencias';
   document.getElementById('dash-sub').textContent='Mostrando '+inc.length+' incidencias activas y pendientes';
   const strip=document.getElementById('alarm-strip-dash');
@@ -2077,7 +2077,8 @@ async function guardarEstado(){
   const res=document.getElementById('modal-resolucion').value;
   const notaNueva=document.getElementById('modal-notas-new').value.trim();
   // Anotación obligatoria al cerrar
-  if(est==='cerrada'&&!notaNueva){
+  const esSuperAdmin=CU&&CU.role==='superadmin';
+  if(est==='cerrada'&&!notaNueva&&!esSuperAdmin){
     document.getElementById('modal-est-msg').innerHTML='<div class="alert-err"><i class="ti ti-alert-triangle"></i> Para cerrar una incidencia es obligatorio añadir una anotación.</div>';
     document.getElementById('modal-notas-new').focus();
     return;
@@ -3979,6 +3980,42 @@ document.addEventListener('DOMContentLoaded',()=>{
 // ════════════════════════════════════════════════
 let IA_CHAT_HISTORY = [];
 
+// Guardar historial en Firebase
+async function saveIAHistory(){
+  if(!gsActive()||!CU)return;
+  try{
+    const key='ia_history_'+(CU.user||'default');
+    await db.collection('config').doc(key).set({
+      history:IA_CHAT_HISTORY.slice(-20),
+      updated:new Date().toISOString(),
+      user:CU.user
+    });
+  }catch(e){console.warn('No se pudo guardar historial IA:',e);}
+}
+
+// Cargar historial desde Firebase
+async function loadIAHistory(){
+  if(!gsActive()||!CU)return;
+  try{
+    const key='ia_history_'+(CU.user||'default');
+    const snap=await db.collection('config').doc(key).get();
+    if(snap.exists&&snap.data().history){
+      IA_CHAT_HISTORY=snap.data().history;
+      // Mostrar resumen del historial cargado
+      if(IA_CHAT_HISTORY.length>0){
+        const box=document.getElementById('ia-chat');
+        if(box){
+          const div=document.createElement('div');
+          div.style.cssText='font-size:.7rem;color:#475569;text-align:center;margin-bottom:.5rem;padding:.3rem;border-bottom:1px solid #1e293b';
+          div.textContent='── Historial cargado ('+Math.floor(IA_CHAT_HISTORY.length/2)+' intercambios anteriores) ──';
+          box.appendChild(div);
+          box.scrollTop=box.scrollHeight;
+        }
+      }
+    }
+  }catch(e){console.warn('No se pudo cargar historial IA:',e);}
+}
+
 function iaGetFilteredInc(){
   let inc=getInc();
   const des=document.getElementById('ia-desde')?.value||'';
@@ -4076,6 +4113,7 @@ ${JSON.stringify(summary)}`;
     iaChatAppend('bot',resp.trim());
     IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
     if(IA_CHAT_HISTORY.length>24)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-24);
+    saveIAHistory();
   }catch(e){
     iaChatLoader(false);
     iaChatAppend('bot','Error IA: '+(e.message||e));
@@ -4120,26 +4158,21 @@ async function iaQuick(mode){
   const datosIA = compact;
 
   iaChatAppend('user','[Acción rápida] '+task);
-
-  const prompt=`Eres un analista policial.
-${task}
-
-Filtros:
-- Desde: ${des||'inicio'}
-- Hasta: ${has||'hoy'}
-- Estado: ${est||'todos'}
-Contexto: ${ctx||'ninguno'}
-
-Incidencias JSON:
-${JSON.stringify(datosIA)}
-
-Responde en texto claro con apartados y viñetas si procede. Máx 250 palabras.`;
+  IA_CHAT_HISTORY.push({role:'user',content:prompt});
+  if(IA_CHAT_HISTORY.length>20)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-20);
 
   try{
     iaChatLoader(true);
-    const resp=await callClaude([{role:'user',content:prompt}],900);
+    const messages=[
+      {role:'user',content:'Eres un operador virtual de apoyo para Policía Municipal de Madrid. Responde SIEMPRE en español. Sé conciso, operativo y objetivo. No inventes datos.'},
+      ...IA_CHAT_HISTORY
+    ];
+    const resp=await callClaude(messages,900);
     iaChatLoader(false);
     iaChatAppend('bot',resp.trim());
+    IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
+    if(IA_CHAT_HISTORY.length>24)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-24);
+    saveIAHistory();
   }catch(e){
     iaChatLoader(false);
     iaChatAppend('bot','Error IA: '+(e.message||e));
