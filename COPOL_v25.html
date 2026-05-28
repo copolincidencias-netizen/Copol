@@ -4079,9 +4079,13 @@ async function iaSend(){
   const ctx=document.getElementById('ia-contexto')?.value||'';
 
   const summary = inc.slice(0,120).map(i=>({
-    id:i.id, fecha:i.fec, hora:i.hor, estado:i.est,
+    id:i.id, fecha:i.fec, hora_apertura:i.hor, estado:i.est,
+    prioridad:i.prioridad||'no_prioritaria',
     tipo:tipoL(i.tip), codigo:i.tip, direccion:i.dir,
     descripcion:i.des, asignado:i.asi, origen:i.ori,
+    hora_asignacion:i.has||'',
+    hora_llegada:i.hlleg||'',
+    hora_cierre:i.hfi||'',
     resolucion:i.res?resL(i.res):''
   }));
 
@@ -4094,6 +4098,8 @@ Normas:
 - No inventes datos: si falta información, dilo.
 - No incluyas datos personales sensibles.
 - Si el usuario pide estadísticas, calcula usando el JSON proporcionado.
+- Cada incidencia tiene: hora_apertura, hora_asignacion, hora_llegada, hora_cierre. Usa estos campos para calcular tiempos de respuesta y resolución. Si hora_cierre está vacío, la incidencia no tiene hora de cierre registrada.
+- Para calcular duración: resta hora_apertura a hora_cierre (formato HH:MM).
 
 Contexto adicional del usuario: ${ctx||'ninguno'}
 
@@ -4137,13 +4143,15 @@ async function iaQuick(mode){
   }
 
   const compact = inc.map(i=>({
-    id:i.id, fecha:i.fec, hora:i.hor, estado:i.est,
+    id:i.id, fecha:i.fec, hora_apertura:i.hor, estado:i.est,
     prioridad:i.prioridad||'no_prioritaria',
-    tipo:i.tip, tipo_nombre:tipoL(i.tip),
+    tipo:tipoL(i.tip), codigo:i.tip,
     direccion:i.dir, descripcion:i.des,
     asignado:i.asi||'sin asignar', origen:i.ori,
-    llegada:i.hlleg||'', fin:i.hfi||'',
-    resolucion:i.res||''
+    hora_asignacion:i.has||'',
+    hora_llegada:i.hlleg||'',
+    hora_cierre:i.hfi||'',
+    resolucion:i.res?resL(i.res):''
   }));
 
   let task='';
