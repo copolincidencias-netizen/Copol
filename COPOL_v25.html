@@ -3985,7 +3985,7 @@ async function saveIAHistory(){
   if(!gsActive()||!CU)return;
   try{
     const key='ia_history_'+(CU.user||'default');
-    await db.collection('config').doc(key).set({
+    await _DB.collection('config').doc(key).set({
       history:IA_CHAT_HISTORY.slice(-20),
       updated:new Date().toISOString(),
       user:CU.user
@@ -3998,7 +3998,7 @@ async function loadIAHistory(){
   if(!gsActive()||!CU)return;
   try{
     const key='ia_history_'+(CU.user||'default');
-    const snap=await db.collection('config').doc(key).get();
+    const snap=await _DB.collection('config').doc(key).get();
     if(snap.exists&&snap.data().history){
       IA_CHAT_HISTORY=snap.data().history;
       // Mostrar resumen del historial cargado
@@ -4189,10 +4189,9 @@ async function iaQuick(mode){
 
 // Set defaults on load
 document.addEventListener('DOMContentLoaded',()=>{
-  const d1=document.getElementById('ia-desde');
-  const d2=document.getElementById('ia-hasta');
-  if(d1&&!d1.value)d1.value=todayDate();
-  if(d2&&!d2.value)d2.value=todayDate();
+  // No poner fecha por defecto en el agente IA para que muestre todas las incidencias
+  // const d1=document.getElementById('ia-desde');
+  // const d2=document.getElementById('ia-hasta');
   const iaInp=document.getElementById('ia-input');
   if(iaInp){
     iaInp.addEventListener('keydown',e=>{
