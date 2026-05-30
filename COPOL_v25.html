@@ -3325,7 +3325,7 @@ setInterval(()=>{
     }catch(e){}
   });
   // UI update
-  const n=all.filter(i=>i.prioridad==='prioritaria').length;
+  const n=all.filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada').length;
   document.getElementById('prio-dot').style.display=n>0?'block':'none';
 },30000);
 
