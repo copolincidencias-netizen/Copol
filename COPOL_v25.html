@@ -138,7 +138,15 @@ tr:hover td{background:#1e293b18}
 .geo-btn{background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:8px;padding:.62rem .9rem;color:#fff;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:.32rem}
 .geo-btn:hover{opacity:.9}
 .geo-status{font-size:.7rem;margin-top:.28rem;min-height:.9rem}
-.btn-voz{background:none;border:1px solid #334155;border-radius:6px;color:#94a3b8;cursor:pointer;padding:.15rem .45rem;font-size:.8rem;transition:.2s;line-height:1;margin-left:.3rem}
+.psh-card{background:#111827;border:1px solid #1e293b;border-radius:9px;padding:.7rem;cursor:pointer;transition:.2s}
+.psh-card:hover{border-color:#7c3aed;background:#1a1035}
+.psh-card.activo{border-left:3px solid #a78bfa}
+.psh-card.derivado{border-left:3px solid #34d399}
+.psh-card.desaparecido{border-left:3px solid #f59e0b}
+.psh-card.fallecido{border-left:3px solid #6b7280}
+.psh-alias{font-weight:600;color:#e2e8f0;font-size:.88rem}
+.psh-meta{font-size:.72rem;color:#64748b;margin-top:.15rem}
+.psh-badge{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600;margin-left:.3rem}border-radius:6px;color:#94a3b8;cursor:pointer;padding:.15rem .45rem;font-size:.8rem;transition:.2s;line-height:1;margin-left:.3rem}
 .btn-voz:hover{border-color:#3b82f6;color:#3b82f6}
 .btn-voz.escuchando,.geo-btn.escuchando{border-color:#ef4444!important;color:#ef4444!important;background:rgba(239,68,68,.1)!important;animation:pulso-mic .8s infinite!important}
 @keyframes pulso-mic{0%,100%{opacity:1}50%{opacity:.4}}
@@ -492,6 +500,7 @@ select option{background:#111827;color:#e2e8f0}
       <button class="ntab active" onclick="showP('dashboard')"><i class="ti ti-dashboard"></i> Inicio</button>
       <button class="ntab" onclick="showP('nueva')"><i class="ti ti-plus"></i> Nueva</button>
       <button class="ntab" onclick="showP('listado')"><i class="ti ti-list"></i> Listado</button>
+      <button class="ntab ao-psh" onclick="showP('psh')"><i class="ti ti-map-pin-heart"></i> PSH</button>
       <button class="ntab" onclick="showP('prioritario')"><i class="ti ti-alert-triangle"></i> Prioritarias<span class="prio-dot" id="prio-dot"></span></button>
       <button class="ntab ao" onclick="showP('mapa')"><i class="ti ti-map-2"></i> Mapa calor</button>
       <button class="ntab ao" onclick="showP('informes')"><i class="ti ti-file-analytics"></i> Informes</button>
@@ -804,6 +813,75 @@ select option{background:#111827;color:#e2e8f0}
     </div></div>
   </div>
 
+  <!-- PSH -->
+  <div class="panel" id="panel-psh">
+    <div class="sec-hdr">
+      <div><h2><i class="ti ti-map-pin-heart" style="color:#a78bfa"></i> Censo PSH — Personas Sin Hogar</h2><p id="psh-count">0 personas registradas</p></div>
+      <button class="btn-s" onclick="openPshModal(null)" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="ti ti-plus"></i> Registrar PSH</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;height:calc(100vh - 160px)">
+      <!-- Mapa PSH -->
+      <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid #1e293b">
+        <div id="psh-map" style="width:100%;height:100%"></div>
+        <div style="position:absolute;bottom:10px;left:10px;background:#111827cc;border-radius:8px;padding:.4rem .7rem;font-size:.72rem;color:#94a3b8;z-index:1000">
+          <i class="ti ti-info-circle"></i> Clic en el mapa para añadir ubicación · Clic en marcador para ver ficha
+        </div>
+      </div>
+      <!-- Lista PSH -->
+      <div style="display:flex;flex-direction:column;gap:.5rem;overflow-y:auto">
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;padding:.6rem">
+          <input type="text" id="psh-search" placeholder="Buscar por alias, descripción..." oninput="renderPshList()"
+            style="width:100%;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;color:#e2e8f0;font-size:.82rem;outline:none">
+        </div>
+        <div id="psh-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PSH -->
+  <div class="modal-overlay" id="modal-psh">
+    <div class="modal-box" style="max-width:520px">
+      <div class="modal-hdr"><span id="modal-psh-title">Registrar PSH</span><button class="modal-close" onclick="closeModal('modal-psh')">✕</button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;padding:1rem">
+        <div class="fg" style="grid-column:1/-1"><label>Alias / Nombre</label><input type="text" id="psh-alias" placeholder="Alias o nombre conocido"></div>
+        <div class="fg"><label>Edad aproximada</label><input type="number" id="psh-edad" placeholder="Ej: 45" min="0" max="120"></div>
+        <div class="fg"><label>Sexo</label>
+          <select id="psh-sexo"><option value="">—</option><option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro/No determinado</option></select>
+        </div>
+        <div class="fg" style="grid-column:1/-1"><label>Descripción física</label><textarea id="psh-desc" rows="2" placeholder="Complexión, color de pelo, ropa habitual, señas particulares..."></textarea></div>
+        <div class="fg" style="grid-column:1/-1"><label>Ubicación habitual <span style="color:#475569;font-size:.68rem">(escribe o pincha en el mapa)</span></label>
+          <div style="display:flex;gap:.4rem">
+            <input type="text" id="psh-dir" placeholder="Dirección habitual" style="flex:1" oninput="clearPshGeo()">
+            <button class="geo-btn" onclick="geocodificarPsh()"><i class="ti ti-map-pin"></i></button>
+          </div>
+          <div style="display:flex;gap:.4rem;margin-top:.3rem">
+            <input type="number" id="psh-lat" placeholder="Latitud" step="any" style="flex:1;font-size:.75rem">
+            <input type="number" id="psh-lon" placeholder="Longitud" step="any" style="flex:1;font-size:.75rem">
+          </div>
+          <div class="geo-status" id="psh-geo-status"></div>
+        </div>
+        <div class="fg"><label>Situación</label>
+          <select id="psh-situacion">
+            <option value="activo">Activo — localizado habitualmente</option>
+            <option value="derivado">Derivado a recursos</option>
+            <option value="desaparecido">No localizado</option>
+            <option value="fallecido">Fallecido</option>
+          </select>
+        </div>
+        <div class="fg"><label>Fecha primer contacto</label><input type="date" id="psh-fecha"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Observaciones</label><textarea id="psh-obs" rows="3" placeholder="Comportamiento, estado de salud, necesidades, historial..."></textarea></div>
+        <div class="fg" style="grid-column:1/-1"><label>Incidencias vinculadas <span style="color:#475569;font-size:.68rem">(IDs separados por comas)</span></label>
+          <input type="text" id="psh-incs" placeholder="Ej: INC-021, INC-035"></div>
+        <input type="hidden" id="psh-id">
+      </div>
+      <div class="btn-row" style="padding:0 1rem 1rem">
+        <button class="btn-s" onclick="guardarPsh()" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="ti ti-device-floppy"></i> Guardar</button>
+        <button class="btn-sec" onclick="closeModal('modal-psh')"><i class="ti ti-x"></i> Cancelar</button>
+        <button class="btn-sec" id="psh-delete-btn" onclick="eliminarPsh()" style="display:none;color:#ef4444;border-color:#ef4444"><i class="ti ti-trash"></i> Eliminar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PRIORITARIO -->
   <div class="panel" id="panel-prioritario">
     <div class="sec-hdr"><div><h2>Incidencias prioritarias</h2><p id="prio-count">0 activas</p></div></div>
@@ -931,7 +1009,7 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg"><label>Nombre completo</label><input type="text" id="nu-name" placeholder="Carlos García"></div>
         <div class="fg"><label>Nombre de usuario</label><input type="text" id="nu-user" placeholder="c.garcia"></div>
         <div class="fg"><label>Contraseña</label><input type="password" id="nu-pass" placeholder="mínimo 6 caracteres"></div>
-        <div class="fg"><label>Rol</label><select id="nu-rol"><option value="user">Agente</option><option value="admin">Administrador</option><option value="superadmin" class="ao-sa">Superadministrador</option></select></div>
+        <div class="fg"><label>Rol</label><select id="nu-rol"><option value="user">Agente</option><option value="social">Servicios Sociales (PSH)</option><option value="admin">Administrador</option><option value="superadmin" class="ao-sa">Superadministrador</option></select></div>
       </div>
       <div id="nu-msg"></div>
       <div class="btn-row"><button class="btn-s" onclick="crearUsuario()"><i class="ti ti-plus"></i> Crear usuario</button></div>
@@ -1623,8 +1701,11 @@ function loginAs(u){
   const roleLabel=u.role==='superadmin'?'Superadministrador':u.role==='admin'?'Administrador':'Agente';
   document.getElementById('u-role').textContent=roleLabel;
   const isSA=u.role==='superadmin', isAdmin=u.role==='admin'||isSA;
+  const isSocial=u.role==='social';
   document.querySelectorAll('.ao').forEach(el=>el.style.display=isAdmin?'flex':'none');
   document.querySelectorAll('.ao-sa').forEach(el=>el.style.display=isSA?'flex':'none');
+  // PSH visible para admin, superadmin y social
+  document.querySelectorAll('.ao-psh').forEach(el=>el.style.display=(isAdmin||isSocial)?'flex':'none');
   const iaVisible=isAdmin;
   const iakeyBtn=document.getElementById('ia-key-btn');
   if(iakeyBtn)iakeyBtn.style.display=iaVisible?'flex':'none';
@@ -1701,6 +1782,12 @@ function showP(name){
   if(name==='mapa')setTimeout(()=>initMap(),150);
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
+  if(name==='psh'){
+    loadPshFirebase().then(()=>{
+      renderPshList();
+      setTimeout(()=>{initPshMap();renderPshMarkers();},150);
+    });
+  }
   if(name==='agenteia'){loadIAHistory();}
 }
 
@@ -4229,6 +4316,212 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <script>
+// ════════════════════════════════════════════════
+//  MÓDULO PSH — Personas Sin Hogar
+// ════════════════════════════════════════════════
+let pshMapInst=null, pshMarkers=[], pshData=[], pshClickMarker=null;
+
+function getPsh(){ try{return JSON.parse(localStorage.getItem('copol_psh')||'[]')}catch(e){return[]} }
+function savePsh(d){ localStorage.setItem('copol_psh',JSON.stringify(d)); syncPshFirebase(d); }
+
+async function syncPshFirebase(d){
+  if(!gsActive()||!_DB)return;
+  try{ await _DB.collection('config').doc('psh_censo').set({data:d,updated:new Date().toISOString()}); }
+  catch(e){ console.warn('PSH sync error:',e); }
+}
+
+async function loadPshFirebase(){
+  if(!gsActive()||!_DB)return;
+  try{
+    const snap=await _DB.collection('config').doc('psh_censo').get();
+    if(snap.exists&&snap.data().data){
+      localStorage.setItem('copol_psh',JSON.stringify(snap.data().data));
+    }
+  }catch(e){ console.warn('PSH load error:',e); }
+}
+
+function initPshMap(){
+  if(pshMapInst)return;
+  pshMapInst=L.map('psh-map',{preferCanvas:true}).setView([40.3980,-3.7030],14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:19
+  }).addTo(pshMapInst);
+  // Click en mapa para añadir coordenadas al modal
+  pshMapInst.on('click',function(e){
+    const lat=e.latlng.lat.toFixed(6), lon=e.latlng.lng.toFixed(6);
+    if(document.getElementById('modal-psh').classList.contains('open')){
+      document.getElementById('psh-lat').value=lat;
+      document.getElementById('psh-lon').value=lon;
+      document.getElementById('psh-geo-status').textContent='✓ Coordenadas: '+lat+', '+lon;
+      document.getElementById('psh-geo-status').style.color='#34d399';
+    }
+  });
+  renderPshMarkers();
+}
+
+function renderPshMarkers(){
+  if(!pshMapInst)return;
+  pshMarkers.forEach(m=>pshMapInst.removeLayer(m));
+  pshMarkers=[];
+  const psh=getPsh();
+  document.getElementById('psh-count').textContent=psh.length+' persona'+(psh.length!==1?'s':'')+' registrada'+(psh.length!==1?'s':'');
+  psh.forEach(p=>{
+    if(!p.lat||!p.lon)return;
+    const color={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b',fallecido:'#6b7280'}[p.situacion]||'#a78bfa';
+    const icon=L.divIcon({
+      html:`<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center">
+        <i class="ti ti-user" style="font-size:9px;color:#fff"></i></div>`,
+      className:'',iconSize:[18,18],iconAnchor:[9,9]
+    });
+    const incsHtml=p.incidencias?p.incidencias.split(',').map(i=>i.trim()).filter(Boolean).map(i=>`<span style="color:#60a5fa;cursor:pointer" onclick="verIncPsh('${i}')">${i}</span>`).join(', '):'—';
+    const popup=`<div style="font-family:'Segoe UI',sans-serif;min-width:200px">
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:.3rem">${escHtml(p.alias||'Sin alias')}</div>
+      <div style="font-size:.75rem;color:#666;margin-bottom:.5rem">${p.sexo||''}${p.edad?' · ~'+p.edad+' años':''}</div>
+      ${p.dir?`<div style="font-size:.75rem;margin-bottom:.3rem">📍 ${escHtml(p.dir)}</div>`:''}
+      ${p.desc?`<div style="font-size:.75rem;margin-bottom:.3rem">📋 ${escHtml(p.desc.slice(0,80))}${p.desc.length>80?'…':''}</div>`:''}
+      <div style="font-size:.75rem;margin-bottom:.4rem">🔗 Incidencias: ${incsHtml}</div>
+      <div style="display:flex;gap:.3rem;margin-top:.5rem">
+        <button onclick="openPshModal('${p.id}')" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:.3rem .6rem;font-size:.72rem;cursor:pointer">✏️ Editar</button>
+      </div>
+    </div>`;
+    const m=L.marker([p.lat,p.lon],{icon}).bindPopup(popup,{maxWidth:280}).addTo(pshMapInst);
+    pshMarkers.push(m);
+  });
+}
+
+function renderPshList(){
+  const q=(document.getElementById('psh-search')?.value||'').toLowerCase();
+  const psh=getPsh().filter(p=>!q||(p.alias||'').toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q)||(p.dir||'').toLowerCase().includes(q));
+  const colSit={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b',fallecido:'#6b7280'};
+  const lblSit={activo:'Activo',derivado:'Derivado',desaparecido:'No localizado',fallecido:'Fallecido'};
+  document.getElementById('psh-list').innerHTML=psh.length?psh.map(p=>`
+    <div class="psh-card ${p.situacion||'activo'}" onclick="focusPsh('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="psh-alias">${escHtml(p.alias||'Sin alias')}</div>
+        <span class="psh-badge" style="background:${colSit[p.situacion]||'#a78bfa'}22;color:${colSit[p.situacion]||'#a78bfa'}">${lblSit[p.situacion]||'Activo'}</span>
+      </div>
+      <div class="psh-meta">${p.sexo||''}${p.edad?' · ~'+p.edad+' años':''} ${p.dir?'· '+p.dir:''}</div>
+      ${p.desc?`<div style="font-size:.7rem;color:#475569;margin-top:.2rem">${escHtml(p.desc.slice(0,60))}${p.desc.length>60?'…':''}</div>`:''}
+    </div>`).join(''):'<div style="text-align:center;color:#334155;padding:2rem;font-size:.82rem">Sin resultados</div>';
+}
+
+function focusPsh(id){
+  const p=getPsh().find(x=>x.id===id);
+  if(!p||!p.lat||!p.lon)return;
+  pshMapInst.setView([p.lat,p.lon],17);
+  const m=pshMarkers.find((mk,i)=>{
+    const latlng=mk.getLatLng();
+    return Math.abs(latlng.lat-p.lat)<0.0001&&Math.abs(latlng.lng-p.lon)<0.0001;
+  });
+  if(m)m.openPopup();
+}
+
+function openPshModal(id){
+  const fields=['psh-alias','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id'];
+  fields.forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  document.getElementById('psh-situacion').value='activo';
+  document.getElementById('psh-fecha').value=todayDate();
+  document.getElementById('psh-geo-status').textContent='';
+  document.getElementById('psh-delete-btn').style.display='none';
+  if(id){
+    const p=getPsh().find(x=>x.id===id);
+    if(!p)return;
+    document.getElementById('modal-psh-title').textContent='Editar PSH';
+    document.getElementById('psh-id').value=p.id;
+    document.getElementById('psh-alias').value=p.alias||'';
+    document.getElementById('psh-edad').value=p.edad||'';
+    document.getElementById('psh-sexo').value=p.sexo||'';
+    document.getElementById('psh-desc').value=p.desc||'';
+    document.getElementById('psh-dir').value=p.dir||'';
+    document.getElementById('psh-lat').value=p.lat||'';
+    document.getElementById('psh-lon').value=p.lon||'';
+    document.getElementById('psh-situacion').value=p.situacion||'activo';
+    document.getElementById('psh-fecha').value=p.fecha||'';
+    document.getElementById('psh-obs').value=p.obs||'';
+    document.getElementById('psh-incs').value=p.incidencias||'';
+    document.getElementById('psh-delete-btn').style.display='inline-flex';
+  } else {
+    document.getElementById('modal-psh-title').textContent='Registrar PSH';
+  }
+  document.getElementById('modal-psh').classList.add('open');
+}
+
+function guardarPsh(){
+  const alias=document.getElementById('psh-alias').value.trim();
+  if(!alias){alert('El alias es obligatorio');return;}
+  const id=document.getElementById('psh-id').value||'PSH-'+Date.now();
+  const psh=getPsh();
+  const idx=psh.findIndex(x=>x.id===id);
+  const nuevo={
+    id, alias,
+    edad:document.getElementById('psh-edad').value||'',
+    sexo:document.getElementById('psh-sexo').value||'',
+    desc:document.getElementById('psh-desc').value.trim(),
+    dir:document.getElementById('psh-dir').value.trim(),
+    lat:parseFloat(document.getElementById('psh-lat').value)||null,
+    lon:parseFloat(document.getElementById('psh-lon').value)||null,
+    situacion:document.getElementById('psh-situacion').value,
+    fecha:document.getElementById('psh-fecha').value,
+    obs:document.getElementById('psh-obs').value.trim(),
+    incidencias:document.getElementById('psh-incs').value.trim(),
+    updated:new Date().toISOString()
+  };
+  if(idx>=0)psh[idx]=nuevo; else psh.push(nuevo);
+  savePsh(psh);
+  closeModal('modal-psh');
+  renderPshMarkers();
+  renderPshList();
+}
+
+function eliminarPsh(){
+  const id=document.getElementById('psh-id').value;
+  if(!id||!confirm('¿Eliminar este registro PSH?'))return;
+  const psh=getPsh().filter(x=>x.id!==id);
+  savePsh(psh);
+  closeModal('modal-psh');
+  renderPshMarkers();
+  renderPshList();
+}
+
+function clearPshGeo(){
+  document.getElementById('psh-geo-status').textContent='';
+}
+
+async function geocodificarPsh(){
+  const dir=document.getElementById('psh-dir').value.trim();
+  if(!dir){document.getElementById('psh-geo-status').textContent='Introduce una dirección';return;}
+  document.getElementById('psh-geo-status').textContent='Buscando...';
+  const query=dir.toLowerCase().includes('madrid')?dir:dir+', Madrid';
+  try{
+    const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en`);
+    const d=await r.json();
+    const features=(d&&d.features)||[];
+    const madrid=features.filter(f=>f.properties&&f.properties.city&&f.properties.city.toLowerCase()==='madrid');
+    const best=(madrid.length?madrid:features)[0];
+    if(best){
+      const [lon,lat]=best.geometry.coordinates;
+      document.getElementById('psh-lat').value=parseFloat(lat).toFixed(6);
+      document.getElementById('psh-lon').value=parseFloat(lon).toFixed(6);
+      document.getElementById('psh-geo-status').textContent='✓ ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']';
+      document.getElementById('psh-geo-status').style.color='#34d399';
+      if(pshMapInst)pshMapInst.setView([lat,lon],16);
+    } else {
+      document.getElementById('psh-geo-status').textContent='No encontrada';
+      document.getElementById('psh-geo-status').style.color='#f87171';
+    }
+  }catch(e){
+    document.getElementById('psh-geo-status').textContent='Error de red';
+    document.getElementById('psh-geo-status').style.color='#f87171';
+  }
+}
+
+function verIncPsh(incId){
+  closeModal('modal-psh');
+  showP('listado');
+  const el=document.getElementById('srch');
+  if(el){el.value=incId;renderLst();}
+}
+
 // ════════════════════════════════════════════════
 //  RECONOCIMIENTO DE VOZ
 // ════════════════════════════════════════════════
