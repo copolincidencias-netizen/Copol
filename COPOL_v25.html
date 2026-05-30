@@ -1391,9 +1391,10 @@ function activarSyncRealTime(){
     var localJson = localStorage.getItem('sigi_inc9')||'[]';
     if(remoteJson !== localJson){
       localStorage.setItem('sigi_inc9', remoteJson);
-      renderDash(); renderLst(); renderPrio(); updatePrioDot();
+      renderDash(); renderLst(); renderPrio();
       showSyncToast('Actualizado en tiempo real');
     }
+    updatePrioDot(); // Siempre actualizar el dot tras recibir datos de Firebase
   }, function(err){ console.warn('FB snapshot error:', err); });
 }
 
