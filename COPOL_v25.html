@@ -842,15 +842,42 @@ select option{background:#111827;color:#e2e8f0}
 
   <!-- MODAL PSH -->
   <div class="modal-overlay" id="modal-psh" style="z-index:2000">
-    <div class="modal-box" style="max-width:520px">
+    <div class="modal-box" style="max-width:620px;max-height:90vh;overflow-y:auto">
       <div class="modal-hdr"><span id="modal-psh-title">Registrar PSH</span><button class="modal-close" onclick="closeModal('modal-psh')">✕</button></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;padding:1rem">
+
+        <!-- FOTO -->
+        <div class="fg" style="grid-column:1/-1;display:flex;gap:1rem;align-items:flex-start">
+          <div id="psh-foto-preview" style="width:80px;height:80px;border-radius:50%;background:#1e293b;border:2px solid #334155;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+            <i class="ti ti-user" style="font-size:2rem;color:#475569"></i>
+          </div>
+          <div style="flex:1">
+            <label>Foto</label>
+            <input type="file" id="psh-foto-input" accept="image/*" onchange="previewPshFoto(this)" style="font-size:.78rem;width:100%">
+            <input type="hidden" id="psh-foto-url">
+            <div style="font-size:.68rem;color:#475569;margin-top:.2rem">Sube una foto para identificación visual</div>
+          </div>
+        </div>
+
         <div class="fg" style="grid-column:1/-1"><label>Alias / Nombre</label><input type="text" id="psh-alias" placeholder="Alias o nombre conocido"></div>
         <div class="fg"><label>Edad aproximada</label><input type="number" id="psh-edad" placeholder="Ej: 45" min="0" max="120"></div>
         <div class="fg"><label>Sexo</label>
           <select id="psh-sexo"><option value="">—</option><option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro/No determinado</option></select>
         </div>
         <div class="fg" style="grid-column:1/-1"><label>Descripción física</label><textarea id="psh-desc" rows="2" placeholder="Complexión, color de pelo, ropa habitual, señas particulares..."></textarea></div>
+
+        <!-- ALERTAS -->
+        <div class="fg" style="grid-column:1/-1">
+          <label>Alertas <span style="color:#475569;font-size:.68rem">(marca todas las que apliquen)</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem">
+            ${['antecedentes','salud_mental','sustancias','violento','vulnerable','menor','animal'].map(a=>`
+            <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:.3rem .6rem">
+              <input type="checkbox" id="psh-alerta-${a}" style="width:13px;height:13px">
+              ${{ antecedentes:'⚠️ Antecedentes', salud_mental:'🧠 Salud mental', sustancias:'💊 Sustancias', violento:'🔴 Violento', vulnerable:'💙 Vulnerable', menor:'👶 Menor edad', animal:'🐕 Con animal' }[a]}
+            </label>`).join('')}
+          </div>
+        </div>
+
         <div class="fg" style="grid-column:1/-1"><label>Ubicación habitual <span style="color:#475569;font-size:.68rem">(escribe o pincha en el mapa)</span></label>
           <div style="display:flex;gap:.4rem">
             <input type="text" id="psh-dir" placeholder="Dirección habitual" style="flex:1" oninput="clearPshGeo()">
@@ -859,9 +886,14 @@ select option{background:#111827;color:#e2e8f0}
           <div style="display:flex;gap:.4rem;margin-top:.3rem">
             <input type="number" id="psh-lat" placeholder="Latitud" step="any" style="flex:1;font-size:.75rem">
             <input type="number" id="psh-lon" placeholder="Longitud" step="any" style="flex:1;font-size:.75rem">
+            <div style="flex:1">
+              <label style="font-size:.68rem;color:#475569">Radio zona (m)</label>
+              <input type="number" id="psh-radio" placeholder="50" min="10" max="500" style="width:100%;font-size:.75rem" value="50">
+            </div>
           </div>
           <div class="geo-status" id="psh-geo-status"></div>
         </div>
+
         <div class="fg"><label>Situación</label>
           <select id="psh-situacion">
             <option value="activo">Activo — localizado habitualmente</option>
@@ -871,13 +903,26 @@ select option{background:#111827;color:#e2e8f0}
           </select>
         </div>
         <div class="fg"><label>Fecha primer contacto</label><input type="date" id="psh-fecha"></div>
-        <div class="fg" style="grid-column:1/-1"><label>Observaciones</label><textarea id="psh-obs" rows="3" placeholder="Comportamiento, estado de salud, necesidades, historial..."></textarea></div>
+        <div class="fg" style="grid-column:1/-1"><label>Observaciones</label><textarea id="psh-obs" rows="2" placeholder="Comportamiento, estado de salud, necesidades, historial..."></textarea></div>
         <div class="fg" style="grid-column:1/-1"><label>Incidencias vinculadas <span style="color:#475569;font-size:.68rem">(IDs separados por comas)</span></label>
           <input type="text" id="psh-incs" placeholder="Ej: INC-021, INC-035"></div>
+
+        <!-- HISTORIAL DE CONTACTOS -->
+        <div class="fg" style="grid-column:1/-1">
+          <label>Añadir contacto <span style="color:#475569;font-size:.68rem">(registra cada intervención)</span></label>
+          <div style="display:flex;gap:.4rem;margin-top:.3rem">
+            <input type="text" id="psh-contacto-nuevo" placeholder="Describe el contacto..." style="flex:1;font-size:.82rem">
+            <button class="btn-s" onclick="addPshContacto()" style="padding:.35rem .7rem;font-size:.78rem"><i class="ti ti-plus"></i></button>
+          </div>
+          <div id="psh-contactos-list" style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem;max-height:120px;overflow-y:auto"></div>
+          <textarea id="psh-contactos-json" style="display:none"></textarea>
+        </div>
+
         <input type="hidden" id="psh-id">
       </div>
-      <div class="btn-row" style="padding:0 1rem 1rem">
+      <div class="btn-row" style="padding:0 1rem 1rem;display:flex;gap:.5rem;flex-wrap:wrap">
         <button class="btn-s" onclick="guardarPsh()" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="ti ti-device-floppy"></i> Guardar</button>
+        <button class="btn-s" onclick="imprimirFichaPsh()" style="background:#1e293b;border:1px solid #334155"><i class="ti ti-printer"></i> Ficha PDF</button>
         <button class="btn-sec" onclick="closeModal('modal-psh')"><i class="ti ti-x"></i> Cancelar</button>
         <button class="btn-sec" id="psh-delete-btn" onclick="eliminarPsh()" style="display:none;color:#ef4444;border-color:#ef4444"><i class="ti ti-trash"></i> Eliminar</button>
       </div>
@@ -2912,6 +2957,7 @@ async function guardar(){
     files:filesSubidos
   };
   saveOneInc(newInc);
+  checkPshProximidad(newInc.lat,newInc.lon);
   updatePrioDot();
   logAudit('crear',newInc.id,tipoL(newInc.tip)+' — '+newInc.dir);
   showFMsg('ok','Incidencia '+newInc.id+' guardada'+(gsActive()?' y sincronizada 📊':''));
@@ -4325,7 +4371,7 @@ window.addEventListener('DOMContentLoaded',function(){
 // ════════════════════════════════════════════════
 //  MÓDULO PSH — Personas Sin Hogar
 // ════════════════════════════════════════════════
-let pshMapInst=null, pshMarkers=[], pshData=[], pshClickMarker=null;
+let pshMapInst=null, pshMarkers=[], pshCircles=[], pshData=[];
 
 function getPsh(){ try{return JSON.parse(localStorage.getItem('copol_psh')||'[]')}catch(e){return[]} }
 function savePsh(d){ localStorage.setItem('copol_psh',JSON.stringify(d)); syncPshFirebase(d); }
@@ -4340,30 +4386,27 @@ async function loadPshFirebase(){
   if(!gsActive()||!_DB)return;
   try{
     const snap=await _DB.collection('config').doc('psh_censo').get();
-    if(snap.exists&&snap.data().data){
-      localStorage.setItem('copol_psh',JSON.stringify(snap.data().data));
-    }
+    if(snap.exists&&snap.data().data) localStorage.setItem('copol_psh',JSON.stringify(snap.data().data));
   }catch(e){ console.warn('PSH load error:',e); }
 }
 
+const ALERTA_LABELS={antecedentes:'⚠️ Antecedentes',salud_mental:'🧠 Salud mental',sustancias:'💊 Sustancias',violento:'🔴 Violento',vulnerable:'💙 Vulnerable',menor:'👶 Menor edad',animal:'🐕 Con animal'};
+const PSH_ALERTAS=['antecedentes','salud_mental','sustancias','violento','vulnerable','menor','animal'];
+const COL_SIT={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b',fallecido:'#6b7280'};
+const LBL_SIT={activo:'Activo',derivado:'Derivado',desaparecido:'No localizado',fallecido:'Fallecido'};
+
 function initPshMap(){
-  if(pshMapInst)return;
-  pshMapInst=L.map('psh-map',{preferCanvas:true}).setView([40.3980,-3.7030],14);
-  const callejero=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'© OpenStreetMap',maxZoom:19
-  });
-  const satelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
-    attribution:'© Esri',maxZoom:19
-  });
+  if(pshMapInst){pshMapInst.invalidateSize();renderPshMarkers();return;}
+  pshMapInst=L.map('psh-map',{preferCanvas:false}).setView([40.3980,-3.7030],14);
+  const callejero=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+  const satelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
   callejero.addTo(pshMapInst);
   L.control.layers({'🗺️ Callejero':callejero,'🛰️ Satélite':satelite},{},{position:'topright'}).addTo(pshMapInst);
-  // Click en mapa para añadir coordenadas al modal
   pshMapInst.on('click',function(e){
-    const lat=e.latlng.lat.toFixed(6), lon=e.latlng.lng.toFixed(6);
     if(document.getElementById('modal-psh').classList.contains('open')){
-      document.getElementById('psh-lat').value=lat;
-      document.getElementById('psh-lon').value=lon;
-      document.getElementById('psh-geo-status').textContent='✓ Coordenadas: '+lat+', '+lon;
+      document.getElementById('psh-lat').value=e.latlng.lat.toFixed(6);
+      document.getElementById('psh-lon').value=e.latlng.lng.toFixed(6);
+      document.getElementById('psh-geo-status').textContent='✓ ['+e.latlng.lat.toFixed(4)+', '+e.latlng.lng.toFixed(4)+']';
       document.getElementById('psh-geo-status').style.color='#34d399';
     }
   });
@@ -4373,29 +4416,41 @@ function initPshMap(){
 function renderPshMarkers(){
   if(!pshMapInst)return;
   pshMarkers.forEach(m=>pshMapInst.removeLayer(m));
-  pshMarkers=[];
+  pshCircles.forEach(c=>pshMapInst.removeLayer(c));
+  pshMarkers=[];pshCircles=[];
   const psh=getPsh();
-  document.getElementById('psh-count').textContent=psh.length+' persona'+(psh.length!==1?'s':'')+' registrada'+(psh.length!==1?'s':'');
+  const el=document.getElementById('psh-count');
+  if(el)el.textContent=psh.length+' persona'+(psh.length!==1?'s':'')+' registrada'+(psh.length!==1?'s':'');
   psh.forEach(p=>{
     if(!p.lat||!p.lon)return;
-    const color={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b',fallecido:'#6b7280'}[p.situacion]||'#a78bfa';
+    const color=COL_SIT[p.situacion]||'#a78bfa';
+    if(p.radio&&parseInt(p.radio)>0){
+      const c=L.circle([p.lat,p.lon],{radius:parseInt(p.radio),color,fillColor:color,fillOpacity:0.1,weight:1.5,dashArray:'4'}).addTo(pshMapInst);
+      pshCircles.push(c);
+    }
+    const tieneAlerta=p.alertas&&(p.alertas.violento||p.alertas.antecedentes);
     const icon=L.divIcon({
-      html:`<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center">
-        <i class="ti ti-user" style="font-size:9px;color:#fff"></i></div>`,
-      className:'',iconSize:[18,18],iconAnchor:[9,9]
+      html:`<div style="width:22px;height:22px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;position:relative">${p.fotoUrl?`<img src="${p.fotoUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:`<i class="ti ti-user" style="font-size:11px;color:#fff"></i>`}${tieneAlerta?'<div style="position:absolute;top:-4px;right:-4px;width:10px;height:10px;border-radius:50%;background:#ef4444;border:1px solid #fff"></div>':''}</div>`,
+      className:'',iconSize:[22,22],iconAnchor:[11,11]
     });
-    const incsHtml=p.incidencias?p.incidencias.split(',').map(i=>i.trim()).filter(Boolean).map(i=>`<span style="color:#60a5fa;cursor:pointer" onclick="verIncPsh('${i}')">${i}</span>`).join(', '):'—';
-    const popup=`<div style="font-family:'Segoe UI',sans-serif;min-width:200px">
-      <div style="font-weight:700;font-size:.95rem;margin-bottom:.3rem">${escHtml(p.alias||'Sin alias')}</div>
-      <div style="font-size:.75rem;color:#666;margin-bottom:.5rem">${p.sexo||''}${p.edad?' · ~'+p.edad+' años':''}</div>
-      ${p.dir?`<div style="font-size:.75rem;margin-bottom:.3rem">📍 ${escHtml(p.dir)}</div>`:''}
-      ${p.desc?`<div style="font-size:.75rem;margin-bottom:.3rem">📋 ${escHtml(p.desc.slice(0,80))}${p.desc.length>80?'…':''}</div>`:''}
-      <div style="font-size:.75rem;margin-bottom:.4rem">🔗 Incidencias: ${incsHtml}</div>
+    const alertasHtml=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>ALERTA_LABELS[k]||k).join(' '):'';
+    const incsHtml=p.incidencias?p.incidencias.split(',').map(i=>i.trim()).filter(Boolean).map(i=>`<span style="color:#60a5fa;cursor:pointer;text-decoration:underline" onclick="verIncPsh('${i}')">${i}</span>`).join(', '):'—';
+    const contactosHtml=p.contactos&&p.contactos.length?`<div style="font-size:.72rem;color:#64748b;margin-top:.3rem">Último contacto: ${p.contactos[p.contactos.length-1].fecha} — ${p.contactos[p.contactos.length-1].texto.slice(0,40)}...</div>`:'';
+    const popup=`<div style="font-family:'Segoe UI',sans-serif;min-width:220px;max-width:280px">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
+        ${p.fotoUrl?`<img src="${p.fotoUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${color}">`:`<div style="width:40px;height:40px;border-radius:50%;background:${color}33;border:2px solid ${color};display:flex;align-items:center;justify-content:center"><i class='ti ti-user' style='color:${color}'></i></div>`}
+        <div><div style="font-weight:700">${escHtml(p.alias||'Sin alias')}</div><div style="font-size:.72rem;color:#888">${p.sexo||''} ${p.edad?'~'+p.edad+' años':''}</div></div>
+      </div>
+      ${alertasHtml?`<div style="font-size:.72rem;margin-bottom:.3rem">${alertasHtml}</div>`:''}
+      ${p.dir?`<div style="font-size:.75rem;margin-bottom:.2rem">📍 ${escHtml(p.dir)}</div>`:''}
+      ${p.desc?`<div style="font-size:.73rem;color:#555;margin-bottom:.3rem">${escHtml(p.desc.slice(0,80))}${p.desc.length>80?'…':''}</div>`:''}
+      <div style="font-size:.73rem;margin-bottom:.3rem">🔗 ${incsHtml}</div>
+      ${contactosHtml}
       <div style="display:flex;gap:.3rem;margin-top:.5rem">
         <button onclick="openPshModal('${p.id}')" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:.3rem .6rem;font-size:.72rem;cursor:pointer">✏️ Editar</button>
-      </div>
-    </div>`;
-    const m=L.marker([p.lat,p.lon],{icon}).bindPopup(popup,{maxWidth:280}).addTo(pshMapInst);
+        <button onclick="imprimirFichaPsh('${p.id}')" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:5px;padding:.3rem .6rem;font-size:.72rem;cursor:pointer">🖨️ Ficha</button>
+      </div></div>`;
+    const m=L.marker([p.lat,p.lon],{icon}).bindPopup(popup,{maxWidth:290}).addTo(pshMapInst);
     pshMarkers.push(m);
   });
 }
@@ -4403,100 +4458,129 @@ function renderPshMarkers(){
 function renderPshList(){
   const q=(document.getElementById('psh-search')?.value||'').toLowerCase();
   const psh=getPsh().filter(p=>!q||(p.alias||'').toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q)||(p.dir||'').toLowerCase().includes(q));
-  const colSit={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b',fallecido:'#6b7280'};
-  const lblSit={activo:'Activo',derivado:'Derivado',desaparecido:'No localizado',fallecido:'Fallecido'};
-  document.getElementById('psh-list').innerHTML=psh.length?psh.map(p=>`
-    <div class="psh-card ${p.situacion||'activo'}" onclick="focusPsh('${p.id}')">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="psh-alias">${escHtml(p.alias||'Sin alias')}</div>
-        <span class="psh-badge" style="background:${colSit[p.situacion]||'#a78bfa'}22;color:${colSit[p.situacion]||'#a78bfa'}">${lblSit[p.situacion]||'Activo'}</span>
+  const list=document.getElementById('psh-list');
+  if(!list)return;
+  list.innerHTML=psh.length?psh.map(p=>{
+    const color=COL_SIT[p.situacion]||'#a78bfa';
+    const alertasIconos=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>({antecedentes:'⚠️',salud_mental:'🧠',sustancias:'💊',violento:'🔴',vulnerable:'💙',menor:'👶',animal:'🐕'})[k]||'').join(''):'';
+    const nContactos=p.contactos?p.contactos.length:0;
+    return`<div class="psh-card ${p.situacion||'activo'}" onclick="focusPsh('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          ${p.fotoUrl?`<img src="${p.fotoUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid ${color};flex-shrink:0">`:`<div style="width:32px;height:32px;border-radius:50%;background:${color}33;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class='ti ti-user' style='font-size:14px;color:${color}'></i></div>`}
+          <div><div class="psh-alias">${escHtml(p.alias||'Sin alias')} ${alertasIconos}</div>
+          <div class="psh-meta">${p.sexo||''} ${p.edad?'~'+p.edad+' años':''}${nContactos?` · 💬 ${nContactos}`:''}</div></div>
+        </div>
+        <span class="psh-badge" style="background:${color}22;color:${color};white-space:nowrap">${LBL_SIT[p.situacion]||'Activo'}</span>
       </div>
-      <div class="psh-meta">${p.sexo||''}${p.edad?' · ~'+p.edad+' años':''} ${p.dir?'· '+p.dir:''}</div>
-      ${p.desc?`<div style="font-size:.7rem;color:#475569;margin-top:.2rem">${escHtml(p.desc.slice(0,60))}${p.desc.length>60?'…':''}</div>`:''}
-    </div>`).join(''):'<div style="text-align:center;color:#334155;padding:2rem;font-size:.82rem">Sin resultados</div>';
+      ${p.dir?`<div style="font-size:.7rem;color:#475569;margin-top:.2rem">📍 ${escHtml(p.dir)}</div>`:''}</div>`;
+  }).join('')+`<div style="text-align:center;padding:.7rem;margin-top:.3rem"><button class="btn-s" onclick="exportarPshCSV()" style="font-size:.75rem;padding:.3rem .8rem;background:#1e293b;border:1px solid #334155"><i class="ti ti-download"></i> Exportar CSV</button></div>`:'<div style="text-align:center;color:#334155;padding:2rem;font-size:.82rem">Sin resultados</div>';
 }
 
 function focusPsh(id){
   const p=getPsh().find(x=>x.id===id);
   if(!p||!p.lat||!p.lon)return;
   pshMapInst.setView([p.lat,p.lon],17);
-  const m=pshMarkers.find((mk,i)=>{
-    const latlng=mk.getLatLng();
-    return Math.abs(latlng.lat-p.lat)<0.0001&&Math.abs(latlng.lng-p.lon)<0.0001;
-  });
+  const m=pshMarkers.find(mk=>{const ll=mk.getLatLng();return Math.abs(ll.lat-p.lat)<0.0001&&Math.abs(ll.lng-p.lon)<0.0001;});
   if(m)m.openPopup();
 }
 
+function previewPshFoto(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById('psh-foto-preview');
+    if(prev)prev.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function renderPshContactosList(contactos){
+  const list=document.getElementById('psh-contactos-list');
+  if(!list)return;
+  list.innerHTML=(contactos||[]).map((c,i)=>`<div style="background:#0f172a;border-radius:6px;padding:.4rem .6rem;font-size:.75rem;display:flex;justify-content:space-between;align-items:flex-start;gap:.3rem"><div><span style="color:#475569">${c.fecha} — ${c.agente||''}: </span><span style="color:#e2e8f0">${escHtml(c.texto)}</span></div><button onclick="removePshContacto(${i})" style="background:none;border:none;color:#475569;cursor:pointer;padding:0;flex-shrink:0">✕</button></div>`).join('');
+  const json=document.getElementById('psh-contactos-json');
+  if(json)json.value=JSON.stringify(contactos||[]);
+}
+
+function addPshContacto(){
+  const input=document.getElementById('psh-contacto-nuevo');
+  const texto=input?input.value.trim():'';
+  if(!texto)return;
+  let contactos=[];
+  try{contactos=JSON.parse(document.getElementById('psh-contactos-json').value||'[]');}catch(e){}
+  contactos.push({fecha:todayDate(),agente:CU?CU.name:'',texto});
+  renderPshContactosList(contactos);
+  if(input)input.value='';
+}
+
+function removePshContacto(idx){
+  let contactos=[];
+  try{contactos=JSON.parse(document.getElementById('psh-contactos-json').value||'[]');}catch(e){}
+  contactos.splice(idx,1);
+  renderPshContactosList(contactos);
+}
+
 function openPshModal(id){
-  const fields=['psh-alias','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id'];
-  fields.forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
-  document.getElementById('psh-situacion').value='activo';
-  document.getElementById('psh-fecha').value=todayDate();
-  document.getElementById('psh-geo-status').textContent='';
-  document.getElementById('psh-delete-btn').style.display='none';
+  PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)el.checked=false;});
+  ['psh-alias','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-radio','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id','psh-foto-url'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  const radioEl=document.getElementById('psh-radio');if(radioEl)radioEl.value='50';
+  const sitEl=document.getElementById('psh-situacion');if(sitEl)sitEl.value='activo';
+  const fechaEl=document.getElementById('psh-fecha');if(fechaEl)fechaEl.value=todayDate();
+  const geoEl=document.getElementById('psh-geo-status');if(geoEl)geoEl.textContent='';
+  const delBtn=document.getElementById('psh-delete-btn');if(delBtn)delBtn.style.display='none';
+  const fotoPrev=document.getElementById('psh-foto-preview');
+  if(fotoPrev)fotoPrev.innerHTML='<i class="ti ti-user" style="font-size:2rem;color:#475569"></i>';
+  renderPshContactosList([]);
   if(id){
     const p=getPsh().find(x=>x.id===id);
     if(!p)return;
     document.getElementById('modal-psh-title').textContent='Editar PSH';
-    document.getElementById('psh-id').value=p.id;
-    document.getElementById('psh-alias').value=p.alias||'';
-    document.getElementById('psh-edad').value=p.edad||'';
-    document.getElementById('psh-sexo').value=p.sexo||'';
-    document.getElementById('psh-desc').value=p.desc||'';
-    document.getElementById('psh-dir').value=p.dir||'';
-    document.getElementById('psh-lat').value=p.lat||'';
-    document.getElementById('psh-lon').value=p.lon||'';
-    document.getElementById('psh-situacion').value=p.situacion||'activo';
-    document.getElementById('psh-fecha').value=p.fecha||'';
-    document.getElementById('psh-obs').value=p.obs||'';
-    document.getElementById('psh-incs').value=p.incidencias||'';
-    document.getElementById('psh-delete-btn').style.display='inline-flex';
+    ['id','alias','edad','sexo','desc','dir','obs','incs'].forEach(k=>{const el=document.getElementById('psh-'+k);if(el)el.value=p[k==='incs'?'incidencias':k]||''});
+    if(document.getElementById('psh-lat'))document.getElementById('psh-lat').value=p.lat||''
+    if(document.getElementById('psh-lon'))document.getElementById('psh-lon').value=p.lon||''
+    if(document.getElementById('psh-radio'))document.getElementById('psh-radio').value=p.radio||50;
+    if(document.getElementById('psh-situacion'))document.getElementById('psh-situacion').value=p.situacion||'activo';
+    if(document.getElementById('psh-fecha'))document.getElementById('psh-fecha').value=p.fecha||''
+    if(p.fotoUrl){document.getElementById('psh-foto-url').value=p.fotoUrl;if(fotoPrev)fotoPrev.innerHTML=`<img src="${p.fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+    if(p.alertas)PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)el.checked=!!p.alertas[a];});
+    renderPshContactosList(p.contactos||[]);
+    if(delBtn)delBtn.style.display='inline-flex';
   } else {
     document.getElementById('modal-psh-title').textContent='Registrar PSH';
   }
   document.getElementById('modal-psh').classList.add('open');document.body.classList.add('modal-open');
 }
 
-function guardarPsh(){
+async function guardarPsh(){
   const alias=document.getElementById('psh-alias').value.trim();
   if(!alias){alert('El alias es obligatorio');return;}
   const id=document.getElementById('psh-id').value||'PSH-'+Date.now();
-  const psh=getPsh();
-  const idx=psh.findIndex(x=>x.id===id);
-  const nuevo={
-    id, alias,
-    edad:document.getElementById('psh-edad').value||'',
-    sexo:document.getElementById('psh-sexo').value||'',
-    desc:document.getElementById('psh-desc').value.trim(),
-    dir:document.getElementById('psh-dir').value.trim(),
-    lat:parseFloat(document.getElementById('psh-lat').value)||null,
-    lon:parseFloat(document.getElementById('psh-lon').value)||null,
-    situacion:document.getElementById('psh-situacion').value,
-    fecha:document.getElementById('psh-fecha').value,
-    obs:document.getElementById('psh-obs').value.trim(),
-    incidencias:document.getElementById('psh-incs').value.trim(),
-    updated:new Date().toISOString()
-  };
-  if(idx>=0)psh[idx]=nuevo; else psh.push(nuevo);
-  savePsh(psh);
-  closeModal('modal-psh');
-  renderPshMarkers();
-  renderPshList();
+  let fotoUrl=document.getElementById('psh-foto-url').value||''
+  const fotoInput=document.getElementById('psh-foto-input');
+  if(fotoInput&&fotoInput.files&&fotoInput.files[0]){
+    try{
+      const f=fotoInput.files[0];const fd=new FormData();fd.append('file',f);fd.append('upload_preset',CLOUDINARY.uploadPreset);fd.append('folder','copol/psh');
+      const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`,{method:'POST',body:fd});
+      const d=await r.json();if(d.secure_url)fotoUrl=d.secure_url;
+    }catch(e){console.warn('Error subiendo foto PSH:',e);}
+  }
+  const alertas={};PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)alertas[a]=el.checked;});
+  let contactos=[];try{contactos=JSON.parse(document.getElementById('psh-contactos-json').value||'[]');}catch(e){}
+  const psh=getPsh();const idx=psh.findIndex(x=>x.id===id);
+  const nuevo={id,alias,edad:document.getElementById('psh-edad').value||'',sexo:document.getElementById('psh-sexo').value||'',desc:document.getElementById('psh-desc').value.trim(),dir:document.getElementById('psh-dir').value.trim(),lat:parseFloat(document.getElementById('psh-lat').value)||null,lon:parseFloat(document.getElementById('psh-lon').value)||null,radio:parseInt(document.getElementById('psh-radio').value)||50,situacion:document.getElementById('psh-situacion').value,fecha:document.getElementById('psh-fecha').value,obs:document.getElementById('psh-obs').value.trim(),incidencias:document.getElementById('psh-incs').value.trim(),fotoUrl,alertas,contactos,updated:new Date().toISOString()};
+  if(idx>=0)psh[idx]=nuevo;else psh.push(nuevo);
+  savePsh(psh);closeModal('modal-psh');renderPshMarkers();renderPshList();
 }
 
 function eliminarPsh(){
   const id=document.getElementById('psh-id').value;
   if(!id||!confirm('¿Eliminar este registro PSH?'))return;
-  const psh=getPsh().filter(x=>x.id!==id);
-  savePsh(psh);
-  closeModal('modal-psh');
-  renderPshMarkers();
-  renderPshList();
+  savePsh(getPsh().filter(x=>x.id!==id));
+  closeModal('modal-psh');renderPshMarkers();renderPshList();
 }
 
-function clearPshGeo(){
-  document.getElementById('psh-geo-status').textContent='';
-}
+function clearPshGeo(){const el=document.getElementById('psh-geo-status');if(el)el.textContent='';}
 
 async function geocodificarPsh(){
   const dir=document.getElementById('psh-dir').value.trim();
@@ -4505,8 +4589,7 @@ async function geocodificarPsh(){
   const query=dir.toLowerCase().includes('madrid')?dir:dir+', Madrid';
   try{
     const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en`);
-    const d=await r.json();
-    const features=(d&&d.features)||[];
+    const d=await r.json();const features=(d&&d.features)||[];
     const madrid=features.filter(f=>f.properties&&f.properties.city&&f.properties.city.toLowerCase()==='madrid');
     const best=(madrid.length?madrid:features)[0];
     if(best){
@@ -4516,21 +4599,39 @@ async function geocodificarPsh(){
       document.getElementById('psh-geo-status').textContent='✓ ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']';
       document.getElementById('psh-geo-status').style.color='#34d399';
       if(pshMapInst)pshMapInst.setView([lat,lon],16);
-    } else {
-      document.getElementById('psh-geo-status').textContent='No encontrada';
-      document.getElementById('psh-geo-status').style.color='#f87171';
-    }
-  }catch(e){
-    document.getElementById('psh-geo-status').textContent='Error de red';
-    document.getElementById('psh-geo-status').style.color='#f87171';
-  }
+    }else{document.getElementById('psh-geo-status').textContent='No encontrada';document.getElementById('psh-geo-status').style.color='#f87171';}
+  }catch(e){document.getElementById('psh-geo-status').textContent='Error de red';document.getElementById('psh-geo-status').style.color='#f87171';}
 }
 
-function verIncPsh(incId){
-  closeModal('modal-psh');
-  showP('listado');
-  const el=document.getElementById('srch');
-  if(el){el.value=incId;renderLst();}
+function verIncPsh(incId){closeModal('modal-psh');showP('listado');const el=document.getElementById('srch');if(el){el.value=incId;renderLst();}}
+
+function imprimirFichaPsh(id){
+  const pshId=id||document.getElementById('psh-id').value;
+  const p=getPsh().find(x=>x.id===pshId);
+  if(!p){alert('Guarda primero el registro');return;}
+  const color=COL_SIT[p.situacion]||'#7c3aed';
+  const alertasHtml=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>`<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-size:9pt;margin-right:4px">${ALERTA_LABELS[k]||k}</span>`).join(''):'<em>Sin alertas</em>';
+  const contactosHtml=p.contactos&&p.contactos.length?p.contactos.map(c=>`<tr><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${c.fecha}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${c.agente}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${c.texto}</td></tr>`).join(''):'<tr><td colspan="3" style="padding:3px 6px;color:#999">Sin contactos registrados</td></tr>';
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha PSH — ${p.alias}</title><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#111;padding:15mm;max-width:190mm;margin:0 auto}h1{font-size:14pt;margin:0}h2{font-size:10pt;color:#666;margin:0 0 8mm}.header{display:flex;align-items:center;gap:8mm;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${color}}.foto{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid ${color}}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:4mm}.field{margin-bottom:3mm}.field label{font-size:8pt;color:#666;display:block;text-transform:uppercase}.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;color:${color};background:${color}22;border:1px solid ${color}}table{width:100%;border-collapse:collapse;font-size:9pt}th{background:#ede9fe;color:#5b21b6;padding:4px 6px;text-align:left}@page{size:A4;margin:10mm}</style></head><body><div class="header">${p.fotoUrl?`<img src="${p.fotoUrl}" class="foto">`:"<div style='width:60px;height:60px;border-radius:50%;background:#ede9fe;border:2px solid "+color+";display:flex;align-items:center;justify-content:center;font-size:24pt'>👤</div>"}<div><h1>${p.alias||'Sin alias'}</h1><h2>COPOL — Ficha PSH · ${p.id}</h2><span class="badge">${LBL_SIT[p.situacion]||'Activo'}</span></div><div style="margin-left:auto;text-align:right;font-size:8pt;color:#666">Generado: ${new Date().toLocaleString('es-ES')}<br>Por: ${CU?CU.name:''}</div></div><div class="grid"><div class="field"><label>Sexo</label>${p.sexo||'—'}</div><div class="field"><label>Edad aprox.</label>${p.edad?'~'+p.edad+' años':'—'}</div><div class="field" style="grid-column:1/-1"><label>Descripción física</label>${p.desc||'—'}</div><div class="field" style="grid-column:1/-1"><label>Ubicación habitual</label>${p.dir||'—'}${p.lat?' ('+parseFloat(p.lat).toFixed(4)+', '+parseFloat(p.lon).toFixed(4)+')':''}${p.radio?' · Radio: '+p.radio+'m':''}</div><div class="field"><label>Primer contacto</label>${p.fecha||'—'}</div><div class="field"><label>Incidencias vinculadas</label>${p.incidencias||'—'}</div></div><div class="field"><label>Alertas</label><div style="margin-top:3px">${alertasHtml}</div></div><div class="field"><label>Observaciones</label>${p.obs||'—'}</div><br><strong style="font-size:9pt;text-transform:uppercase;color:#5b21b6">Historial de contactos</strong><table style="margin-top:4px"><thead><tr><th style="width:70px">Fecha</th><th style="width:80px">Agente</th><th>Descripción</th></tr></thead><tbody>${contactosHtml}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+function exportarPshCSV(){
+  const psh=getPsh();
+  const rows=['ID,Alias,Sexo,Edad,Dirección,Situación,Alertas,Incidencias,Primer contacto,Observaciones'];
+  psh.forEach(p=>{
+    const alertas=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>k).join(' | '):'';
+    rows.push([p.id,p.alias,p.sexo,p.edad,p.dir,LBL_SIT[p.situacion]||p.situacion,alertas,p.incidencias,p.fecha,p.obs].map(v=>`"${(v||'').replace(/"/g,'\'\'')}"`).join(','));
+  });
+  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='censo_psh_'+todayDate()+'.csv';a.click();
+}
+
+function checkPshProximidad(lat,lon){
+  if(!lat||!lon)return;
+  const psh=getPsh().filter(p=>p.lat&&p.lon&&p.situacion==='activo');
+  const cercanas=psh.filter(p=>{const dlat=(p.lat-lat)*111000;const dlon=(p.lon-lon)*111000*Math.cos(lat*Math.PI/180);return Math.sqrt(dlat*dlat+dlon*dlon)<(p.radio||100);});
+  if(cercanas.length>0)showFMsg('warn',`⚠️ PSH en zona: ${cercanas.map(p=>p.alias).join(', ')} — ${cercanas.length} persona${cercanas.length>1?'s':''} registrada${cercanas.length>1?'s':''} cerca de esta dirección`);
 }
 
 // ════════════════════════════════════════════════
