@@ -1,4 +1,4 @@
-const CACHE_NAME = 'copol-v25';
+const CACHE_NAME = 'copol-v26';
 const ASSETS = [
   '/Copol/COPOL_v25.html',
   '/Copol/manifest.json'
