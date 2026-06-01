@@ -107,6 +107,7 @@ tr:hover td{background:#1e293b18}
 .s-abierta{background:#1d4ed822;color:#60a5fa;border:1px solid #1d4ed855}
 .s-asignada{background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed55}
 .s-cerrada{background:#10b98122;color:#34d399;border:1px solid #10b98155}
+.s-anulado{background:#47556922;color:#94a3b8;border:1px solid #47556955}
 .s-prioritario{background:#ef444422;color:#f87171;border:1px solid #ef444455}
 .rbadge-res{display:inline-block;padding:2px 7px;border-radius:5px;font-size:.62rem;font-weight:600}
 .r-pos-sol{background:#10b98122;color:#34d399;border:1px solid #10b98155}
@@ -219,7 +220,8 @@ tr:hover td{background:#1e293b18}
 .fsel:focus{border-color:#3b82f6}
 
 /* ── MODALS ── */
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:200;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:2000;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+body.modal-open .leaflet-pane,.modal-open .leaflet-control,.modal-open .leaflet-top,.modal-open .leaflet-bottom{z-index:1!important}
 .modal-overlay.open{display:flex}
 .modal{background:#111827;border:1px solid #334155;border-radius:14px;padding:1.4rem;width:100%;max-width:530px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .modal h3{font-size:.95rem;font-weight:700;color:#f1f5f9;margin-bottom:1.05rem}
@@ -592,7 +594,7 @@ select option{background:#111827;color:#e2e8f0}
           <select id="f-est" onchange="togglePrioField('f-prioridad',this.value)">
             <option value="abierta">Abierta</option>
             <option value="asignada">Asignada</option>
-            <option value="cerrada">Cerrada</option>
+            <option value="cerrada">Cerrada</option><option value="anulado">Anulado</option>
           </select>
         </div>
         <div class="fg" id="f-prioridad-wrap">
@@ -724,7 +726,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="sec-hdr"><div><h2>Listado de incidencias</h2><p id="lst-count">0 registros</p></div></div>
     <div class="search-bar"><i class="ti ti-search"></i><input type="text" id="srch" placeholder="Buscar por dirección, descripción, agente, indicativo..." oninput="renderLst()"></div>
     <div class="filters-row">
-      <select class="fsel" id="fl-est" onchange="renderLst()"><option value="">Todos los estados</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select>
+      <select class="fsel" id="fl-est" onchange="renderLst()"><option value="">Todos los estados</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select>
       <select class="fsel" id="fl-prioridad" onchange="renderLst()"><option value="">Toda prioridad</option><option value="prioritaria">⚡ Prioritaria</option><option value="no_prioritaria">No Prioritaria</option></select>
       <select class="fsel" id="fl-tip" onchange="renderLst()">
   <option value="">Todos los tipos</option>
@@ -902,7 +904,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="sec-hdr"><div><h2>Mapa de calor</h2><p>Tiles estilo Google Maps (CARTO Voyager) · Concentración por proximidad</p></div></div>
     <div class="map-ctrl">
       <div class="map-ctrl-grid">
-        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Prioridad</label><select class="map-sel" id="mp-prio" onchange="updateMap()"><option value="">Todas</option><option value="prioritaria">⚡ Prioritaria</option><option value="no_prioritaria">No Prioritaria</option></select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Tipo</label><select class="map-sel" id="mp-tip" onchange="updateMap()">
   <option value="">Todos los tipos</option>
@@ -991,7 +993,7 @@ select option{background:#111827;color:#e2e8f0}
     <div class="report-flt"><div class="flt-grid">
       <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Desde</label><input type="date" class="map-inp" id="r-des"></div>
       <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="r-has"></div>
-      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="r-est"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option></select></div>
+      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="r-est"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select></div>
       <button class="btn-map" onclick="genInforme()"><i class="ti ti-file-analytics"></i> Generar informe</button>
       <button id="btn-ia-narrar" class="btn-map" onclick="iaNarrarInforme()" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);display:none"><i class="ti ti-sparkles"></i> Narrar con IA</button>
     </div></div>
@@ -1059,7 +1061,7 @@ select option{background:#111827;color:#e2e8f0}
             <option value="">Todos</option>
             <option value="abierta">Abierta</option>
             <option value="asignada">Asignada</option>
-            <option value="cerrada">Cerrada</option>
+            <option value="cerrada">Cerrada</option><option value="anulado">Anulado</option>
             
           </select>
         </div>
@@ -1200,7 +1202,7 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg"><label>Estado</label>
           <select id="modal-estado" class="modal-sel" onchange="togglePrioField('modal-prioridad',this.value)">
             <option value="abierta">Abierta</option><option value="asignada">Asignada</option>
-            <option value="cerrada">Cerrada</option>
+            <option value="cerrada">Cerrada</option><option value="anulado">Anulado</option>
           </select>
         </div>
         <div class="fg" id="modal-prioridad-wrap">
@@ -1660,7 +1662,11 @@ function todayDate(){return new Date().toISOString().split('T')[0]}
 function fmtFec(iso){if(!iso)return'—';const p=iso.split('-');if(p.length===3)return p[2]+'/'+p[1]+'/'+p[0];return iso;}
 function tsAnot(){return new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  // Si no queda ningún modal abierto, quitar clase modal-open
+  if(!document.querySelector('.modal-overlay.open'))document.body.classList.remove('modal-open');
+}
 
 // JSONBin se inicializa en su propia seccion
 // ════════════════════════════════════════════════
@@ -1738,7 +1744,7 @@ function openChangePassModal(u){
   document.getElementById('chpass-new').value='';
   document.getElementById('chpass-confirm').value='';
   document.getElementById('chpass-msg').innerHTML='';
-  document.getElementById('modal-chpass').classList.add('open');
+  document.getElementById('modal-chpass').classList.add('open');document.body.classList.add('modal-open');
 }
 function confirmarCambioPass(){
   const np=document.getElementById('chpass-new').value;
@@ -1896,7 +1902,7 @@ function abrirCierre(id){
   document.getElementById('cierre-hora').value=nowTime();
   document.getElementById('cierre-notas').value='';
   document.getElementById('cierre-msg').innerHTML='';
-  document.getElementById('modal-cierre').classList.add('open');
+  document.getElementById('modal-cierre').classList.add('open');document.body.classList.add('modal-open');
 }
 function confirmarCierre(){
   const id=document.getElementById('cierre-id').value;
@@ -2132,7 +2138,7 @@ function abrirModalEst(id){
     }).join('')+`<span style="font-size:.68rem;color:#475569;align-self:center">(${i.files.length} existente${i.files.length>1?'s':''})</span>`:
     '<span style="font-size:.7rem;color:#334155">Sin archivos adjuntos</span>';
   renderModalPF();
-  document.getElementById('modal-est').classList.add('open');
+  document.getElementById('modal-est').classList.add('open');document.body.classList.add('modal-open');
   // Mostrar/ocultar campo prioridad según estado actual
   setTimeout(()=>togglePrioField('modal-prioridad',i.est),50);
 }
@@ -2446,7 +2452,7 @@ function selectTurno(t){
 function openPrintModal(){
   document.getElementById('print-date').value=todayDate();
   selectTurno('dia');
-  document.getElementById('modal-print').classList.add('open');
+  document.getElementById('modal-print').classList.add('open');document.body.classList.add('modal-open');
 }
 function updatePrintPreview(){
   const d=document.getElementById('print-date').value;
@@ -3034,7 +3040,7 @@ function verAdj(id){
     const sz=f.size?(f.size>1048576?(f.size/1048576).toFixed(1)+'MB':(f.size/1024).toFixed(0)+'KB'):'';
     return`<div class="attach-card-file"><a href="${srcFinal}" target="_blank" download="${f.name}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:inherit"><i class="ti ${f.name&&f.name.endsWith('.pdf')?'ti-file-type-pdf':'ti-file-text'}"></i><div><div class="fn">${f.name}</div><div class="fs">${sz}${f.cloudinary?' · ☁️':''}</div></div></a></div>`;
   }).join('');
-  document.getElementById('modal-adj').classList.add('open');
+  document.getElementById('modal-adj').classList.add('open');document.body.classList.add('modal-open');
 }
 
 // ════════════════════════════════════════════════
@@ -4343,9 +4349,14 @@ async function loadPshFirebase(){
 function initPshMap(){
   if(pshMapInst)return;
   pshMapInst=L.map('psh-map',{preferCanvas:true}).setView([40.3980,-3.7030],14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  const callejero=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'© OpenStreetMap',maxZoom:19
-  }).addTo(pshMapInst);
+  });
+  const satelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'© Esri',maxZoom:19
+  });
+  callejero.addTo(pshMapInst);
+  L.control.layers({'🗺️ Callejero':callejero,'🛰️ Satélite':satelite},{},{position:'topright'}).addTo(pshMapInst);
   // Click en mapa para añadir coordenadas al modal
   pshMapInst.on('click',function(e){
     const lat=e.latlng.lat.toFixed(6), lon=e.latlng.lng.toFixed(6);
@@ -4443,7 +4454,7 @@ function openPshModal(id){
   } else {
     document.getElementById('modal-psh-title').textContent='Registrar PSH';
   }
-  document.getElementById('modal-psh').classList.add('open');
+  document.getElementById('modal-psh').classList.add('open');document.body.classList.add('modal-open');
 }
 
 function guardarPsh(){
