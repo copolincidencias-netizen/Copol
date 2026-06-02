@@ -4569,8 +4569,10 @@ async function iaQuick(mode){
 
   const SYSTEM_PROMPT='Eres un operador virtual de apoyo para Policía Municipal de Madrid. Responde SIEMPRE en español. Sé conciso, operativo y objetivo. No inventes datos.';
 
+  const promptTexto=`${task}\n\nFiltros: Desde: ${des||'inicio'} Hasta: ${has||'hoy'} Estado: ${est||'todos'}\nContexto: ${ctx||'ninguno'}\n\nIncidencias (JSON):\n${JSON.stringify(datosIA.slice(0,60))}`;
+
   iaChatAppend('user','[Acción rápida] '+task);
-  IA_CHAT_HISTORY.push({role:'user',content:prompt});
+  IA_CHAT_HISTORY.push({role:'user',content:promptTexto});
   if(IA_CHAT_HISTORY.length>6)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-6);
 
   try{
