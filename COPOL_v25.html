@@ -2625,7 +2625,7 @@ async function printMapa(){
   document.getElementById('mpp-list').innerHTML=inc.map((i,n)=>{
     const cls=i.prioridad==='prioritaria'?'prio':i.est==='asignada'?'asig':i.est==='cerrada'?'cerr':'';
     return`<li>
-      <span class="inc-num-p ${cls}">${n+1}</span>
+      <span class="inc-num-p ${cls}" style="font-size:.65rem;min-width:54px">${i.id}</span>
       <div class="inc-info-p">
         <div class="idir">${i.dir.length>33?i.dir.slice(0,33)+'…':i.dir}</div>
         <div class="ides">${i.des.length>62?i.des.slice(0,62)+'…':i.des}</div>
@@ -3328,26 +3328,50 @@ function verAdj(id){
 // ════════════════════════════════════════════════
 function renderUsers(){
   const users=getUsers(),inc=getInc();
+  const isSA=CU&&CU.role==='superadmin';
+  const rolLabels={user:'Agente',social:'Servicios Sociales',admin:'Administrador',superadmin:'Superadministrador'};
+  const rolClasses={user:'t-user',social:'t-user',admin:'t-admin',superadmin:'t-sa'};
   document.getElementById('users-grid').innerHTML=users.map(u=>{
     const ini=inc.filter(i=>i.by===u.user).length;
     const asi=inc.filter(i=>i.asi===u.name||i.asi===u.user).length;
     return`<div class="uc">
       <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem">
-        <div class="uav-lg ${u.role==='admin'?'av-admin':'av-user'}">${u.initials||u.name.slice(0,2).toUpperCase()}</div>
+        <div class="uav-lg ${u.role==='admin'||u.role==='superadmin'?'av-admin':'av-user'}">${u.initials||u.name.slice(0,2).toUpperCase()}</div>
         <div>
           <div style="font-weight:600;color:#f1f5f9;font-size:.9rem">${u.name}</div>
-          <span class="tag ${u.role==='admin'?'t-admin':'t-user'}">${u.role==='admin'?'Administrador':'Agente'}</span>
+          <span class="tag ${rolClasses[u.role]||'t-user'}">${rolLabels[u.role]||u.role}</span>
           <div style="font-size:.7rem;color:#475569;margin-top:.12rem">@${u.user}</div>
         </div>
       </div>
       <div class="ustats">
         <div class="ustat"><strong>${ini}</strong>Iniciadas</div>
         <div class="ustat"><strong>${asi}</strong>Asignadas</div>
-        <div class="ustat"><strong>${u.role==='admin'?'Total':'Estándar'}</strong>Acceso</div>
+        <div class="ustat"><strong>${rolLabels[u.role]||u.role}</strong>Rol</div>
       </div>
-      ${u.user!=='admin'?`<div style="margin-top:.65rem"><button class="btn-danger" onclick="elimUser(${u.id})"><i class="ti ti-trash"></i> Eliminar</button></div>`:''}
+      ${isSA&&u.user!=='superadmin'?`
+      <div style="margin-top:.65rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+        <select onchange="cambiarRolUser(${u.id},this.value)" style="flex:1;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+          <option value="user" ${u.role==='user'?'selected':''}>Agente</option>
+          <option value="social" ${u.role==='social'?'selected':''}>Servicios Sociales</option>
+          <option value="admin" ${u.role==='admin'?'selected':''}>Administrador</option>
+        </select>
+        <button class="btn-danger" onclick="elimUser(${u.id})" style="padding:.35rem .6rem;font-size:.75rem"><i class="ti ti-trash"></i></button>
+      </div>`:''}
     </div>`;
   }).join('');
+}
+
+function cambiarRolUser(id,newRole){
+  const users=getUsers();
+  const u=users.find(x=>x.id===id);
+  if(!u)return;
+  if(!confirm(`¿Cambiar el rol de ${u.name} a "${newRole}"?`)){
+    renderUsers();return;
+  }
+  u.role=newRole;
+  saveUsers(users);
+  renderUsers();
+  showFMsg('ok','Rol actualizado correctamente');
 }
 
 function renderSAUsers(){
@@ -3666,7 +3690,7 @@ function renderDir(){
       html+=`<div class="dir-card">
         <div class="dir-card-name" style="display:flex;justify-content:space-between;align-items:flex-start">
           <span><i class="ti ti-building-community"></i>${d.nombre}<span class="dir-group-tag">G${d.grupo}</span>${d._src==='custom'?'<span style="font-size:.6rem;background:#1e3a8a;color:#93c5fd;border-radius:4px;padding:1px 4px;margin-left:.3rem">personalizado</span>':''}</span>
-          ${isAdmin?`<button onclick="openDirModal(${JSON.stringify(d).replace(/"/g,'&quot;')})" style="background:none;border:1px solid #334155;border-radius:5px;padding:.15rem .4rem;color:#64748b;cursor:pointer;font-size:.7rem;flex-shrink:0"><i class="ti ti-pencil"></i></button>`:''}
+          ${isAdmin?`<button onclick="editDirEntry(${d._src==='custom'?d._idx:-1},${d._src==='base'?'true':'false'},'${escHtml(d.nombre)}')" style="background:none;border:1px solid #334155;border-radius:5px;padding:.15rem .4rem;color:#64748b;cursor:pointer;font-size:.7rem;flex-shrink:0"><i class="ti ti-pencil"></i></button>`:''}
         </div>
         ${d.radio?`<div class="dir-row"><span class="dir-label"><i class="ti ti-radio" style="font-size:12px"></i> Radio</span><span class="dir-val" style="color:#f59e0b;font-weight:700">${d.radio}</span></div>`:''}
         ${d.base?`<div class="dir-row"><span class="dir-label"><i class="ti ti-antenna" style="font-size:12px"></i> Base</span><span class="dir-val">${d.base}</span></div>`:''}
@@ -3678,6 +3702,18 @@ function renderDir(){
   });
   if(!html)html='<div style="grid-column:1/-1;text-align:center;color:#334155;padding:2rem;font-size:.85rem">No se encontraron resultados</div>';
   grid.innerHTML=html;
+}
+
+function editDirEntry(idx, isBase, nombre){
+  let d;
+  if(isBase){
+    d = DIRECTORIO.find(x=>x.nombre===nombre);
+    if(d) d = {...d, _src:'base', _idx:-1};
+  } else {
+    const custom = getDirCustom();
+    d = custom[idx] ? {...custom[idx], _src:'custom', _idx:idx} : null;
+  }
+  if(d) openDirModal(d);
 }
 
 function openDirModal(d){
