@@ -1293,9 +1293,10 @@ select option{background:#111827;color:#e2e8f0}
         </div>
         <div class="fg" style="min-width:220px;flex:1 1 auto">
           <label>Contexto (opcional)</label>
-          <input type="text" id="ia-contexto" class="map-inp" placeholder="Ej: turno noche, zona Centro, operativo especial...">
+          <input type="text" id="ia-contexto" class="map-inp" placeholder="Ej: turno noche, zona Centro, operativo especial..." oninput="updateIaCount()">
         </div>
       </div>
+      <div id="ia-count-info" style="font-size:.75rem;padding:.4rem .7rem;border-radius:7px;margin-bottom:.6rem;display:none"></div>
 
       <div class="ia-chat" id="ia-chat" style="background:#0b1220;border:1px solid #1f2a44;border-radius:14px;min-height:360px;max-height:480px;overflow:auto;padding:1rem">
         <div class="ia-msg ia-bot" style="margin-bottom:.9rem">
@@ -2037,7 +2038,7 @@ function showP(name){
       setTimeout(()=>{initPshMap();renderPshMarkers();},150);
     });
   }
-  if(name==='agenteia'){loadIAHistory();}
+  if(name==='agenteia'){loadIAHistory();setTimeout(updateIaCount,500);}
 }
 
 // ════════════════════════════════════════════════
@@ -2555,8 +2556,8 @@ function updateMap(){
     var shadow = 'rgba(0,0,0,.35)';
     var icon = L.divIcon({
       className:'',
-      html:'<div style="background:'+col+';color:#fff;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:'+border+';box-shadow:0 2px 8px '+shadow+';cursor:pointer;position:relative">'+(n+1)+(i.prioridad==='prioritaria'?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #fff"></span>':'')+'</div>',
-      iconSize:[26,26],iconAnchor:[13,13]
+      html:'<div style="background:'+col+';color:#fff;padding:2px 5px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:'+border+';box-shadow:0 2px 8px '+shadow+';cursor:pointer;white-space:nowrap;position:relative">'+i.id+(i.prioridad==='prioritaria'?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #fff"></span>':'')+'</div>',
+      iconSize:[60,20],iconAnchor:[30,10]
     });
     var popup = '<div style="font-size:12px;min-width:210px;font-family:sans-serif">' +
       '<b style="color:'+col+';font-size:13px">'+i.id+'</b> &mdash; <span style="background:'+col+'22;color:'+col+';padding:1px 5px;border-radius:3px;font-weight:600;font-size:11px">'+i.tip+'</span><br>' +
@@ -3464,7 +3465,7 @@ async function callClaudeWithSystem(system,messages,maxTokens=1000){
   }
   // Debe empezar con user
   if(!msgsValidos.length||msgsValidos[0].role!=='user')return '';
-  const body={model:'claude-haiku-4-5-20251001',max_tokens:maxTokens,system,messages:msgsValidos};
+  const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:msgsValidos};
   let r;
   try{
     r=await fetch('https://api.anthropic.com/v1/messages',{
@@ -3501,7 +3502,7 @@ async function callClaude(messages,maxTokens=1000){
     return typeof m.content!=='function'&&String(m.content).trim().length>0;
   }).map(m=>({role:m.role,content:typeof m.content==='string'?m.content:String(m.content)}));
   console.log('Enviando a Claude:', JSON.stringify(messagesFiltrados.map(m=>({role:m.role,len:m.content?.length,type:typeof m.content}))));
-  const body={model:'claude-haiku-4-5-20251001',max_tokens:maxTokens,messages:messagesFiltrados};
+  const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,messages:messagesFiltrados};
   let r;
   try{
     r=await fetch('https://api.anthropic.com/v1/messages',{
@@ -4473,7 +4474,29 @@ async function iaSend(){
   const inc=iaGetFilteredInc();
   const ctx=document.getElementById('ia-contexto')?.value||'';
 
-  const summary = inc.slice(0,60).map(i=>({
+  // Pre-calcular estadísticas para no enviar miles de incidencias en JSON
+  const totalInc=inc.length;
+  const limite=50;
+  const incDetalle=inc.slice(0,limite);
+
+  // Resumen estadístico
+  const porEstado={};inc.forEach(i=>{porEstado[i.est]=(porEstado[i.est]||0)+1;});
+  const porTipo={};inc.forEach(i=>{const t=(i.tip||'').charAt(0);porTipo[t]=(porTipo[t]||0)+1;});
+  const porAgente={};inc.forEach(i=>{if(i.asi)porAgente[i.asi]=(porAgente[i.asi]||0)+1;});
+  const porRes={};inc.forEach(i=>{if(i.res)porRes[resL(i.res)]=(porRes[resL(i.res)]||0)+1;});
+  const topCalles={};inc.forEach(i=>{if(i.dir){const c=i.dir.split(',')[0].trim();topCalles[c]=(topCalles[c]||0)+1;}});
+  const topCallesOrden=Object.entries(topCalles).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const prioritarias=inc.filter(i=>i.prioridad==='prioritaria').length;
+
+  const resumenStats=`RESUMEN ESTADÍSTICO (${totalInc} incidencias en total, mostrando detalle de las ${Math.min(totalInc,limite)} más recientes):
+- Por estado: ${Object.entries(porEstado).map(([k,v])=>k+': '+v).join(', ')}
+- Por categoría: ${Object.entries(porTipo).map(([k,v])=>k+': '+v).join(', ')}
+- Prioritarias: ${prioritarias}
+- Por resolución: ${Object.entries(porRes).map(([k,v])=>k+': '+v).join(', ')}
+- Top agentes: ${Object.entries(porAgente).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+': '+v).join(', ')}
+- Top calles: ${topCallesOrden.map(([k,v])=>k+' ('+v+')').join(', ')}`;
+
+  const summary = incDetalle.map(i=>({
     id:i.id, fecha:i.fec, hora_apertura:i.hor, estado:i.est,
     prioridad:i.prioridad||'no_prioritaria',
     tipo:tipoL(i.tip), codigo:i.tip, direccion:i.dir,
@@ -4484,31 +4507,28 @@ async function iaSend(){
     resolucion:i.res?resL(i.res):''
   }));
 
-  const sysPrompt = `Eres un operador virtual de apoyo para Policía Municipal de Madrid.
-Tu tarea es ayudar al usuario a analizar incidencias del sistema COPOL.
+  const sysPrompt = `Eres un analista operativo de Policía Municipal de Madrid. Ayudas a analizar incidencias del sistema COPOL.
 
 Normas:
-- Responde SIEMPRE en español.
-- Sé conciso, operativo y objetivo.
-- No inventes datos: si falta información, dilo.
-- No incluyas datos personales sensibles.
-- Si el usuario pide estadísticas, calcula usando el JSON proporcionado.
-- Cada incidencia tiene: hora_apertura, hora_asignacion, hora_llegada, hora_cierre. Usa estos campos para calcular tiempos de respuesta y resolución. Si hora_cierre está vacío, la incidencia no tiene hora de cierre registrada.
-- Para calcular duración: resta hora_apertura a hora_cierre (formato HH:MM).
+- Responde SIEMPRE en español. Sé conciso y operativo.
+- No inventes datos. Calcula todo desde los datos proporcionados.
+- Para tiempos de resolución usa hora_apertura y hora_cierre (formato HH:MM).
+- Si hay más incidencias de las que se muestran en detalle, usa el resumen estadístico para responder preguntas generales.
 
-CALLEJERO ARGANZUELA (usa para identificar barrio de cada calle):
-IMPERIAL: Alejandro Dumas, Cobos de Segovia, Gil Imón, Paseo Imperial, Juan Duque, Mármol, Melancolicos, Piramides, Puerta de Toledo, Segovia, Ronda de Segovia, Toledo, Virgen del Puerto
-ACACIAS: Arganda, Embajadores, Ercilla, Esperanza, Gasómetro, Moratines, Peñuelas, Ribera de Curtidores, Santa María de la Cabeza, Toledo, Ronda de Toledo, Yeserías
-CHOPERA: Paseo de la Chopera, Paseo de las Delicias, Embajadores, General Palanca, Plaza Legazpi, Santa María de la Cabeza, Tomas Borrás
-LEGAZPI: Embajadores, Gasómetro, Plaza Legazpi, Maestro Arbos, Mendez Álvaro, Manzanares, Avenida de la Paz, Planetario, Puerto de Béjar, Teniente Coronel Noreña
-DELICIAS: Paseo de las Delicias, Embajadores, Ferrocarril, General Lacy, General Palanca, Juan de Mariana, Mendez Álvaro, Rafael de Riego, Santa María de la Cabeza, Tomas Bretón, Vara de Rey, Bustamante, Murcia, Palos de la Frontera, Tarragona, Ronda de Valencia
-PALOS DE MOGUER: Ancora, Ronda de Atocha, Bustamante, Canarias, Las Delicias, Embajadores, Fray Luis de León, General Lacy, Juan Sebastián Elcano, Mendez Álvaro, Murcia, Palos de la Frontera, Tarragona, Ronda de Valencia, Vizcaya
-ATOCHA: Alamedilla, Antonio Nebrija, Ciudad de Barcelona, Mendez Álvaro, Avenida de la Paz, Leganes
-COLONIAS: Pico del Pañuelo (Chopera/Delicias/Guillermo de Osma), Ferroviarios (Tomas Bretón/Alonso Martos)
+BARRIOS DE ARGANZUELA:
+IMPERIAL: Cobos de Segovia, Gil Imón, Paseo Imperial, Toledo, Pirámides
+ACACIAS: Arganda, Embajadores, Ercilla, Peñuelas, Yeserías, Ronda de Toledo
+CHOPERA: Paseo de la Chopera, Paseo de las Delicias, General Palanca, Legazpi
+LEGAZPI: Mendez Álvaro, Maestro Arbos, Puerto de Béjar, Teniente Coronel Noreña
+DELICIAS: Paseo de las Delicias, Rafael de Riego, Tomas Bretón, Palos de la Frontera, Murcia, Tarragona
+PALOS DE MOGUER: Ronda de Atocha, Palos de la Frontera, Juan Sebastián Elcano, Vizcaya
+ATOCHA: Ciudad de Barcelona, Mendez Álvaro, Avenida de la Paz
 
-Contexto adicional del usuario: ${ctx||'ninguno'}
+Contexto: ${ctx||'ninguno'}
 
-Incidencias (JSON):
+${resumenStats}
+
+Detalle de las ${Math.min(totalInc,limite)} incidencias más recientes (JSON):
 ${JSON.stringify(summary)}`;
 
   try{
@@ -4590,8 +4610,36 @@ async function iaQuick(mode){
   }
 }
 
-// Set defaults on load
+function updateIaCount(){
+  const el=document.getElementById('ia-count-info');
+  if(!el)return;
+  const n=iaGetFilteredInc().length;
+  const limite=60;
+  if(n===0){
+    el.style.display='block';
+    el.style.background='#1e293b';
+    el.style.color='#f59e0b';
+    el.innerHTML='⚠️ Sin incidencias en el periodo seleccionado. Ajusta los filtros de fecha.';
+  } else if(n>limite){
+    el.style.display='block';
+    el.style.background='#450a0a';
+    el.style.color='#fca5a5';
+    el.innerHTML=`⚠️ ${n} incidencias — se enviarán las ${limite} más recientes al agente. Usa filtros de fecha para mayor precisión.`;
+  } else {
+    el.style.display='block';
+    el.style.background='#0f2723';
+    el.style.color='#34d399';
+    el.innerHTML=`✓ ${n} incidencia${n!==1?'s':''} en el periodo seleccionado — se enviarán todas al agente.`;
+  }
+}
+
+// Actualizar contador al cambiar filtros IA
 document.addEventListener('DOMContentLoaded',()=>{
+  ['ia-desde','ia-hasta','ia-estado'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('change',updateIaCount);
+  });
+});
   // Por defecto últimos 7 días en el agente IA para evitar prompts demasiado grandes
   const d1=document.getElementById('ia-desde');
   const d2=document.getElementById('ia-hasta');
