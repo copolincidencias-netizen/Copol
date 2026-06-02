@@ -1,4 +1,4 @@
-const CACHE_NAME = 'copol-v26';
+const CACHE_NAME = 'copol-v27';
 const ASSETS = [
   '/Copol/COPOL_v25.html',
   '/Copol/manifest.json'
@@ -21,7 +21,18 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const url = e.request.url;
+  // No interceptar Firebase, Anthropic, Cloudinary ni APIs externas
+  if(url.includes('firestore.googleapis.com') ||
+     url.includes('firebase') ||
+     url.includes('anthropic.com') ||
+     url.includes('cloudinary.com') ||
+     url.includes('photon.komoot.io') ||
+     url.includes('api.') ||
+     e.request.method !== 'GET'){
+    return; // dejar pasar sin interceptar
+  }
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });

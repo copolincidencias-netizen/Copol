@@ -3474,10 +3474,12 @@ async function callClaude(messages,maxTokens=1000){
   }
   if(!r.ok){
     let detail='';
-    try{const j=await r.json();detail=j.error?.message||'';}catch(e){try{detail=await r.text();}catch(e2){}}
-    if(r.status===401)throw new Error('Clave API rechazada (401). Verifica que sea correcta en console.anthropic.com/settings/keys. Detalle: '+detail);
-    if(r.status===429)throw new Error('Límite de uso alcanzado (429). Espera unos minutos o revisa tu plan en console.anthropic.com.');
-    throw new Error('Error API '+r.status+': '+detail);
+    try{const j=await r.json();detail=j.error?.message||JSON.stringify(j);}catch(e){try{detail=await r.text();}catch(e2){}}
+    console.error('API Error '+r.status+':', detail);
+    if(r.status===400)throw new Error('Error 400 — prompt demasiado largo o formato incorrecto. Usa filtros de fecha para reducir las incidencias. Detalle: '+detail.slice(0,200));
+    if(r.status===401)throw new Error('Clave API rechazada (401). Verifica que sea correcta en console.anthropic.com/settings/keys.');
+    if(r.status===429)throw new Error('Límite de uso alcanzado (429). Espera unos minutos.');
+    throw new Error('Error API '+r.status+': '+detail.slice(0,200));
   }
   const data=await r.json();
   return data.content.map(c=>c.text||'').join('');
@@ -4547,9 +4549,14 @@ async function iaQuick(mode){
 
 // Set defaults on load
 document.addEventListener('DOMContentLoaded',()=>{
-  // No poner fecha por defecto en el agente IA para que muestre todas las incidencias
-  // const d1=document.getElementById('ia-desde');
-  // const d2=document.getElementById('ia-hasta');
+  // Por defecto últimos 7 días en el agente IA para evitar prompts demasiado grandes
+  const d1=document.getElementById('ia-desde');
+  const d2=document.getElementById('ia-hasta');
+  if(d1&&!d1.value){
+    const hace7=new Date();hace7.setDate(hace7.getDate()-7);
+    d1.value=hace7.toISOString().split('T')[0];
+  }
+  if(d2&&!d2.value)d2.value=todayDate();
   const iaInp=document.getElementById('ia-input');
   if(iaInp){
     iaInp.addEventListener('keydown',e=>{
