@@ -376,103 +376,49 @@ select option{background:#111827;color:#e2e8f0}
   .flt-grid{grid-template-columns:1fr 1fr;gap:.4rem}
   .fg2{grid-template-columns:1fr}
 }
-@media (max-width: 768px){
-  /* Hamburguesa visible */
-  #hamburger-btn{display:flex!important;align-items:center;justify-content:center}
-
-  /* Topbar compacta */
-  .topbar{padding:.5rem .75rem;gap:.4rem;flex-wrap:nowrap;position:sticky;top:0;z-index:150}
+@media (max-width: 640px){
+  body{font-size:.92rem}
+  .panel{padding:.6rem}
+  .topbar{padding:.55rem .7rem;gap:.35rem}
   .tlogo span{font-size:.82rem}
   .tlogo small{display:none}
-
-  /* Menú desplegable en móvil */
-  .navtabs{
-    display:none;position:fixed;top:54px;left:0;right:0;bottom:0;
-    background:#0a0e1a;z-index:140;flex-direction:column;
-    padding:1rem;gap:.3rem;overflow-y:auto;border-top:1px solid #1e293b;
-  }
-  .navtabs.mobile-open{display:flex!important}
-  .ntab{
-    padding:.75rem 1rem;font-size:.88rem;font-weight:500;
-    border-radius:10px;width:100%;justify-content:flex-start;
-    min-height:48px;border:1px solid #1e293b!important;
-  }
-  .ntab:hover{background:#1e293b}
-  .ntab.active{background:#1d4ed8;border-color:#1d4ed8!important}
-
-  /* Ocultar info usuario en topbar, mostrar en menú */
-  .uinfo{margin-left:0;gap:.3rem}
+  .navtabs{order:99;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;justify-content:flex-start}
+  .navtabs::-webkit-scrollbar{height:3px}
+  .navtabs::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+  .ntab{padding:.55rem .85rem;font-size:.78rem;flex-shrink:0;min-height:38px}
+  .uinfo{margin-left:auto;gap:.4rem}
   .uname,.urole{display:none}
-  .uav{width:32px;height:32px;font-size:.7rem}
-  .logout-btn{padding:.4rem .5rem;min-height:36px;font-size:.7rem}
-
-  /* Panels */
-  .panel{padding:.7rem;overflow-y:auto}
-  .panel.active{height:calc(100vh - 54px)}
-
-  /* Formularios */
+  .uav{width:34px;height:34px;font-size:.72rem}
+  .logout-btn{padding:.4rem .55rem;min-height:36px;font-size:.7rem}
+  .sec-hdr h2{font-size:.95rem}
+  .sec-hdr p{font-size:.7rem}
   .form-card{padding:.85rem}
-  .fg-row{grid-template-columns:1fr!important}
-  .fg-2{grid-template-columns:1fr!important}
-
-  /* KPIs dashboard */
   .kpi-grid{grid-template-columns:1fr 1fr}
   .kpi-val{font-size:1.3rem}
   .widgets-row{grid-template-columns:1fr}
   .sum-grid{grid-template-columns:1fr 1fr;padding:.6rem}
-
-  /* Tabla listado — scroll horizontal */
-  .dash-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{font-size:.7rem;min-width:600px}
-  th,td{padding:.4rem .45rem;font-size:.68rem}
-
-  /* Filtros */
-  .filters-row{flex-wrap:wrap;gap:.3rem}
-  .filters-row .fsel{flex:1 1 calc(50% - .15rem);min-width:0;font-size:.72rem}
-  .filters-row .btn-sec,.filters-row .btn-exp,.filters-row .btn-print{flex:1 1 calc(50% - .15rem);font-size:.72rem;padding:.5rem .55rem;min-height:40px;justify-content:center}
-
-  /* Botones */
-  .btn-s,.btn-sec,.btn-print,.btn-map{min-height:44px;padding:.7rem 1rem;font-size:.85rem}
-  .abtn{min-width:34px;min-height:34px}
-
-  /* Modales pantalla completa */
-  .modal-overlay{padding:0;align-items:flex-end}
-  .modal-box{max-width:100%!important;width:100%;border-radius:16px 16px 0 0;max-height:94vh;overflow-y:auto}
-
-  /* Sección cabeceras */
-  .sec-hdr{flex-wrap:wrap;gap:.5rem}
-  .sec-hdr h2{font-size:.95rem}
-  .sec-hdr p{font-size:.7rem}
-
-  /* Usuarios */
   .users-grid{grid-template-columns:1fr}
-
-  /* Mapa calor */
-  #heat-map{height:55vh}
-  .map-ctrl,.report-flt{padding:.7rem}
-  .radius-row{flex-wrap:wrap;gap:.3rem}
-
-  /* PSH mapa */
-  #panel-psh > div[style*="grid-template-columns"]{grid-template-columns:1fr!important;height:auto!important}
-  #psh-map{height:50vh!important}
-
-  /* Login */
+  .filters-row{gap:.3rem}
+  .filters-row .fsel{flex:1 1 calc(50% - .15rem);min-width:0;font-size:.72rem}
+  .filters-row .btn-sec,.filters-row .btn-exp,.filters-row .btn-print{flex:1 1 calc(50% - .15rem);font-size:.72rem;padding:.5rem .55rem;min-height:38px;justify-content:center}
+  table{font-size:.72rem}
+  th,td{padding:.45rem .5rem;font-size:.7rem;max-width:120px}
+  .btn-s,.btn-sec,.btn-print,.btn-map{min-height:42px;padding:.7rem 1.1rem;font-size:.85rem}
+  .btn-cierre{min-height:34px;padding:.45rem .75rem}
+  .abtn{min-width:32px;min-height:32px;padding:.4rem .55rem;font-size:15px}
+  .drop-zone{padding:1.4rem .9rem}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{max-width:100%;border-radius:16px 16px 0 0;max-height:92vh;overflow-y:auto}
   .login-box{width:100%;max-width:100%;border-radius:0;border:none;padding:1.5rem 1.25rem;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
-
-  /* Directorio */
+  #heat-map{height:60vh}
   .dir-card{padding:.7rem .85rem}
-
-  /* Drop zone */
-  .drop-zone{padding:1.2rem .9rem}
-
-  /* Geo row */
-  .geo-row{flex-wrap:wrap}
+  .map-ctrl,.report-flt{padding:.7rem}
+  .radius-row{flex-wrap:wrap}
 }
-
 @media (max-width: 420px){
   .kpi-grid{grid-template-columns:1fr}
-  .ntab{font-size:.82rem}
-  table{min-width:500px}
+  .navtabs .ntab i{font-size:14px}
+  .ntab{padding:.55rem .65rem;font-size:.72rem}
 }
 
 @media print{
@@ -552,11 +498,7 @@ select option{background:#111827;color:#e2e8f0}
       <div class="tlogo-icon"><i class="ti ti-shield-star"></i></div>
       <div><span>COPOL</span><small>Incidencias policiales</small></div>
     </div>
-    <!-- Botón hamburguesa solo en móvil -->
-    <button id="hamburger-btn" onclick="toggleMobileMenu()" style="display:none;background:none;border:1px solid #334155;border-radius:8px;padding:.45rem .55rem;color:#94a3b8;cursor:pointer;margin-left:auto">
-      <i class="ti ti-menu-2" style="font-size:20px"></i>
-    </button>
-    <div class="navtabs" id="navtabs-menu">
+    <div class="navtabs">
       <button class="ntab active" onclick="showP('dashboard')"><i class="ti ti-dashboard"></i> Inicio</button>
       <button class="ntab" onclick="showP('nueva')"><i class="ti ti-plus"></i> Nueva</button>
       <button class="ntab" onclick="showP('listado')"><i class="ti ti-list"></i> Listado</button>
@@ -889,31 +831,9 @@ select option{background:#111827;color:#e2e8f0}
       </div>
       <!-- Lista PSH -->
       <div style="display:flex;flex-direction:column;gap:.5rem;overflow-y:auto">
-        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;padding:.6rem;display:flex;flex-direction:column;gap:.4rem">
-          <input type="text" id="psh-search" placeholder="🔍 Buscar por alias, descripción, dirección..." oninput="renderPshList()"
+        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;padding:.6rem">
+          <input type="text" id="psh-search" placeholder="Buscar por alias, descripción..." oninput="renderPshList()"
             style="width:100%;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;color:#e2e8f0;font-size:.82rem;outline:none">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
-            <select id="psh-filter-sit" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
-              <option value="">Todas las situaciones</option>
-              <option value="activo">Activo</option>
-              <option value="derivado">Derivado</option>
-              <option value="desaparecido">No localizado</option>
-            </select>
-            <select id="psh-filter-alerta" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
-              <option value="">Todas las alertas</option>
-              <option value="antecedentes">⚠️ Antecedentes</option>
-              <option value="salud_mental">🧠 Salud mental</option>
-              <option value="sustancias">💊 Sustancias</option>
-              <option value="violento">🔴 Violento</option>
-              <option value="vulnerable">💙 Vulnerable</option>
-              <option value="menor">👶 Menor edad</option>
-              <option value="animal">🐕 Con animal</option>
-            </select>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span id="psh-filter-count" style="font-size:.7rem;color:#475569"></span>
-            <button onclick="limpiarFiltrosPsh()" style="background:none;border:none;color:#475569;font-size:.72rem;cursor:pointer;padding:0"><i class="ti ti-x"></i> Limpiar</button>
-          </div>
         </div>
         <div id="psh-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
       </div>
@@ -949,21 +869,12 @@ select option{background:#111827;color:#e2e8f0}
         <!-- ALERTAS -->
         <div class="fg" style="grid-column:1/-1">
           <label>Alertas <span style="color:#475569;font-size:.68rem">(marca todas las que apliquen)</span></label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.4rem">
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-antecedentes" style="width:14px;height:14px;accent-color:#f59e0b"> ⚠️ Antecedentes</label>
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-salud_mental" style="width:14px;height:14px;accent-color:#a78bfa"> 🧠 Salud mental</label>
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-sustancias" style="width:14px;height:14px;accent-color:#60a5fa"> 💊 Sustancias</label>
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-violento" style="width:14px;height:14px;accent-color:#ef4444"> 🔴 Violento</label>
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-vulnerable" style="width:14px;height:14px;accent-color:#34d399"> 💙 Vulnerable</label>
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-menor" style="width:14px;height:14px;accent-color:#fbbf24"> 👶 Menor edad</label>
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;transition:.15s" onmouseover="this.style.borderColor='#a78bfa'" onmouseout="this.style.borderColor='#334155'">
-              <input type="checkbox" id="psh-alerta-animal" style="width:14px;height:14px;accent-color:#f97316"> 🐕 Con animal</label>
+          <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.3rem">
+            ${['antecedentes','salud_mental','sustancias','violento','vulnerable','menor','animal'].map(a=>`
+            <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;cursor:pointer;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:.3rem .6rem">
+              <input type="checkbox" id="psh-alerta-${a}" style="width:13px;height:13px">
+              ${{ antecedentes:'⚠️ Antecedentes', salud_mental:'🧠 Salud mental', sustancias:'💊 Sustancias', violento:'🔴 Violento', vulnerable:'💙 Vulnerable', menor:'👶 Menor edad', animal:'🐕 Con animal' }[a]}
+            </label>`).join('')}
           </div>
         </div>
 
@@ -988,105 +899,23 @@ select option{background:#111827;color:#e2e8f0}
             <option value="activo">Activo — localizado habitualmente</option>
             <option value="derivado">Derivado a recursos</option>
             <option value="desaparecido">No localizado</option>
+            <option value="fallecido">Fallecido</option>
           </select>
         </div>
         <div class="fg"><label>Fecha primer contacto</label><input type="date" id="psh-fecha"></div>
         <div class="fg" style="grid-column:1/-1"><label>Observaciones</label><textarea id="psh-obs" rows="2" placeholder="Comportamiento, estado de salud, necesidades, historial..."></textarea></div>
-        <div class="fg" style="grid-column:1/-1">
-          <label>Incidencias vinculadas</label>
-          <div style="display:flex;gap:.4rem;margin-bottom:.4rem">
-            <input type="text" id="psh-incs" placeholder="Ej: INC-021, INC-035" style="flex:1">
-            <button class="btn-s" onclick="buscarIncidenciasCercanasPsh()" style="padding:.35rem .7rem;font-size:.78rem;background:#1e3a8a;white-space:nowrap"><i class="ti ti-search"></i> Buscar cercanas</button>
-          </div>
-          <div id="psh-incs-cercanas" style="display:none;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:.6rem;max-height:180px;overflow-y:auto"></div>
-        </div>
+        <div class="fg" style="grid-column:1/-1"><label>Incidencias vinculadas <span style="color:#475569;font-size:.68rem">(IDs separados por comas)</span></label>
+          <input type="text" id="psh-incs" placeholder="Ej: INC-021, INC-035"></div>
 
         <!-- HISTORIAL DE CONTACTOS -->
         <div class="fg" style="grid-column:1/-1">
-          <label>Historial de contactos <span style="color:#475569;font-size:.68rem">(registra cada intervención)</span></label>
+          <label>Añadir contacto <span style="color:#475569;font-size:.68rem">(registra cada intervención)</span></label>
           <div style="display:flex;gap:.4rem;margin-top:.3rem">
             <input type="text" id="psh-contacto-nuevo" placeholder="Describe el contacto..." style="flex:1;font-size:.82rem">
             <button class="btn-s" onclick="addPshContacto()" style="padding:.35rem .7rem;font-size:.78rem"><i class="ti ti-plus"></i></button>
           </div>
           <div id="psh-contactos-list" style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem;max-height:120px;overflow-y:auto"></div>
           <textarea id="psh-contactos-json" style="display:none"></textarea>
-        </div>
-
-        <!-- HISTORIAL DE UBICACIONES -->
-        <div class="fg" style="grid-column:1/-1">
-          <label>Historial de ubicaciones <span style="color:#475569;font-size:.68rem">(registra cambios de zona habitual)</span></label>
-          <div style="display:flex;gap:.4rem;margin-top:.3rem">
-            <input type="text" id="psh-ubic-nueva" placeholder="Nueva ubicación observada..." style="flex:1;font-size:.82rem">
-            <button class="btn-s" onclick="addPshUbicacion()" style="padding:.35rem .7rem;font-size:.78rem"><i class="ti ti-map-pin-plus"></i></button>
-          </div>
-          <div id="psh-ubicaciones-list" style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem;max-height:100px;overflow-y:auto"></div>
-          <textarea id="psh-ubicaciones-json" style="display:none"></textarea>
-        </div>
-
-        <!-- PROTOCOLOS PSH -->
-        <div class="fg" style="grid-column:1/-1">
-          <label>Protocolos realizados <span style="color:#475569;font-size:.68rem">(registra cada protocolo PSH aplicado)</span></label>
-          <div style="display:flex;gap:.4rem;margin-top:.3rem;flex-wrap:wrap">
-            <select id="psh-protocolo-tipo" style="flex:1;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.78rem;outline:none;min-width:140px">
-              <option value="primer_contacto">🤝 Primer contacto</option>
-              <option value="valoracion">📋 Valoración social</option>
-              <option value="oferta_alojamiento">🏠 Oferta alojamiento</option>
-              <option value="atencion_sanitaria">🏥 Atención sanitaria</option>
-              <option value="identificacion">🪪 Identificación</option>
-              <option value="seguimiento">👁️ Seguimiento</option>
-              <option value="intervencion_crisis">🚨 Intervención crisis</option>
-              <option value="otro">📝 Otro</option>
-            </select>
-            <input type="text" id="psh-protocolo-obs" placeholder="Observaciones (opcional)" style="flex:2;font-size:.78rem;min-width:120px">
-            <button class="btn-s" onclick="addPshProtocolo()" style="padding:.35rem .7rem;font-size:.78rem"><i class="ti ti-plus"></i></button>
-          </div>
-          <div id="psh-protocolos-list" style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem;max-height:120px;overflow-y:auto"></div>
-          <textarea id="psh-protocolos-json" style="display:none"></textarea>
-        </div>
-
-        <!-- DERIVACIONES -->
-        <div class="fg" style="grid-column:1/-1">
-          <label>Derivaciones <span style="color:#475569;font-size:.68rem">(registra derivaciones a recursos o servicios)</span></label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.3rem">
-            <select id="psh-deriv-recurso" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.78rem;outline:none">
-              <option value="albergue">🏠 Albergue municipal</option>
-              <option value="centro_dia">☀️ Centro de día</option>
-              <option value="samur_social">🚑 SAMUR Social</option>
-              <option value="servicios_sociales">👥 Servicios Sociales</option>
-              <option value="salud_mental">🧠 Salud Mental</option>
-              <option value="desintoxicacion">💊 Desintoxicación</option>
-              <option value="hospital">🏥 Hospital</option>
-              <option value="ong">🤝 ONG / Entidad</option>
-              <option value="otro">📝 Otro recurso</option>
-            </select>
-            <select id="psh-deriv-resultado" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.78rem;outline:none">
-              <option value="pendiente">⏳ Pendiente</option>
-              <option value="aceptada">✅ Aceptada</option>
-              <option value="rechazada">❌ Rechazada</option>
-              <option value="no_localizado">🔍 No localizado</option>
-            </select>
-            <input type="text" id="psh-deriv-nombre" placeholder="Nombre del recurso/entidad" style="font-size:.78rem">
-            <input type="text" id="psh-deriv-obs" placeholder="Observaciones" style="font-size:.78rem">
-          </div>
-          <button class="btn-s" onclick="addPshDerivacion()" style="margin-top:.4rem;font-size:.78rem;padding:.35rem .8rem;width:100%"><i class="ti ti-corner-down-right"></i> Registrar derivación</button>
-          <div id="psh-derivaciones-list" style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem;max-height:130px;overflow-y:auto"></div>
-          <textarea id="psh-derivaciones-json" style="display:none"></textarea>
-        </div>
-
-        <!-- ADJUNTOS -->
-        <div class="fg" style="grid-column:1/-1">
-          <label>Archivos adjuntos <span style="color:#475569;font-size:.68rem">(imágenes, PDFs, documentos)</span></label>
-          <div id="psh-drop-zone" style="border:2px dashed #334155;border-radius:8px;padding:.8rem;text-align:center;cursor:pointer;margin-top:.3rem;transition:.2s"
-            ondragover="event.preventDefault();this.style.borderColor='#a78bfa'"
-            ondragleave="this.style.borderColor='#334155'"
-            ondrop="pshDropFile(event)"
-            onclick="document.getElementById('psh-file-input').click()">
-            <i class="ti ti-upload" style="font-size:1.2rem;color:#475569"></i>
-            <div style="font-size:.75rem;color:#475569;margin-top:.2rem">Arrastra archivos o pulsa para seleccionar</div>
-          </div>
-          <input type="file" id="psh-file-input" multiple style="display:none" onchange="pshAddFiles(this.files)">
-          <div id="psh-files-preview" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem"></div>
-          <textarea id="psh-files-json" style="display:none"></textarea>
         </div>
 
         <input type="hidden" id="psh-id">
@@ -1194,16 +1023,6 @@ select option{background:#111827;color:#e2e8f0}
         <label><i class="ti ti-circle-dashed" style="font-size:14px;margin-right:.25rem;vertical-align:-2px"></i> Radio de agrupación por proximidad:</label>
         <input type="range" id="prox-radius" min="0.1" max="3" value="1" step="0.1" oninput="document.getElementById('prox-val').textContent=this.value+'km';updateMap()">
         <span id="prox-val">1km</span>
-      </div>
-      <div class="radius-row">
-        <label><i class="ti ti-flame" style="font-size:14px;margin-right:.25rem;vertical-align:-2px;color:#ef4444"></i> Intensidad del calor:</label>
-        <input type="range" id="heat-intensity" min="1" max="10" value="5" step="1" oninput="document.getElementById('heat-intensity-val').textContent=this.value;updateHeatOptions()">
-        <span id="heat-intensity-val">5</span>
-      </div>
-      <div class="radius-row">
-        <label><i class="ti ti-blur" style="font-size:14px;margin-right:.25rem;vertical-align:-2px;color:#60a5fa"></i> Radio del punto de calor:</label>
-        <input type="range" id="heat-radius" min="10" max="80" value="42" step="2" oninput="document.getElementById('heat-radius-val').textContent=this.value+'px';updateHeatOptions()">
-        <span id="heat-radius-val">42px</span>
       </div>
     </div>
     <div id="heat-map"></div>
@@ -1994,22 +1813,6 @@ function doLogout(){
   document.getElementById('lp').value='';
   mapInst=null;heatLay=null;
 }
-function toggleMobileMenu(){
-  const menu=document.getElementById('navtabs-menu');
-  const btn=document.getElementById('hamburger-btn');
-  const open=menu.classList.toggle('mobile-open');
-  btn.innerHTML=open?'<i class="ti ti-x" style="font-size:20px"></i>':'<i class="ti ti-menu-2" style="font-size:20px"></i>';
-}
-
-function closeMobileMenu(){
-  const menu=document.getElementById('navtabs-menu');
-  const btn=document.getElementById('hamburger-btn');
-  if(menu.classList.contains('mobile-open')){
-    menu.classList.remove('mobile-open');
-    btn.innerHTML='<i class="ti ti-menu-2" style="font-size:20px"></i>';
-  }
-}
-
 function updatePrioDot(){
   const n=getInc().filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada').length;
   document.getElementById('prio-dot').style.display=n>0?'block':'none';
@@ -2019,7 +1822,6 @@ function updatePrioDot(){
 //  NAVEGACIÓN
 // ════════════════════════════════════════════════
 function showP(name){
-  closeMobileMenu();
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
@@ -2481,15 +2283,6 @@ function initMap(){
   updateMap();
 }
 
-function updateHeatOptions(){
-  if(!heatLay)return;
-  const hRadius=parseInt(document.getElementById('heat-radius')?.value||42);
-  const hIntensity=parseFloat(document.getElementById('heat-intensity')?.value||5)/5;
-  heatLay.setOptions({
-    radius:hRadius,blur:Math.round(hRadius*0.75),max:hIntensity,
-    gradient:{0.0:'#0000ff',0.2:'#00ffff',0.4:'#00ff00',0.6:'#ffff00',0.8:'#ff8000',1.0:'#ff0000'}
-  });
-}
 function updateMap(){
   if(!mapInst)return;
   const est=document.getElementById('mp-est').value;
@@ -2535,13 +2328,11 @@ function updateMap(){
   });
   // Puntos individuales con intensidad baja
   const solosPts=pts.filter(p=>!clusters.some(cl=>cl.points.includes(p)));
-  // Capa de calor con gradiente estilo Google Heatmap
+  // Capa de calor con gradiente mejorado por cantidad
   if(heatPts.length||pts.length){
-    const hRadius=parseInt(document.getElementById('heat-radius')?.value||42);
-    const hIntensity=parseFloat(document.getElementById('heat-intensity')?.value||5)/5;
     heatLay=L.heatLayer(heatPts.concat(solosPts.map(p=>[p.lat,p.lon,0.15])),{
-      radius:hRadius,blur:Math.round(hRadius*0.75),maxZoom:18,max:hIntensity,
-      gradient:{0.0:'#0000ff',0.2:'#00ffff',0.4:'#00ff00',0.6:'#ffff00',0.8:'#ff8000',1.0:'#ff0000'}
+      radius:42,blur:32,maxZoom:18,
+      gradient:{0.0:'#3b82f6',0.25:'#10b981',0.5:'#eab308',0.75:'#f97316',1.0:'#ef4444'}
     }).addTo(mapInst);
   }
   // Marcadores numerados
@@ -3474,12 +3265,10 @@ async function callClaude(messages,maxTokens=1000){
   }
   if(!r.ok){
     let detail='';
-    try{const j=await r.json();detail=j.error?.message||JSON.stringify(j);}catch(e){try{detail=await r.text();}catch(e2){}}
-    console.error('API Error '+r.status+':', detail);
-    if(r.status===400)throw new Error('Error 400 — prompt demasiado largo o formato incorrecto. Usa filtros de fecha para reducir las incidencias. Detalle: '+detail.slice(0,200));
-    if(r.status===401)throw new Error('Clave API rechazada (401). Verifica que sea correcta en console.anthropic.com/settings/keys.');
-    if(r.status===429)throw new Error('Límite de uso alcanzado (429). Espera unos minutos.');
-    throw new Error('Error API '+r.status+': '+detail.slice(0,200));
+    try{const j=await r.json();detail=j.error?.message||'';}catch(e){try{detail=await r.text();}catch(e2){}}
+    if(r.status===401)throw new Error('Clave API rechazada (401). Verifica que sea correcta en console.anthropic.com/settings/keys. Detalle: '+detail);
+    if(r.status===429)throw new Error('Límite de uso alcanzado (429). Espera unos minutos o revisa tu plan en console.anthropic.com.');
+    throw new Error('Error API '+r.status+': '+detail);
   }
   const data=await r.json();
   return data.content.map(c=>c.text||'').join('');
@@ -3729,7 +3518,7 @@ function toggleMapLayer(){
     var btn=document.getElementById('btn-satellite');
     if(btn) btn.innerHTML='<i class="ti ti-satellite" style="font-size:13px"></i> Satelite';
   }
-  // No llamar updateMap() para no resetear las capas de tiles
+  updateMap();
 }
 
 // ══════════════════════════════════════════
@@ -4336,7 +4125,7 @@ async function saveIAHistory(){
   try{
     const key='ia_history_'+(CU.user||'default');
     await _DB.collection('config').doc(key).set({
-      history:IA_CHAT_HISTORY.slice(-6),
+      history:IA_CHAT_HISTORY.slice(-20),
       updated:new Date().toISOString(),
       user:CU.user
     });
@@ -4423,12 +4212,12 @@ async function iaSend(){
   iaChatAppend('user',msg);
 
   IA_CHAT_HISTORY.push({role:'user',content:msg});
-  if(IA_CHAT_HISTORY.length>6)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-6);
+  if(IA_CHAT_HISTORY.length>20)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-20);
 
   const inc=iaGetFilteredInc();
   const ctx=document.getElementById('ia-contexto')?.value||'';
 
-  const summary = inc.slice(0,60).map(i=>({
+  const summary = inc.slice(0,120).map(i=>({
     id:i.id, fecha:i.fec, hora_apertura:i.hor, estado:i.est,
     prioridad:i.prioridad||'no_prioritaria',
     tipo:tipoL(i.tip), codigo:i.tip, direccion:i.dir,
@@ -4451,15 +4240,17 @@ Normas:
 - Cada incidencia tiene: hora_apertura, hora_asignacion, hora_llegada, hora_cierre. Usa estos campos para calcular tiempos de respuesta y resolución. Si hora_cierre está vacío, la incidencia no tiene hora de cierre registrada.
 - Para calcular duración: resta hora_apertura a hora_cierre (formato HH:MM).
 
-CALLEJERO ARGANZUELA (usa para identificar barrio de cada calle):
-IMPERIAL: Alejandro Dumas, Cobos de Segovia, Gil Imón, Paseo Imperial, Juan Duque, Mármol, Melancolicos, Piramides, Puerta de Toledo, Segovia, Ronda de Segovia, Toledo, Virgen del Puerto
-ACACIAS: Arganda, Embajadores, Ercilla, Esperanza, Gasómetro, Moratines, Peñuelas, Ribera de Curtidores, Santa María de la Cabeza, Toledo, Ronda de Toledo, Yeserías
-CHOPERA: Paseo de la Chopera, Paseo de las Delicias, Embajadores, General Palanca, Plaza Legazpi, Santa María de la Cabeza, Tomas Borrás
-LEGAZPI: Embajadores, Gasómetro, Plaza Legazpi, Maestro Arbos, Mendez Álvaro, Manzanares, Avenida de la Paz, Planetario, Puerto de Béjar, Teniente Coronel Noreña
-DELICIAS: Paseo de las Delicias, Embajadores, Ferrocarril, General Lacy, General Palanca, Juan de Mariana, Mendez Álvaro, Rafael de Riego, Santa María de la Cabeza, Tomas Bretón, Vara de Rey, Bustamante, Murcia, Palos de la Frontera, Tarragona, Ronda de Valencia
-PALOS DE MOGUER: Ancora, Ronda de Atocha, Bustamante, Canarias, Las Delicias, Embajadores, Fray Luis de León, General Lacy, Juan Sebastián Elcano, Mendez Álvaro, Murcia, Palos de la Frontera, Tarragona, Ronda de Valencia, Vizcaya
-ATOCHA: Alamedilla, Antonio Nebrija, Ciudad de Barcelona, Mendez Álvaro, Avenida de la Paz, Leganes
-COLONIAS: Pico del Pañuelo (Chopera/Delicias/Guillermo de Osma), Ferroviarios (Tomas Bretón/Alonso Martos)
+CALLEJERO DEL DISTRITO DE ARGANZUELA (7 barrios y 2 colonias):
+Cuando el usuario pregunte por una calle o zona, usa este callejero para identificar a qué barrio pertenece.
+1 BARRIO IMPERIAL: CALLE DE ALEJANDRO DUMAS, PASEO BAJO DE LA VIRGEN DEL PUERTO, CALLE DE BERCIAL, CALLE DE CASIMIRO MAHOU BIERHANS, CALLE DE LOS CHULAPOS, CALLE DE COBOS DE SEGOVIA, CALLE DEL DUQUE DE TOVAR, CALLE DE ETREROS, CALLE DEL FOSFORO, PLAZA DE FRANCISCO MORANO, CALLE DE FRANCISCO NIEVA, CALLE DE GIL IMON, TRAVESÍA DE GIL IMON, PASEO IMPERIAL, CALLE DE JEMENUÑO, PASEO DE JUAN ANTONIO VALLEJO-NAJERA BOTAS, CALLE DE JUAN DUQUE, CALLE DE LEONOR DE LA VEGA, CALLE DE LINNEO, AUTOVÍA M-30, AVENIDA DEL MANZANARES, CALLE DEL MANZANARES, CALLE DEL MARMOL, CALLE DE MAZARREDO, PASEO DE LOS MELANCOLICOS, TRAVESÍA DE LOS MELANCOLICOS, CALLEJÓN DEL MERCADO, CALLE DE MORENO NIETO, CALLE DE MUÑOPEDRO, CALLE DE NATI MISTRAL, CALLE DE LOS NOGALES, CALLE DE PARADINAS, CALLE PARTICULAR, PASEO DE LOS PINOS, GLORIETA DE LAS PIRAMIDES, CALLE DE LA PIZARRA, PASEO DE LOS PONTONES, GLORIETA DE LA PUERTA DE TOLEDO, CALLE DE RUY GONZALEZ DE CLAVIJO, CALLE DE SAN ALEJANDRO, CALLE DE SAN EPIFANIO, PUENTE DE SAN ISIDRO, CALLE DE SANGARCIA, CALLE DE SANTA CASILDA, CALLE DE SANTA MARIA LA REAL DE NIEVA, CALLE DE SEGOVIA, RONDA DE SEGOVIA, PLAZA DEL TEATRO, CALLE DE TOLEDO, PUENTE DE TOLEDO, CALLE DE VILLOSLADA, PASEO DE LA VIRGEN DEL PUERTO
+2 BARRIO ACACIAS: AUTOVÍA A-42, PASEO DE LAS ACACIAS, CALLE DE ARGANDA, CALLE DE LA ARQUITECTURA, CALLE DE BAÑOS DE MONTEMAYOR, CALLE DE LA CAOBA, CALLE DE CARMEN COBEÑA, CALLE DE LOS CARVAJALES, CALLE DE LA CEIBA, CALLE DE LAS CIGARRERAS, CALLE DEL CONCEJAL BENITO MARTIN LOZANO, CALLE DE EMBAJADORES, GLORIETA DE EMBAJADORES, CALLE DE ERCILLA, PASEO DE LA ESPERANZA, CALLE DE GARGANTILLA, CALLE DEL GASOMETRO, PASEO DE JUAN ANTONIO VALLEJO-NAJERA BOTAS, CALLE DEL LABRADOR, CALLE DEL LAUREL, AUTOVÍA M-30, CALLE DEL MAJUELO, AVENIDA DEL MANZANARES, CALLE DE MARTIN DE VARGAS, CALLE DE MELILLA, CALLE DE MORATINES, CALLE DE LAS NAVES, CALLE DE LOS NOGALES, PASEO DE LOS OLMOS, PLAZA DE ORTEGA Y MUNILLA, CALLE DEL PALO DE ROSA, CALLE DE LAS PEÑUELAS, PLAZA DE LAS PEÑUELAS, PASEO DE LOS PINOS, GLORIETA DE LAS PIRAMIDES, CALLE DE POZUELO DE ZARZON, PUENTE DE PRAGA, GLORIETA DE LA PUERTA DE TOLEDO, CALLE DE LA RIBERA DE CURTIDORES, CALLE DE SAN ANASTASIO, CALLE DE SAN ISIDORO DE SEVILLA, TRAVESÍA DE SAN ISIDORO DE SEVILLA, GLORIETA DE SANTA MARIA DE LA CABEZA, PASEO DE SANTA MARIA DE LA CABEZA, CALLE DE SANTOCILDES, CALLE DE SORIA, CALLE DE TOLEDO, PUENTE DE TOLEDO, RONDA DE TOLEDO, CALLE DE VALDELAGUNA, CALLE DE VALDELASIERRA, CALLE DE LA VILLA DE ARBANCON, PASEO DE LAS YESERIAS
+3 BARRIO CHOPERA: CALLE DE AGUILON, CALLE DE ALDEA DEL FRESNO, CALLE DE ALEJANDRO SAINT AUBIN, CALLE DE ALGETE, CALLE DE ALONSO CARBONELL, PASAJE DE ALONSO CARBONELL, PLAZA DE LA BEATA MARIA ANA DE JESUS, CALLE DE BENITO VALDERAS, CALLE DE CACERES, PASEO DE LA CHOPERA, CALLE DEL COMANDANTE BENITEZ, PASEO DE LAS DELICIAS, CALLE DEL DIVINO VALLES, CALLE DE DOMINGO PEREZ DEL VAL, CALLE DE EMBAJADORES, CALLE DE ENRIQUE TROMPETA, CALLE DE EUGENIO SELLES, CALLE DE FERNANDO POO, CALLE DEL GASOMETRO, PLAZA DEL GENERAL MAROTO, CALLE DEL GENERAL PALANCA, CALLE DE GUILLERMO DE OSMA, CALLE DE JAIME EL CONQUISTADOR, PLAZA DE JOSE DE VILLARREAL, CALLE DE JOSE MIGUEL GORDOA, AUTOVÍA M-30, AVENIDA DEL MANZANARES, CALLE DE MIGUEL ARREDONDO, CALLE DEL PARROCO JULIO MORATE, PUENTE DE PRAGA, PUENTE DE LA PRINCESA, PLAZA DE RUTILIO GACI, CALLE DE SAN DANIEL, CALLE DE SAN EVARISTO, CALLE DE SAN FELIX, GLORIETA DE SAN VICTOR, GLORIETA DE SANTA MARIA DE LA CABEZA, PASEO DE SANTA MARIA DE LA CABEZA, CALLE DE TOMAS BORRAS, CALLE DE TORRES MIRANDA, CALLE DEL VADO DE SANTA CATALINA, CALLE DE LOS VOLUNTARIOS MACABEBES
+4 BARRIO LEGAZPI: CALLE DE ALGETE, CALLE DE ANDRES DE URDANETA, CALLE DE LA ANTRACITA, CALLE DE ARIEL, CALLE DE BOLIVAR, CALLE DEL BRONCE, CALLE DE CANDELARIA MORA, CALLE DE CARABAÑA, CALLE DEL CROMO, CALLE DE EL SOTO, CALLE DE EMBAJADORES, CALLE DE ENRIQUE SIMONIS, CALLE DE EROS, CALLE DE LA ESTRELLA HADAR, CALLE DE FRIGILIANA, CALLE DEL GASOMETRO, CALLE DEL HIERRO, PLAZA DE ITALIA, CALLE DE JESUS GOLDERO, CALLE DE JOSE ANTONIO ZAPATA, CALLE DE JUAN DUQUE, CALLE DE JULIAN RABANEDO, PLAZA DE LEGAZPI, CALLE DEL LITIO, AUTOVÍA M-30, CALLE DEL MAESTRO ARBOS, CALLE DE MANUEL ALEIXANDRE, AVENIDA DEL MANZANARES, CALLE DE MENDEZ ALVARO, CALLE DE MENESES, PASEO DEL MOLINO, CALLE DE NEREIDA, CALLE DE NERJA, CALLE DE NESTARES, CALLE DEL ONICE, AVENIDA DE LA PAZ, CALLE DEL PLANETA TIERRA, AVENIDA DEL PLANETARIO, CALLE DEL PLOMO, PUENTE DE LA PRINCESA, CALLE DEL PUERTO DE BEJAR, CALLE DEL PUERTO DE LA CRUZ VERDE, CALLE DEL PUERTO DE MIRAVETE, CALLE DE PUERTO SERRANO, CALLE DE RICARDO DAMAS, CALLE DE RICARDO GOIZUETA, CALLE DEL RODIO, CALLE DE RODRIGUEZ VILLAREJO, CALLE DEL SODIO, CALLE DEL TENIENTE CORONEL NOREÑA, CALLE DE TERESA LOPEZ VALCARCEL, CALLE DE TITAN, CALLE DEL VADO DE SANTA CATALINA, CALLE DE VALDEMORILLO, CALLE DE VILLARROBLEDO, CALLE DE VIÑUELAS
+5 BARRIO DELICIAS: CALLE DEL ALABASTRO, CALLE DE ALEJANDRO FERRANT, CALLE DE ALICANTE, CALLE DE ALONSO MARTOS, CALLE DE AMALTEA, PLAZA DEL AMANECER EN MENDEZ ALVARO, CALLE DE LA BATALLA DEL SALADO, PLAZA DE LA BEATA MARIA ANA DE JESUS, CALLE DEL BERILO, CALLE DE BOLIVAR, CALLE DEL BRONCE, CALLE DE BUSTAMANTE, CALLE DE CACERES, CALLE DEL CAOLIN, PLAZA DE CASAR DE CACERES, CALLE DE CASTOR Y POLUX, CALLE DEL CIRCON, CALLE DE LA CIRCONITA, CALLE DE CIUDAD REAL, CALLE DEL COBRE, CALLE DEL CRISTO DEL CAMINO, CALLE DE DANIEL SEGOVIA, PASEO DE LAS DELICIAS, CALLE DEL DIVINO VALLES, CALLE DE EL ATAZAR, CALLE DE EMBAJADORES, CALLE DE LA ESTRELLA DENEBOLA, CALLE DE LA ESTRELLA NAOS, CALLE DE LA ESTRELLA SHAULA, CALLE DEL FERROCARRIL, CALLE DEL GASOMETRO, CALLE DEL GENERAL LACY, CALLE DEL GENERAL PALANCA, CALLE DEL GRANITO, CALLE DEL HIERRO, CALLE DE ISIDORO ALVAREZ ALVAREZ, CALLE DE JUAN DE MARIANA, CALLE DE JUAN DE VERA, CALLE DE JUAN MARTIN EL EMPECINADO, CALLE DE JUANA DOÑA, PLAZA DE LEGAZPI, CALLE DE LUIS PARET, CALLE DE MEJORADA DEL CAMPO, CALLE DE MENDEZ ALVARO, CALLE DE MENESES, CALLE DEL MEZQUITE, CALLE DE LAS NEBULOSAS, CALLE DEL ONICE, CALLE DEL ORIANA, CALLE DEL PARROCO EUSEBIO CUENCA, AVENIDA DEL PLANETARIO, CALLE DEL PLOMO, TRAVESÍA DEL PLOMO, CALLE DE RAFAEL DE RIEGO, CALLE DE RAMIREZ DE PRADO, CALLE DEL SABAL, GLORIETA DE SANTA MARIA DE LA CABEZA, CALLE DE TOMAS BRETON, CALLE DE LA TURMALINA, CALLE DE VARA DE REY, CALLE DE VILLA DEL PRADO, CALLE DE WATTEAU, CALLE DEL ZINC, PASAJE DEL ANCORA, RONDA DE ATOCHA, CALLE DE LA BATALLA DEL SALADO, CALLE DE BERNARDINO OBREGON, CALLE DE BUSTAMANTE, CALLE DE LAS CANARIAS, CALLE DEL CARDENAL SOLIS, CALLE DE LAS DELICIAS, PASEO DE LAS DELICIAS, CALLE DE EMBAJADORES, GLORIETA DE EMBAJADORES, PLAZA DEL EMPERADOR CARLOS V, CALLE DEL FERROCARRIL, CALLE DE FRAY LUIS DE LEON, CALLE DEL GENERAL LACY, CALLE DE JOSE ANTONIO DE ARMONA, CALLE DE JOSE MARIA ROQUERO, CALLE DE JUAN MARTIN EL EMPECINADO, CALLE DE JUAN SEBASTIAN ELCANO, PLAZA DE LUCA DE TENA, CALLE DEL MARQUES DE LA VALDAVIA, CALLE DE MARTIN SOLER, CALLE DE MENDEZ ALVARO, CALLE DE MURCIA, CALLE DE PALOS DE LA FRONTERA, CALLE DE PEDRO UNANUE, CALLE DE RAFAEL DE RIEGO, GLORIETA DE SANTA MARIA DE LA CABEZA, PASEO DE SANTA MARIA DE LA CABEZA, CALLE DE SEBASTIAN HERRERA, CALLE DE TARRAGONA, CALLE DE TORTOSA, PASAJE DE TORTOSA, RONDA DE VALENCIA, CALLE DE VARA DE REY, CALLE DE VIZCAYA
+6 BARRIO PALOS DE MOGUER: CALLE DE ALONSO DEL BARCO, CALLE DEL ANCORA, PASAJE DEL ANCORA, RONDA DE ATOCHA, CALLE DE LA BATALLA DEL SALADO, CALLE DE BERNARDINO OBREGON, CALLE DE BUSTAMANTE, CALLE DE LAS CANARIAS, CALLE DEL CARDENAL SOLIS, CALLE DE LAS DELICIAS, PASEO DE LAS DELICIAS, CALLE DE EMBAJADORES, GLORIETA DE EMBAJADORES, PLAZA DEL EMPERADOR CARLOS V, CALLE DEL FERROCARRIL, CALLE DE FRAY LUIS DE LEON, CALLE DEL GENERAL LACY, CALLE DE JOSE ANTONIO DE ARMONA, CALLE DE JOSE MARIA ROQUERO, CALLE DE JUAN MARTIN EL EMPECINADO, CALLE DE JUAN SEBASTIAN ELCANO, PLAZA DE LUCA DE TENA, CALLE DEL MARQUES DE LA VALDAVIA, CALLE DE MARTIN SOLER, CALLE DE MENDEZ ALVARO, CALLE DE MURCIA, CALLE DE PALOS DE LA FRONTERA, CALLE DE PEDRO UNANUE, CALLE DE RAFAEL DE RIEGO, GLORIETA DE SANTA MARIA DE LA CABEZA, PASEO DE SANTA MARIA DE LA CABEZA, CALLE DE SEBASTIAN HERRERA, CALLE DE TARRAGONA, CALLE DE TORTOSA, PASAJE DE TORTOSA, RONDA DE VALENCIA, CALLE DE VARA DE REY, CALLE DE VIZCAYA
+7 BARRIO ATOCHA: CALLE DEL ACANTO, CALLE DE ALAMEDILLA, CALLE DEL ALBERCHE, CALLE DEL ALMEZ, CALLE DE ALPEDRETE, CALLE DE ANTONIO NEBRIJA, AVENIDA DE LA CIUDAD DE BARCELONA, CALLE DEL COMERCIO, PLAZA DEL EMPERADOR CARLOS V, CALLE DE GARGANTA DE LOS MONTES, CALLE DEL GASOMETRO, CALLE DEL JACARANDA, CALLE DE LA KENTIA, CALLE DE LEGANES, AUTOVÍA M-30, CALLE DE MENDEZ ALVARO, CALLE DEL OMBU, AVENIDA DE LA PAZ, CALLE DE PEDRO BOSCH, CALLE PROVISIONAL TALLERES GENERALES MZA, CALLE DE LA RETAMA, CALLE DEL TAMARINDO, CALLE DEL TEJO
+1. Colonia del Pico del Pañuelo: delimitado por el Paseo de las Delicias, el Paseo de la Chopera y la calle Guillermo de Osma, calles interiores secundarias y peatonales, Calle de los Voluntarios Macabebes, Calle de Domingo Pérez del Val, Calle de José Miguel Gordoa, Alejandro Saint Aubin, San Daniel, San Evaristo, San Félix
+2 COLONIA DE LOS FERROVIARIOS: Calle de Tomás Bretón, Calle Alonso Martos.
 
 Contexto adicional del usuario: ${ctx||'ninguno'}
 
@@ -4478,7 +4269,7 @@ ${JSON.stringify(summary)}`;
     iaChatLoader(false);
     iaChatAppend('bot',resp.trim());
     IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
-    if(IA_CHAT_HISTORY.length>8)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-8);
+    if(IA_CHAT_HISTORY.length>24)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-24);
     saveIAHistory();
   }catch(e){
     iaChatLoader(false);
@@ -4527,7 +4318,7 @@ async function iaQuick(mode){
 
   iaChatAppend('user','[Acción rápida] '+task);
   IA_CHAT_HISTORY.push({role:'user',content:prompt});
-  if(IA_CHAT_HISTORY.length>6)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-6);
+  if(IA_CHAT_HISTORY.length>20)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-20);
 
   try{
     iaChatLoader(true);
@@ -4539,7 +4330,7 @@ async function iaQuick(mode){
     iaChatLoader(false);
     iaChatAppend('bot',resp.trim());
     IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
-    if(IA_CHAT_HISTORY.length>8)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-8);
+    if(IA_CHAT_HISTORY.length>24)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-24);
     saveIAHistory();
   }catch(e){
     iaChatLoader(false);
@@ -4549,14 +4340,9 @@ async function iaQuick(mode){
 
 // Set defaults on load
 document.addEventListener('DOMContentLoaded',()=>{
-  // Por defecto últimos 7 días en el agente IA para evitar prompts demasiado grandes
-  const d1=document.getElementById('ia-desde');
-  const d2=document.getElementById('ia-hasta');
-  if(d1&&!d1.value){
-    const hace7=new Date();hace7.setDate(hace7.getDate()-7);
-    d1.value=hace7.toISOString().split('T')[0];
-  }
-  if(d2&&!d2.value)d2.value=todayDate();
+  // No poner fecha por defecto en el agente IA para que muestre todas las incidencias
+  // const d1=document.getElementById('ia-desde');
+  // const d2=document.getElementById('ia-hasta');
   const iaInp=document.getElementById('ia-input');
   if(iaInp){
     iaInp.addEventListener('keydown',e=>{
@@ -4671,16 +4457,7 @@ function renderPshMarkers(){
 
 function renderPshList(){
   const q=(document.getElementById('psh-search')?.value||'').toLowerCase();
-  const filtSit=document.getElementById('psh-filter-sit')?.value||'';
-  const filtAlerta=document.getElementById('psh-filter-alerta')?.value||'';
-  const psh=getPsh().filter(p=>{
-    if(q&&!(p.alias||'').toLowerCase().includes(q)&&!(p.desc||'').toLowerCase().includes(q)&&!(p.dir||'').toLowerCase().includes(q))return false;
-    if(filtSit&&p.situacion!==filtSit)return false;
-    if(filtAlerta&&!(p.alertas&&p.alertas[filtAlerta]))return false;
-    return true;
-  });
-  const countEl=document.getElementById('psh-filter-count');
-  if(countEl)countEl.textContent=psh.length+' de '+getPsh().length+' registros';
+  const psh=getPsh().filter(p=>!q||(p.alias||'').toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q)||(p.dir||'').toLowerCase().includes(q));
   const list=document.getElementById('psh-list');
   if(!list)return;
   list.innerHTML=psh.length?psh.map(p=>{
@@ -4754,12 +4531,7 @@ function openPshModal(id){
   const delBtn=document.getElementById('psh-delete-btn');if(delBtn)delBtn.style.display='none';
   const fotoPrev=document.getElementById('psh-foto-preview');
   if(fotoPrev)fotoPrev.innerHTML='<i class="ti ti-user" style="font-size:2rem;color:#475569"></i>';
-  document.getElementById('psh-files-json').value='[]';
-  renderPshFilesPreview([]);
   renderPshContactosList([]);
-  renderPshUbicacionesList([]);
-  renderPshProtocolosList([]);
-  renderPshDerivacionesList([]);
   if(id){
     const p=getPsh().find(x=>x.id===id);
     if(!p)return;
@@ -4773,12 +4545,6 @@ function openPshModal(id){
     if(p.fotoUrl){document.getElementById('psh-foto-url').value=p.fotoUrl;if(fotoPrev)fotoPrev.innerHTML=`<img src="${p.fotoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
     if(p.alertas)PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)el.checked=!!p.alertas[a];});
     renderPshContactosList(p.contactos||[]);
-    const archivos=p.archivos||[];
-    document.getElementById('psh-files-json').value=JSON.stringify(archivos);
-    renderPshFilesPreview(archivos);
-    renderPshUbicacionesList(p.ubicaciones||[]);
-    renderPshProtocolosList(p.protocolos||[]);
-    renderPshDerivacionesList(p.derivaciones||[]);
     if(delBtn)delBtn.style.display='inline-flex';
   } else {
     document.getElementById('modal-psh-title').textContent='Registrar PSH';
@@ -4801,12 +4567,8 @@ async function guardarPsh(){
   }
   const alertas={};PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)alertas[a]=el.checked;});
   let contactos=[];try{contactos=JSON.parse(document.getElementById('psh-contactos-json').value||'[]');}catch(e){}
-  let archivos=[];try{archivos=JSON.parse(document.getElementById('psh-files-json').value||'[]');}catch(e){}
-  let ubicaciones=[];try{ubicaciones=JSON.parse(document.getElementById('psh-ubicaciones-json').value||'[]');}catch(e){}
-  let protocolos=[];try{protocolos=JSON.parse(document.getElementById('psh-protocolos-json').value||'[]');}catch(e){}
-  let derivaciones=[];try{derivaciones=JSON.parse(document.getElementById('psh-derivaciones-json').value||'[]');}catch(e){}
   const psh=getPsh();const idx=psh.findIndex(x=>x.id===id);
-  const nuevo={id,alias,edad:document.getElementById('psh-edad').value||'',sexo:document.getElementById('psh-sexo').value||'',desc:document.getElementById('psh-desc').value.trim(),dir:document.getElementById('psh-dir').value.trim(),lat:parseFloat(document.getElementById('psh-lat').value)||null,lon:parseFloat(document.getElementById('psh-lon').value)||null,radio:parseInt(document.getElementById('psh-radio').value)||50,situacion:document.getElementById('psh-situacion').value,fecha:document.getElementById('psh-fecha').value,obs:document.getElementById('psh-obs').value.trim(),incidencias:document.getElementById('psh-incs').value.trim(),fotoUrl,alertas,contactos,archivos,ubicaciones,protocolos,derivaciones,updated:new Date().toISOString()};
+  const nuevo={id,alias,edad:document.getElementById('psh-edad').value||'',sexo:document.getElementById('psh-sexo').value||'',desc:document.getElementById('psh-desc').value.trim(),dir:document.getElementById('psh-dir').value.trim(),lat:parseFloat(document.getElementById('psh-lat').value)||null,lon:parseFloat(document.getElementById('psh-lon').value)||null,radio:parseInt(document.getElementById('psh-radio').value)||50,situacion:document.getElementById('psh-situacion').value,fecha:document.getElementById('psh-fecha').value,obs:document.getElementById('psh-obs').value.trim(),incidencias:document.getElementById('psh-incs').value.trim(),fotoUrl,alertas,contactos,updated:new Date().toISOString()};
   if(idx>=0)psh[idx]=nuevo;else psh.push(nuevo);
   savePsh(psh);closeModal('modal-psh');renderPshMarkers();renderPshList();
 }
@@ -4818,238 +4580,7 @@ function eliminarPsh(){
   closeModal('modal-psh');renderPshMarkers();renderPshList();
 }
 
-function buscarIncidenciasCercanasPsh(){
-  const lat=parseFloat(document.getElementById('psh-lat').value);
-  const lon=parseFloat(document.getElementById('psh-lon').value);
-  const radio=parseInt(document.getElementById('psh-radio').value)||100;
-  if(!lat||!lon){
-    alert('Introduce primero la ubicación del PSH (coordenadas o dirección geocodificada)');
-    return;
-  }
-  // Buscar incidencias en el radio
-  const cercanas=getInc().filter(i=>{
-    if(!i.lat||!i.lon)return false;
-    const dlat=(i.lat-lat)*111000;
-    const dlon=(i.lon-lon)*111000*Math.cos(lat*Math.PI/180);
-    return Math.sqrt(dlat*dlat+dlon*dlon)<=radio;
-  });
-  const div=document.getElementById('psh-incs-cercanas');
-  if(!cercanas.length){
-    div.style.display='block';
-    div.innerHTML='<div style="color:#475569;font-size:.8rem;text-align:center;padding:.5rem">No hay incidencias con coordenadas en un radio de '+radio+'m</div>';
-    return;
-  }
-  // Obtener IDs ya vinculados
-  const yaVinculados=(document.getElementById('psh-incs').value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  div.style.display='block';
-  div.innerHTML=`
-    <div style="font-size:.75rem;color:#64748b;margin-bottom:.4rem">
-      ${cercanas.length} incidencia${cercanas.length!==1?'s':''} en un radio de ${radio}m — selecciona las que quieres vincular:
-    </div>
-    ${cercanas.map(i=>{
-      const yaEsta=yaVinculados.includes(i.id);
-      const dist=Math.round(Math.sqrt(Math.pow((i.lat-lat)*111000,2)+Math.pow((i.lon-lon)*111000*Math.cos(lat*Math.PI/180),2)));
-      return`<label style="display:flex;align-items:flex-start;gap:.5rem;padding:.4rem .3rem;border-bottom:1px solid #1e293b;cursor:pointer;font-size:.78rem">
-        <input type="checkbox" id="psh-inc-sel-${i.id}" ${yaEsta?'checked':''} style="width:14px;height:14px;margin-top:2px;accent-color:#a78bfa;flex-shrink:0">
-        <div>
-          <span style="color:#60a5fa;font-weight:600">${i.id}</span>
-          <span style="color:#475569"> · ${i.fec} ${i.hor} · ${dist}m</span>
-          <span style="color:#94a3b8"> · ${tipoL(i.tip)}</span>
-          <div style="color:#64748b;font-size:.72rem">${(i.des||'').slice(0,60)}${(i.des||'').length>60?'…':''}</div>
-        </div>
-      </label>`;
-    }).join('')}
-    <div style="margin-top:.5rem;display:flex;justify-content:flex-end">
-      <button class="btn-s" onclick="confirmarIncidenciasCercanasPsh()" style="font-size:.75rem;padding:.3rem .8rem">
-        <i class="ti ti-check"></i> Añadir seleccionadas
-      </button>
-    </div>`;
-}
-
-function confirmarIncidenciasCercanasPsh(){
-  const div=document.getElementById('psh-incs-cercanas');
-  const checkboxes=div.querySelectorAll('input[type=checkbox]');
-  const seleccionados=[];
-  checkboxes.forEach(cb=>{
-    if(cb.checked){
-      const id=cb.id.replace('psh-inc-sel-','');
-      seleccionados.push(id);
-    }
-  });
-  // Combinar con los ya existentes sin duplicar
-  const yaExistentes=(document.getElementById('psh-incs').value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const todos=[...new Set([...yaExistentes,...seleccionados])];
-  document.getElementById('psh-incs').value=todos.join(', ');
-  div.style.display='none';
-  div.innerHTML='';
-}
-
-// ── Historial de ubicaciones PSH ──
-function renderPshUbicacionesList(ubicaciones){
-  const list=document.getElementById('psh-ubicaciones-list');
-  if(!list)return;
-  list.innerHTML=(ubicaciones||[]).map((u,i)=>`
-    <div style="background:#0f172a;border-radius:6px;padding:.4rem .6rem;font-size:.75rem;display:flex;justify-content:space-between;align-items:flex-start;gap:.3rem">
-      <div><span style="color:#475569">${u.fecha} — ${u.agente||''}:</span> <span style="color:#e2e8f0">📍 ${escHtml(u.ubicacion)}</span></div>
-      <button onclick="removePshUbicacion(${i})" style="background:none;border:none;color:#475569;cursor:pointer;padding:0;flex-shrink:0">✕</button>
-    </div>`).join('');
-  const json=document.getElementById('psh-ubicaciones-json');
-  if(json)json.value=JSON.stringify(ubicaciones||[]);
-}
-
-function addPshUbicacion(){
-  const input=document.getElementById('psh-ubic-nueva');
-  const texto=input?input.value.trim():'';
-  if(!texto)return;
-  let ubicaciones=[];
-  try{ubicaciones=JSON.parse(document.getElementById('psh-ubicaciones-json').value||'[]');}catch(e){}
-  ubicaciones.push({fecha:todayDate(),agente:CU?CU.name:'',ubicacion:texto});
-  renderPshUbicacionesList(ubicaciones);
-  if(input)input.value='';
-}
-
-function removePshUbicacion(idx){
-  let ubicaciones=[];
-  try{ubicaciones=JSON.parse(document.getElementById('psh-ubicaciones-json').value||'[]');}catch(e){}
-  ubicaciones.splice(idx,1);
-  renderPshUbicacionesList(ubicaciones);
-}
-
-// ── Protocolos PSH ──
-const PSH_PROTOCOLO_LABELS={primer_contacto:'🤝 Primer contacto',valoracion:'📋 Valoración social',oferta_alojamiento:'🏠 Oferta alojamiento',atencion_sanitaria:'🏥 Atención sanitaria',identificacion:'🪪 Identificación',seguimiento:'👁️ Seguimiento',intervencion_crisis:'🚨 Intervención crisis',otro:'📝 Otro'};
-
-function renderPshProtocolosList(protocolos){
-  const list=document.getElementById('psh-protocolos-list');
-  if(!list)return;
-  list.innerHTML=(protocolos||[]).map((p,i)=>`
-    <div style="background:#0f172a;border-radius:6px;padding:.4rem .6rem;font-size:.75rem;display:flex;justify-content:space-between;align-items:flex-start;gap:.3rem">
-      <div>
-        <span style="color:#a78bfa;font-weight:600">${PSH_PROTOCOLO_LABELS[p.tipo]||p.tipo}</span>
-        <span style="color:#475569"> · ${p.fecha} — ${p.agente||''}</span>
-        ${p.obs?`<div style="color:#64748b;font-size:.72rem">${escHtml(p.obs)}</div>`:''}
-      </div>
-      <button onclick="removePshProtocolo(${i})" style="background:none;border:none;color:#475569;cursor:pointer;padding:0;flex-shrink:0">✕</button>
-    </div>`).join('');
-  const json=document.getElementById('psh-protocolos-json');
-  if(json)json.value=JSON.stringify(protocolos||[]);
-}
-
-function addPshProtocolo(){
-  const tipo=document.getElementById('psh-protocolo-tipo')?.value||'otro';
-  const obs=document.getElementById('psh-protocolo-obs')?.value.trim()||'';
-  let protocolos=[];
-  try{protocolos=JSON.parse(document.getElementById('psh-protocolos-json').value||'[]');}catch(e){}
-  protocolos.push({fecha:todayDate(),agente:CU?CU.name:'',tipo,obs});
-  renderPshProtocolosList(protocolos);
-  const obsEl=document.getElementById('psh-protocolo-obs');if(obsEl)obsEl.value='';
-}
-
-function removePshProtocolo(idx){
-  let protocolos=[];
-  try{protocolos=JSON.parse(document.getElementById('psh-protocolos-json').value||'[]');}catch(e){}
-  protocolos.splice(idx,1);
-  renderPshProtocolosList(protocolos);
-}
-
-// ── Derivaciones PSH ──
-const PSH_RECURSO_LABELS={albergue:'🏠 Albergue municipal',centro_dia:'☀️ Centro de día',samur_social:'🚑 SAMUR Social',servicios_sociales:'👥 Servicios Sociales',salud_mental:'🧠 Salud Mental',desintoxicacion:'💊 Desintoxicación',hospital:'🏥 Hospital',ong:'🤝 ONG / Entidad',otro:'📝 Otro recurso'};
-const PSH_RESULTADO_LABELS={pendiente:'⏳ Pendiente',aceptada:'✅ Aceptada',rechazada:'❌ Rechazada',no_localizado:'🔍 No localizado'};
-const PSH_RESULTADO_COLORS={pendiente:'#f59e0b',aceptada:'#34d399',rechazada:'#f87171',no_localizado:'#94a3b8'};
-
-function renderPshDerivacionesList(derivaciones){
-  const list=document.getElementById('psh-derivaciones-list');
-  if(!list)return;
-  list.innerHTML=(derivaciones||[]).map((d,i)=>`
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:6px;padding:.45rem .6rem;font-size:.75rem;display:flex;justify-content:space-between;align-items:flex-start;gap:.3rem">
-      <div style="flex:1">
-        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-          <span style="color:#e2e8f0;font-weight:600">${PSH_RECURSO_LABELS[d.recurso]||d.recurso}</span>
-          ${d.nombre?`<span style="color:#64748b">· ${escHtml(d.nombre)}</span>`:''}
-          <span style="color:${PSH_RESULTADO_COLORS[d.resultado]||'#94a3b8'};font-size:.7rem;font-weight:600">${PSH_RESULTADO_LABELS[d.resultado]||d.resultado}</span>
-        </div>
-        <span style="color:#475569">${d.fecha} — ${d.agente||''}</span>
-        ${d.obs?`<div style="color:#64748b;font-size:.72rem">${escHtml(d.obs)}</div>`:''}
-      </div>
-      <button onclick="removePshDerivacion(${i})" style="background:none;border:none;color:#475569;cursor:pointer;padding:0;flex-shrink:0">✕</button>
-    </div>`).join('');
-  const json=document.getElementById('psh-derivaciones-json');
-  if(json)json.value=JSON.stringify(derivaciones||[]);
-}
-
-function addPshDerivacion(){
-  const recurso=document.getElementById('psh-deriv-recurso')?.value||'otro';
-  const resultado=document.getElementById('psh-deriv-resultado')?.value||'pendiente';
-  const nombre=document.getElementById('psh-deriv-nombre')?.value.trim()||'';
-  const obs=document.getElementById('psh-deriv-obs')?.value.trim()||'';
-  let derivaciones=[];
-  try{derivaciones=JSON.parse(document.getElementById('psh-derivaciones-json').value||'[]');}catch(e){}
-  derivaciones.push({fecha:todayDate(),agente:CU?CU.name:'',recurso,resultado,nombre,obs});
-  renderPshDerivacionesList(derivaciones);
-  const nomEl=document.getElementById('psh-deriv-nombre');if(nomEl)nomEl.value='';
-  const obsEl=document.getElementById('psh-deriv-obs');if(obsEl)obsEl.value='';
-}
-
-function removePshDerivacion(idx){
-  let derivaciones=[];
-  try{derivaciones=JSON.parse(document.getElementById('psh-derivaciones-json').value||'[]');}catch(e){}
-  derivaciones.splice(idx,1);
-  renderPshDerivacionesList(derivaciones);
-}
-
-function limpiarFiltrosPsh(){
-  const s=document.getElementById('psh-search');if(s)s.value='';
-  const sit=document.getElementById('psh-filter-sit');if(sit)sit.value='';
-  const al=document.getElementById('psh-filter-alerta');if(al)al.value='';
-  renderPshList();
-}
-
-function pshDropFile(e){
-  e.preventDefault();
-  document.getElementById('psh-drop-zone').style.borderColor='#334155';
-  pshAddFiles(e.dataTransfer.files);
-}
-
-function pshAddFiles(files){
-  for(const f of files){
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      let archivos=[];
-      try{archivos=JSON.parse(document.getElementById('psh-files-json').value||'[]');}catch(e){}
-      archivos.push({name:f.name,type:f.type,size:f.size,data:ev.target.result});
-      document.getElementById('psh-files-json').value=JSON.stringify(archivos);
-      renderPshFilesPreview(archivos);
-    };
-    reader.readAsDataURL(f);
-  }
-}
-
-function renderPshFilesPreview(archivos){
-  const div=document.getElementById('psh-files-preview');
-  if(!div)return;
-  div.innerHTML=(archivos||[]).map((f,i)=>{
-    const isImg=f.type&&f.type.startsWith('image/');
-    const src=f.url||f.data||'';
-    const sz=f.size?(f.size>1048576?(f.size/1048576).toFixed(1)+'MB':(f.size/1024).toFixed(0)+'KB'):'';
-    return isImg
-      ?`<div style="position:relative;width:64px;height:64px">
-          <img src="${src}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #334155">
-          <button onclick="removePshFile(${i})" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#ef4444;border:none;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-        </div>`
-      :`<div style="display:flex;align-items:center;gap:.3rem;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:.3rem .5rem;font-size:.72rem;position:relative">
-          <i class="ti ti-file" style="color:#94a3b8"></i>
-          <div><div style="color:#e2e8f0;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div><div style="color:#475569">${sz}</div></div>
-          <button onclick="removePshFile(${i})" style="background:none;border:none;color:#475569;cursor:pointer;font-size:.85rem;padding:0;margin-left:.2rem">✕</button>
-        </div>`;
-  }).join('');
-}
-
-function removePshFile(idx){
-  let archivos=[];
-  try{archivos=JSON.parse(document.getElementById('psh-files-json').value||'[]');}catch(e){}
-  archivos.splice(idx,1);
-  document.getElementById('psh-files-json').value=JSON.stringify(archivos);
-  renderPshFilesPreview(archivos);
-}
+function clearPshGeo(){const el=document.getElementById('psh-geo-status');if(el)el.textContent='';}
 
 async function geocodificarPsh(){
   const dir=document.getElementById('psh-dir').value.trim();
@@ -5081,23 +4612,7 @@ function imprimirFichaPsh(id){
   const color=COL_SIT[p.situacion]||'#7c3aed';
   const alertasHtml=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>`<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-size:9pt;margin-right:4px">${ALERTA_LABELS[k]||k}</span>`).join(''):'<em>Sin alertas</em>';
   const contactosHtml=p.contactos&&p.contactos.length?p.contactos.map(c=>`<tr><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${c.fecha}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${c.agente}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${c.texto}</td></tr>`).join(''):'<tr><td colspan="3" style="padding:3px 6px;color:#999">Sin contactos registrados</td></tr>';
-  const protocolosHtml=p.protocolos&&p.protocolos.length?p.protocolos.map(pr=>`<tr><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${pr.fecha}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${pr.agente}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${PSH_PROTOCOLO_LABELS[pr.tipo]||pr.tipo}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${pr.obs||'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="padding:3px 6px;color:#999">Sin protocolos registrados</td></tr>';
-  const derivacionesHtml=p.derivaciones&&p.derivaciones.length?p.derivaciones.map(d=>`<tr><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${d.fecha}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${PSH_RECURSO_LABELS[d.recurso]||d.recurso}${d.nombre?' · '+d.nombre:''}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${PSH_RESULTADO_LABELS[d.resultado]||d.resultado}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${d.obs||'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="padding:3px 6px;color:#999">Sin derivaciones registradas</td></tr>';
-  const ubicacionesHtml=p.ubicaciones&&p.ubicaciones.length?p.ubicaciones.map(u=>`<tr><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${u.fecha}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${u.agente}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${u.ubicacion}</td></tr>`).join(''):'<tr><td colspan="3" style="padding:3px 6px;color:#999">Sin historial de ubicaciones</td></tr>';
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha PSH — ${p.alias}</title><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#111;padding:15mm;max-width:190mm;margin:0 auto}h1{font-size:14pt;margin:0}h2{font-size:10pt;color:#666;margin:0 0 8mm}.header{display:flex;align-items:center;gap:8mm;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${color}}.foto{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid ${color}}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:4mm}.field{margin-bottom:3mm}.field label{font-size:8pt;color:#666;display:block;text-transform:uppercase}.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;color:${color};background:${color}22;border:1px solid ${color}}table{width:100%;border-collapse:collapse;font-size:9pt}th{background:#ede9fe;color:#5b21b6;padding:4px 6px;text-align:left}.section-title{font-size:9pt;text-transform:uppercase;color:#5b21b6;font-weight:700;margin:6mm 0 2mm}@page{size:A4;margin:10mm}</style></head><body>
-  <div class="header">${p.fotoUrl?`<img src="${p.fotoUrl}" class="foto">`:"<div style='width:60px;height:60px;border-radius:50%;background:#ede9fe;border:2px solid "+color+";display:flex;align-items:center;justify-content:center;font-size:24pt'>👤</div>"}<div><h1>${p.alias||'Sin alias'}</h1><h2>COPOL — Ficha PSH · ${p.id}</h2><span class="badge">${LBL_SIT[p.situacion]||'Activo'}</span></div><div style="margin-left:auto;text-align:right;font-size:8pt;color:#666">Generado: ${new Date().toLocaleString('es-ES')}<br>Por: ${CU?CU.name:''}</div></div>
-  <div class="grid"><div class="field"><label>Sexo</label>${p.sexo||'—'}</div><div class="field"><label>Edad aprox.</label>${p.edad?'~'+p.edad+' años':'—'}</div><div class="field" style="grid-column:1/-1"><label>Descripción física</label>${p.desc||'—'}</div><div class="field" style="grid-column:1/-1"><label>Ubicación habitual</label>${p.dir||'—'}${p.lat?' ('+parseFloat(p.lat).toFixed(4)+', '+parseFloat(p.lon).toFixed(4)+')':''}${p.radio?' · Radio: '+p.radio+'m':''}</div><div class="field"><label>Primer contacto</label>${p.fecha||'—'}</div><div class="field"><label>Incidencias vinculadas</label>${p.incidencias||'—'}</div></div>
-  <div class="field"><label>Alertas</label><div style="margin-top:3px">${alertasHtml}</div></div>
-  <div class="field"><label>Observaciones</label>${p.obs||'—'}</div>
-  <div class="section-title">Historial de contactos</div>
-  <table><thead><tr><th style="width:70px">Fecha</th><th style="width:80px">Agente</th><th>Descripción</th></tr></thead><tbody>${contactosHtml}</tbody></table>
-  <div class="section-title">Protocolos realizados (${p.protocolos?p.protocolos.length:0})</div>
-  <table><thead><tr><th style="width:70px">Fecha</th><th style="width:80px">Agente</th><th style="width:120px">Protocolo</th><th>Observaciones</th></tr></thead><tbody>${protocolosHtml}</tbody></table>
-  <div class="section-title">Derivaciones</div>
-  <table><thead><tr><th style="width:70px">Fecha</th><th style="width:130px">Recurso</th><th style="width:80px">Resultado</th><th>Observaciones</th></tr></thead><tbody>${derivacionesHtml}</tbody></table>
-  <div class="section-title">Historial de ubicaciones</div>
-  <table><thead><tr><th style="width:70px">Fecha</th><th style="width:80px">Agente</th><th>Ubicación observada</th></tr></thead><tbody>${ubicacionesHtml}</tbody></table>
-  <script>window.onload=()=>window.print()<\/script></body></html>`;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha PSH — ${p.alias}</title><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#111;padding:15mm;max-width:190mm;margin:0 auto}h1{font-size:14pt;margin:0}h2{font-size:10pt;color:#666;margin:0 0 8mm}.header{display:flex;align-items:center;gap:8mm;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${color}}.foto{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid ${color}}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:4mm}.field{margin-bottom:3mm}.field label{font-size:8pt;color:#666;display:block;text-transform:uppercase}.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;color:${color};background:${color}22;border:1px solid ${color}}table{width:100%;border-collapse:collapse;font-size:9pt}th{background:#ede9fe;color:#5b21b6;padding:4px 6px;text-align:left}@page{size:A4;margin:10mm}</style></head><body><div class="header">${p.fotoUrl?`<img src="${p.fotoUrl}" class="foto">`:"<div style='width:60px;height:60px;border-radius:50%;background:#ede9fe;border:2px solid "+color+";display:flex;align-items:center;justify-content:center;font-size:24pt'>👤</div>"}<div><h1>${p.alias||'Sin alias'}</h1><h2>COPOL — Ficha PSH · ${p.id}</h2><span class="badge">${LBL_SIT[p.situacion]||'Activo'}</span></div><div style="margin-left:auto;text-align:right;font-size:8pt;color:#666">Generado: ${new Date().toLocaleString('es-ES')}<br>Por: ${CU?CU.name:''}</div></div><div class="grid"><div class="field"><label>Sexo</label>${p.sexo||'—'}</div><div class="field"><label>Edad aprox.</label>${p.edad?'~'+p.edad+' años':'—'}</div><div class="field" style="grid-column:1/-1"><label>Descripción física</label>${p.desc||'—'}</div><div class="field" style="grid-column:1/-1"><label>Ubicación habitual</label>${p.dir||'—'}${p.lat?' ('+parseFloat(p.lat).toFixed(4)+', '+parseFloat(p.lon).toFixed(4)+')':''}${p.radio?' · Radio: '+p.radio+'m':''}</div><div class="field"><label>Primer contacto</label>${p.fecha||'—'}</div><div class="field"><label>Incidencias vinculadas</label>${p.incidencias||'—'}</div></div><div class="field"><label>Alertas</label><div style="margin-top:3px">${alertasHtml}</div></div><div class="field"><label>Observaciones</label>${p.obs||'—'}</div><br><strong style="font-size:9pt;text-transform:uppercase;color:#5b21b6">Historial de contactos</strong><table style="margin-top:4px"><thead><tr><th style="width:70px">Fecha</th><th style="width:80px">Agente</th><th>Descripción</th></tr></thead><tbody>${contactosHtml}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
 
