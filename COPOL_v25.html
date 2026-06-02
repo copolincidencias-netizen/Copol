@@ -1247,11 +1247,34 @@ select option{background:#111827;color:#e2e8f0}
   <!-- DIRECTORIO TELEFÓNICO -->
   <div class="panel" id="panel-directorio">
     <div class="sec-hdr"><div><h2><i class="ti ti-phone-call" style="color:#3b82f6;margin-right:.4rem"></i>Directorio de comisarías</h2><p>Radio, bases y teléfonos — Policía Municipal Madrid</p></div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
         <div class="search-bar" style="margin:0;min-width:220px"><i class="ti ti-search"></i><input type="text" id="dir-srch" placeholder="Buscar comisaría..." oninput="renderDir()"></div>
+        <button class="btn-s ao" onclick="openDirModal(null)" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)"><i class="ti ti-plus"></i> Añadir</button>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.7rem" id="dir-grid"></div>
+  </div>
+
+  <!-- MODAL DIRECTORIO -->
+  <div class="modal-overlay" id="modal-dir-entry">
+    <div class="modal-box" style="max-width:480px">
+      <div class="modal-hdr"><span id="modal-dir-title">Añadir entrada</span><button class="modal-close" onclick="closeModal('modal-dir-entry')">✕</button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;padding:1rem">
+        <div class="fg" style="grid-column:1/-1"><label>Nombre / Unidad</label><input type="text" id="dir-f-nombre" placeholder="Ej: Comisaría Arganzuela"></div>
+        <div class="fg"><label>Grupo</label><input type="number" id="dir-f-grupo" placeholder="Ej: 1" min="1" max="99"></div>
+        <div class="fg"><label>Frecuencia Radio</label><input type="text" id="dir-f-radio" placeholder="Ej: 460.200"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Base / Ubicación</label><input type="text" id="dir-f-base" placeholder="Ej: Arganzuela"></div>
+        <div class="fg"><label>Teléfono</label><input type="text" id="dir-f-tel" placeholder="Ej: 91-000-00-00"></div>
+        <div class="fg"><label>Email</label><input type="text" id="dir-f-email" placeholder="Ej: correo@madrid.es"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Notas</label><textarea id="dir-f-notas" rows="2" placeholder="Información adicional..."></textarea></div>
+        <input type="hidden" id="dir-f-idx">
+      </div>
+      <div class="btn-row" style="padding:0 1rem 1rem;display:flex;gap:.5rem">
+        <button class="btn-s" onclick="guardarDirEntry()"><i class="ti ti-device-floppy"></i> Guardar</button>
+        <button class="btn-sec" onclick="closeModal('modal-dir-entry')"><i class="ti ti-x"></i> Cancelar</button>
+        <button class="btn-sec" id="dir-delete-btn" onclick="eliminarDirEntry()" style="display:none;color:#ef4444;border-color:#ef4444"><i class="ti ti-trash"></i> Eliminar</button>
+      </div>
+    </div>
   </div>
 
 
@@ -2039,6 +2062,7 @@ function showP(name){
     });
   }
   if(name==='agenteia'){loadIAHistory();setTimeout(updateIaCount,500);}
+  if(name==='directorio'){loadDirCustom().then(()=>renderDir());}
 }
 
 // ════════════════════════════════════════════════
@@ -3613,27 +3637,93 @@ const DIRECTORIO=[
   {grupo:16,nombre:'Grúas',radio:11,base:'BASE 73',tel:'91-7877292'},
 ];
 
+function getDirCustom(){try{return JSON.parse(localStorage.getItem('copol_dir_custom')||'[]')}catch(e){return[]}}
+function saveDirCustom(d){
+  localStorage.setItem('copol_dir_custom',JSON.stringify(d));
+  if(gsActive()&&_DB)_DB.collection('config').doc('directorio_custom').set({data:d,updated:new Date().toISOString()}).catch(()=>{});
+}
+async function loadDirCustom(){
+  if(!gsActive()||!_DB)return;
+  try{
+    const snap=await _DB.collection('config').doc('directorio_custom').get();
+    if(snap.exists&&snap.data().data)localStorage.setItem('copol_dir_custom',JSON.stringify(snap.data().data));
+  }catch(e){}
+}
+
 function renderDir(){
   const q=(document.getElementById('dir-srch').value||'').toLowerCase();
-  const filtered=DIRECTORIO.filter(d=>!q||d.nombre.toLowerCase().includes(q)||String(d.radio).includes(q)||d.base.toLowerCase().includes(q)||(d.tel||'').includes(q));
-  // Group by grupo
+  const custom=getDirCustom();
+  const todos=[...DIRECTORIO.map((d,i)=>({...d,_src:'base',_idx:i})),...custom.map((d,i)=>({...d,_src:'custom',_idx:i}))];
+  const filtered=todos.filter(d=>!q||d.nombre.toLowerCase().includes(q)||String(d.radio||'').includes(q)||(d.base||'').toLowerCase().includes(q)||(d.tel||'').includes(q));
   const grupos={};
   filtered.forEach(d=>{if(!grupos[d.grupo])grupos[d.grupo]=[];grupos[d.grupo].push(d)});
   const grid=document.getElementById('dir-grid');
+  const isAdmin=CU&&(CU.role==='admin'||CU.role==='superadmin');
   let html='';
   Object.entries(grupos).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([g,items])=>{
     html+=`<div class="dir-group-hdr"><i class="ti ti-users-group" style="font-size:13px;margin-right:.35rem;vertical-align:-2px"></i>Grupo ${g}</div>`;
     items.forEach(d=>{
       html+=`<div class="dir-card">
-        <div class="dir-card-name"><i class="ti ti-building-community"></i>${d.nombre}<span class="dir-group-tag">G${d.grupo}</span></div>
+        <div class="dir-card-name" style="display:flex;justify-content:space-between;align-items:flex-start">
+          <span><i class="ti ti-building-community"></i>${d.nombre}<span class="dir-group-tag">G${d.grupo}</span>${d._src==='custom'?'<span style="font-size:.6rem;background:#1e3a8a;color:#93c5fd;border-radius:4px;padding:1px 4px;margin-left:.3rem">personalizado</span>':''}</span>
+          ${isAdmin?`<button onclick="openDirModal(${JSON.stringify(d).replace(/"/g,'&quot;')})" style="background:none;border:1px solid #334155;border-radius:5px;padding:.15rem .4rem;color:#64748b;cursor:pointer;font-size:.7rem;flex-shrink:0"><i class="ti ti-pencil"></i></button>`:''}
+        </div>
         ${d.radio?`<div class="dir-row"><span class="dir-label"><i class="ti ti-radio" style="font-size:12px"></i> Radio</span><span class="dir-val" style="color:#f59e0b;font-weight:700">${d.radio}</span></div>`:''}
         ${d.base?`<div class="dir-row"><span class="dir-label"><i class="ti ti-antenna" style="font-size:12px"></i> Base</span><span class="dir-val">${d.base}</span></div>`:''}
         ${d.tel?`<div class="dir-row"><span class="dir-label"><i class="ti ti-phone" style="font-size:12px"></i> Tel.</span><span class="dir-val"><a href="tel:${d.tel.replace(/-/g,'')}">${d.tel}</a></span></div>`:'<div class="dir-row"><span class="dir-label"><i class="ti ti-phone" style="font-size:12px"></i> Tel.</span><span class="dir-val" style="color:#334155">—</span></div>'}
+        ${d.email?`<div class="dir-row"><span class="dir-label"><i class="ti ti-mail" style="font-size:12px"></i> Email</span><span class="dir-val"><a href="mailto:${d.email}">${d.email}</a></span></div>`:''}
+        ${d.notas?`<div class="dir-row"><span class="dir-label"><i class="ti ti-note" style="font-size:12px"></i> Notas</span><span class="dir-val" style="color:#64748b">${d.notas}</span></div>`:''}
       </div>`;
     });
   });
   if(!html)html='<div style="grid-column:1/-1;text-align:center;color:#334155;padding:2rem;font-size:.85rem">No se encontraron resultados</div>';
   grid.innerHTML=html;
+}
+
+function openDirModal(d){
+  document.getElementById('modal-dir-title').textContent=d?'Editar entrada':'Añadir entrada';
+  document.getElementById('dir-f-nombre').value=d?d.nombre:'';
+  document.getElementById('dir-f-grupo').value=d?d.grupo:'';
+  document.getElementById('dir-f-radio').value=d?d.radio||'':'';
+  document.getElementById('dir-f-base').value=d?d.base||'':'';
+  document.getElementById('dir-f-tel').value=d?d.tel||'':'';
+  document.getElementById('dir-f-email').value=d?d.email||'':'';
+  document.getElementById('dir-f-notas').value=d?d.notas||'':'';
+  document.getElementById('dir-f-idx').value=d&&d._src==='custom'?d._idx:'';
+  const delBtn=document.getElementById('dir-delete-btn');
+  if(delBtn)delBtn.style.display=d&&d._src==='custom'?'inline-flex':'none';
+  document.getElementById('modal-dir-entry').classList.add('open');document.body.classList.add('modal-open');
+}
+
+function guardarDirEntry(){
+  const nombre=document.getElementById('dir-f-nombre').value.trim();
+  if(!nombre){alert('El nombre es obligatorio');return;}
+  const entry={
+    nombre,
+    grupo:parseInt(document.getElementById('dir-f-grupo').value)||1,
+    radio:document.getElementById('dir-f-radio').value.trim(),
+    base:document.getElementById('dir-f-base').value.trim(),
+    tel:document.getElementById('dir-f-tel').value.trim(),
+    email:document.getElementById('dir-f-email').value.trim(),
+    notas:document.getElementById('dir-f-notas').value.trim()
+  };
+  const custom=getDirCustom();
+  const idx=document.getElementById('dir-f-idx').value;
+  if(idx!=='')custom[parseInt(idx)]=entry;
+  else custom.push(entry);
+  saveDirCustom(custom);
+  closeModal('modal-dir-entry');
+  renderDir();
+}
+
+function eliminarDirEntry(){
+  const idx=document.getElementById('dir-f-idx').value;
+  if(idx===''||!confirm('¿Eliminar esta entrada?'))return;
+  const custom=getDirCustom();
+  custom.splice(parseInt(idx),1);
+  saveDirCustom(custom);
+  closeModal('modal-dir-entry');
+  renderDir();
 }
 
 // ════════════════════════════════════════════════
