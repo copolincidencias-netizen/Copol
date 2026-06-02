@@ -4729,8 +4729,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const el=document.getElementById(id);
     if(el)el.addEventListener('change',updateIaCount);
   });
-});
-  // Por defecto últimos 7 días en el agente IA para evitar prompts demasiado grandes
+  // Por defecto últimos 7 días en el agente IA
   const d1=document.getElementById('ia-desde');
   const d2=document.getElementById('ia-hasta');
   if(d1&&!d1.value){
