@@ -3350,12 +3350,12 @@ function renderUsers(){
       </div>
       ${isSA&&u.user!=='superadmin'?`
       <div style="margin-top:.65rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
-        <select onchange="cambiarRolUser(${u.id},this.value)" style="flex:1;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+        <select onchange="cambiarRolUser('${u.user}',this.value)" style="flex:1;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
           <option value="user" ${u.role==='user'?'selected':''}>Agente</option>
           <option value="social" ${u.role==='social'?'selected':''}>Servicios Sociales</option>
           <option value="admin" ${u.role==='admin'?'selected':''}>Administrador</option>
         </select>
-        <button class="btn-danger" onclick="elimUser(${u.id})" style="padding:.35rem .6rem;font-size:.75rem"><i class="ti ti-trash"></i></button>
+        <button class="btn-danger" onclick="elimUser('${u.user}')" style="padding:.35rem .6rem;font-size:.75rem"><i class="ti ti-trash"></i></button>
       </div>`:''}
     </div>`;
   }).join('');
@@ -3363,7 +3363,8 @@ function renderUsers(){
 
 function cambiarRolUser(id,newRole){
   const users=getUsers();
-  const u=users.find(x=>x.id===id);
+  // Buscar por id numérico o por username (usuarios sin id)
+  const u=users.find(x=>x.id===id||x.id===String(id)||x.user===String(id));
   if(!u)return;
   if(!confirm(`¿Cambiar el rol de ${u.name} a "${newRole}"?`)){
     renderUsers();return;
@@ -3416,7 +3417,7 @@ function crearUsuario(){
 
 function elimUser(id){
   if(!confirm('¿Eliminar este usuario? Esta acción no se puede deshacer.'))return;
-  saveUsers(getUsers().filter(u=>u.id!==id));
+  saveUsers(getUsers().filter(u=>u.id!==id&&u.user!==id));
   renderUsers();
 }
 
