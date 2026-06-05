@@ -1982,7 +1982,7 @@ function loginAs(u){
   showP('dashboard');
   updateIaStatus();
   logAudit('login','','Sesión iniciada como '+roleLabel);
-  if(u.firstLogin) openChangePassModal(u);
+  if(u.firstLogin||u.pass==='123456') openChangePassModal(u);
   if(fbActive()){
     setTimeout(function(){ syncFromFirebase().then(()=>updatePrioDot()); }, 400);
   } else {
