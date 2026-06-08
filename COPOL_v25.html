@@ -879,6 +879,51 @@ select option{background:#111827;color:#e2e8f0}
       <div><h2><i class="ti ti-map-pin-heart" style="color:#a78bfa"></i> Censo PSH — Personas Sin Hogar</h2><p id="psh-count">0 personas registradas</p></div>
       <button class="btn-s" onclick="openPshModal(null)" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="ti ti-plus"></i> Registrar PSH</button>
     </div>
+    <!-- BARRA DE FILTROS -->
+    <div style="display:flex;flex-wrap:wrap;gap:.35rem;padding:.5rem 0;margin-bottom:.5rem;border-bottom:1px solid #1e293b;align-items:center">
+      <input type="text" id="psh-search" placeholder="🔍 Buscar..." oninput="renderPshList()"
+        style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .7rem;color:#e2e8f0;font-size:.78rem;outline:none;width:160px">
+      <select id="psh-filter-sit" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+        <option value="">Situación</option>
+        <option value="activo">Activo</option>
+        <option value="derivado">Derivado</option>
+        <option value="desaparecido">No localizado</option>
+      </select>
+      <select id="psh-filter-alerta" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+        <option value="">Alerta</option>
+        <option value="antecedentes">⚠️ Antecedentes</option>
+        <option value="salud_mental">🧠 Salud mental</option>
+        <option value="sustancias">💊 Sustancias</option>
+        <option value="violento">🔴 Violento</option>
+        <option value="vulnerable">💙 Vulnerable</option>
+        <option value="menor">👶 Menor</option>
+        <option value="animal">🐕 Animal</option>
+      </select>
+      <select id="psh-filter-gedie" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+        <option value="">GEDIE</option>
+        <option value="con_gedie">Con expediente</option>
+        <option value="sin_gedie">Sin expediente</option>
+        <option value="abierto">Abierto</option>
+        <option value="cerrado">Cerrado</option>
+        <option value="pendiente">Pendiente</option>
+      </select>
+      <select id="psh-filter-protocolo" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+        <option value="">Protocolo</option>
+        <option value="con_protocolo">Con protocolo</option>
+        <option value="sin_protocolo">Sin protocolo</option>
+        <option value="proximo">⚠️ Próximos 48h</option>
+      </select>
+      <input type="date" id="psh-filter-desde" onchange="renderPshList()" title="Primer contacto desde"
+        style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+      <input type="date" id="psh-filter-hasta" onchange="renderPshList()" title="Primer contacto hasta"
+        style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
+      <button onclick="limpiarFiltrosPsh()" style="background:none;border:1px solid #334155;border-radius:7px;color:#64748b;font-size:.75rem;cursor:pointer;padding:.35rem .6rem"><i class="ti ti-x"></i> Limpiar</button>
+      <span id="psh-filter-count" style="font-size:.7rem;color:#475569;margin-left:.2rem"></span>
+      <div style="margin-left:auto;display:flex;gap:.35rem">
+        <button onclick="imprimirPshListado()" class="btn-sec" style="font-size:.75rem;padding:.35rem .7rem"><i class="ti ti-list"></i> Listado</button>
+        <button onclick="imprimirPshMapa()" class="btn-sec" style="font-size:.75rem;padding:.35rem .7rem"><i class="ti ti-map"></i> Mapa</button>
+      </div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 340px;gap:1rem;height:calc(100vh - 160px)">
       <!-- Mapa PSH -->
       <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid #1e293b">
@@ -889,35 +934,13 @@ select option{background:#111827;color:#e2e8f0}
       </div>
       <!-- Lista PSH -->
       <div style="display:flex;flex-direction:column;gap:.5rem;overflow-y:auto">
-        <div style="background:#111827;border:1px solid #1e293b;border-radius:10px;padding:.6rem;display:flex;flex-direction:column;gap:.4rem">
-          <input type="text" id="psh-search" placeholder="🔍 Buscar por alias, descripción, dirección..." oninput="renderPshList()"
-            style="width:100%;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.45rem .7rem;color:#e2e8f0;font-size:.82rem;outline:none">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
-            <select id="psh-filter-sit" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
-              <option value="">Todas las situaciones</option>
-              <option value="activo">Activo</option>
-              <option value="derivado">Derivado</option>
-              <option value="desaparecido">No localizado</option>
-            </select>
-            <select id="psh-filter-alerta" onchange="renderPshList()" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.35rem .5rem;color:#e2e8f0;font-size:.75rem;outline:none">
-              <option value="">Todas las alertas</option>
-              <option value="antecedentes">⚠️ Antecedentes</option>
-              <option value="salud_mental">🧠 Salud mental</option>
-              <option value="sustancias">💊 Sustancias</option>
-              <option value="violento">🔴 Violento</option>
-              <option value="vulnerable">💙 Vulnerable</option>
-              <option value="menor">👶 Menor edad</option>
-              <option value="animal">🐕 Con animal</option>
-            </select>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span id="psh-filter-count" style="font-size:.7rem;color:#475569"></span>
-            <button onclick="limpiarFiltrosPsh()" style="background:none;border:none;color:#475569;font-size:.72rem;cursor:pointer;padding:0"><i class="ti ti-x"></i> Limpiar</button>
-          </div>
+        <!-- ALARMA PROTOCOLO PSH -->
+        <div id="psh-alarma-protocolo" style="display:none;background:#1a0a2e;border:1px solid #7c3aed;border-radius:8px;padding:.6rem;animation:pulso-mic .8s infinite">
+          <div style="color:#c084fc;font-size:.78rem;font-weight:600"><i class="ti ti-bell-ringing"></i> ⚠️ Protocolo PSH próximo a activarse</div>
+          <div id="psh-alarma-lista" style="font-size:.73rem;color:#e2e8f0;margin-top:.3rem"></div>
         </div>
         <div id="psh-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
       </div>
-    </div>
   </div>
 
   <!-- MODAL PSH -->
@@ -940,11 +963,77 @@ select option{background:#111827;color:#e2e8f0}
         </div>
 
         <div class="fg" style="grid-column:1/-1"><label>Alias / Nombre</label><input type="text" id="psh-alias" placeholder="Alias o nombre conocido"></div>
-        <div class="fg"><label>Edad aproximada</label><input type="number" id="psh-edad" placeholder="Ej: 45" min="0" max="120"></div>
-        <div class="fg"><label>Sexo</label>
-          <select id="psh-sexo"><option value="">—</option><option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro/No determinado</option></select>
+
+        <!-- FILIACIÓN COMPLETA -->
+        <div class="fg" style="grid-column:1/-1;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:.7rem">
+          <label style="color:#a78bfa;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600"><i class="ti ti-id-badge"></i> Filiación</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">
+            <div class="fg"><label>Nombre completo</label><input type="text" id="psh-nombre-completo" placeholder="Nombre y apellidos"></div>
+            <div class="fg"><label>Tipo documento</label>
+              <select id="psh-doc-tipo" style="width:100%;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.82rem;outline:none">
+                <option value="">— Sin identificar —</option>
+                <option value="dni">DNI</option>
+                <option value="nie">NIE</option>
+                <option value="pasaporte">Pasaporte</option>
+                <option value="otro">Otro documento</option>
+              </select>
+            </div>
+            <div class="fg"><label>Número de documento</label><input type="text" id="psh-doc-num" placeholder="Ej: 12345678A"></div>
+            <div class="fg"><label>Fecha de nacimiento</label><input type="date" id="psh-fnac"></div>
+            <div class="fg"><label>Nacionalidad</label><input type="text" id="psh-nacionalidad" placeholder="Ej: Española"></div>
+            <div class="fg"><label>Edad aproximada</label><input type="number" id="psh-edad" placeholder="Ej: 45" min="0" max="120"></div>
+            <div class="fg"><label>Sexo</label>
+              <select id="psh-sexo"><option value="">—</option><option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro/No determinado</option></select>
+            </div>
+            <div class="fg"><label>Otros datos filiación</label><input type="text" id="psh-otros-filiacion" placeholder="Apodos, alias conocidos..."></div>
+          </div>
         </div>
+
         <div class="fg" style="grid-column:1/-1"><label>Descripción física</label><textarea id="psh-desc" rows="2" placeholder="Complexión, color de pelo, ropa habitual, señas particulares..."></textarea></div>
+
+        <!-- GEDIE -->
+        <div class="fg" style="grid-column:1/-1;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:.7rem">
+          <label style="color:#60a5fa;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600"><i class="ti ti-database"></i> GEDIE</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem">
+            <div class="fg"><label>Nº expediente GEDIE</label><input type="text" id="psh-gedie-num" placeholder="Nº de expediente"></div>
+            <div class="fg"><label>Estado GEDIE</label>
+              <select id="psh-gedie-estado" style="width:100%;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.82rem;outline:none">
+                <option value="">— Sin expediente —</option>
+                <option value="abierto">Abierto</option>
+                <option value="cerrado">Cerrado</option>
+                <option value="pendiente">Pendiente</option>
+              </select>
+            </div>
+            <div class="fg" style="grid-column:1/-1"><label>Observaciones GEDIE</label><input type="text" id="psh-gedie-obs" placeholder="Notas sobre el expediente GEDIE..."></div>
+          </div>
+        </div>
+
+        <!-- ÚLTIMA Y PRÓXIMA ACTUACIÓN -->
+        <div class="fg" style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:.7rem">
+          <label style="color:#34d399;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600"><i class="ti ti-clock-check"></i> Última actuación</label>
+          <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
+            <input type="date" id="psh-ultima-fecha" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.82rem;outline:none;width:100%">
+            <input type="text" id="psh-ultima-desc" placeholder="Descripción de la actuación..." style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.82rem;outline:none;width:100%">
+          </div>
+        </div>
+        <div class="fg" style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:.7rem">
+          <label style="color:#f59e0b;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600"><i class="ti ti-clock-exclamation"></i> Próxima actuación</label>
+          <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
+            <input type="date" id="psh-proxima-fecha" style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.82rem;outline:none;width:100%">
+            <input type="text" id="psh-proxima-desc" placeholder="Descripción de la próxima actuación..." style="background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.4rem .5rem;color:#e2e8f0;font-size:.82rem;outline:none;width:100%">
+          </div>
+        </div>
+
+        <!-- ACTIVACIÓN PROTOCOLO PSH -->
+        <div class="fg" style="grid-column:1/-1;background:#1a0a2e;border:1px solid #7c3aed44;border-radius:8px;padding:.7rem">
+          <label style="color:#c084fc;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600"><i class="ti ti-file-certificate"></i> Activación Protocolo PSH</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-top:.5rem">
+            <div class="fg"><label>Fecha activación</label><input type="date" id="psh-protocolo-fecha"></div>
+            <div class="fg"><label>Hora activación</label><input type="time" id="psh-protocolo-hora"></div>
+            <div class="fg"><label>Solicitado por</label><input type="text" id="psh-protocolo-solicitante" placeholder="Nombre o servicio solicitante"></div>
+            <div class="fg" style="grid-column:1/-1"><label>Motivo de activación</label><input type="text" id="psh-protocolo-motivo" placeholder="Descripción del motivo de activación del protocolo..."></div>
+          </div>
+        </div>
 
         <!-- ALERTAS -->
         <div class="fg" style="grid-column:1/-1">
@@ -2058,6 +2147,7 @@ function showP(name){
   if(name==='psh'){
     loadPshFirebase().then(()=>{
       renderPshList();
+      checkPshAlarmaProtocolo();
       setTimeout(()=>{initPshMap();renderPshMarkers();},150);
     });
   }
@@ -2071,7 +2161,7 @@ function showP(name){
 function renderDash(){
   const all=getInc();
   const inc=all.filter(i=>i.est==='abierta'||i.est==='asignada');
-  const prioN=all.filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada').length;
+  const prioN=all.filter(i=>i.prioridad==='prioritaria'&&i.est!=='cerrada'&&i.est!=='anulado').length;
   document.getElementById('dash-count').textContent=inc.length+' incidencias';
   document.getElementById('dash-sub').textContent='Mostrando '+inc.length+' incidencias activas y pendientes';
   const strip=document.getElementById('alarm-strip-dash');
@@ -2087,7 +2177,7 @@ function renderDash(){
   const last7d=new Date(now.getTime()-7*24*3600*1000);
   const incToday=all.filter(i=>i.fec===today);
   const inc24=all.filter(i=>{try{return new Date(i.fec+'T'+(i.hor||'00:00'))>=last24}catch(e){return false}});
-  const incOpen=all.filter(i=>i.est!=='cerrada');
+  const incOpen=all.filter(i=>i.est!=='cerrada'&&i.est!=='anulado');
   const incClosed7d=all.filter(i=>{if(i.est!=='cerrada')return false;try{return new Date(i.fec)>=last7d}catch(e){return false}});
   // Average resolution time (in minutes) for closed incidents in last 7d
   let avgRes='—';
@@ -4887,17 +4977,10 @@ function renderPshMarkers(){
 }
 
 function renderPshList(){
-  const q=(document.getElementById('psh-search')?.value||'').toLowerCase();
-  const filtSit=document.getElementById('psh-filter-sit')?.value||'';
-  const filtAlerta=document.getElementById('psh-filter-alerta')?.value||'';
-  const psh=getPsh().filter(p=>{
-    if(q&&!(p.alias||'').toLowerCase().includes(q)&&!(p.desc||'').toLowerCase().includes(q)&&!(p.dir||'').toLowerCase().includes(q))return false;
-    if(filtSit&&p.situacion!==filtSit)return false;
-    if(filtAlerta&&!(p.alertas&&p.alertas[filtAlerta]))return false;
-    return true;
-  });
+  checkPshAlarmaProtocolo();
+  const psh=getPshFiltrado();
   const countEl=document.getElementById('psh-filter-count');
-  if(countEl)countEl.textContent=psh.length+' de '+getPsh().length+' registros';
+  if(countEl)countEl.textContent=psh.length+' de '+getPsh().length;
   const list=document.getElementById('psh-list');
   if(!list)return;
   list.innerHTML=psh.length?psh.map(p=>{
@@ -4963,7 +5046,7 @@ function removePshContacto(idx){
 
 function openPshModal(id){
   PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)el.checked=false;});
-  ['psh-alias','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-radio','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id','psh-foto-url'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['psh-alias','psh-nombre-completo','psh-doc-tipo','psh-doc-num','psh-fnac','psh-nacionalidad','psh-otros-filiacion','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-radio','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id','psh-foto-url','psh-gedie-num','psh-gedie-estado','psh-gedie-obs','psh-ultima-fecha','psh-ultima-desc','psh-proxima-fecha','psh-proxima-desc','psh-protocolo-fecha','psh-protocolo-hora','psh-protocolo-solicitante','psh-protocolo-motivo'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
   const radioEl=document.getElementById('psh-radio');if(radioEl)radioEl.value='50';
   const sitEl=document.getElementById('psh-situacion');if(sitEl)sitEl.value='activo';
   const fechaEl=document.getElementById('psh-fecha');if(fechaEl)fechaEl.value=todayDate();
@@ -4981,7 +5064,40 @@ function openPshModal(id){
     const p=getPsh().find(x=>x.id===id);
     if(!p)return;
     document.getElementById('modal-psh-title').textContent='Editar PSH';
-    ['id','alias','edad','sexo','desc','dir','obs','incs'].forEach(k=>{const el=document.getElementById('psh-'+k);if(el)el.value=p[k==='incs'?'incidencias':k]||''});
+    // Campos básicos
+    document.getElementById('psh-id').value=p.id||'';
+    document.getElementById('psh-alias').value=p.alias||'';
+    document.getElementById('psh-nombre-completo').value=p.nombre_completo||'';
+    document.getElementById('psh-doc-tipo').value=p.doc_tipo||'';
+    document.getElementById('psh-doc-num').value=p.doc_num||'';
+    document.getElementById('psh-fnac').value=p.fnac||'';
+    document.getElementById('psh-nacionalidad').value=p.nacionalidad||'';
+    document.getElementById('psh-otros-filiacion').value=p.otros_filiacion||'';
+    document.getElementById('psh-edad').value=p.edad||'';
+    document.getElementById('psh-sexo').value=p.sexo||'';
+    document.getElementById('psh-desc').value=p.desc||'';
+    document.getElementById('psh-dir').value=p.dir||'';
+    document.getElementById('psh-lat').value=p.lat||'';
+    document.getElementById('psh-lon').value=p.lon||'';
+    document.getElementById('psh-radio').value=p.radio||50;
+    document.getElementById('psh-situacion').value=p.situacion||'activo';
+    document.getElementById('psh-fecha').value=p.fecha||'';
+    document.getElementById('psh-obs').value=p.obs||'';
+    document.getElementById('psh-incs').value=p.incidencias||'';
+    // GEDIE
+    document.getElementById('psh-gedie-num').value=p.gedie_num||'';
+    document.getElementById('psh-gedie-estado').value=p.gedie_estado||'';
+    document.getElementById('psh-gedie-obs').value=p.gedie_obs||'';
+    // Actuaciones
+    document.getElementById('psh-ultima-fecha').value=p.ultima_fecha||'';
+    document.getElementById('psh-ultima-desc').value=p.ultima_desc||'';
+    document.getElementById('psh-proxima-fecha').value=p.proxima_fecha||'';
+    document.getElementById('psh-proxima-desc').value=p.proxima_desc||'';
+    // Protocolo PSH
+    document.getElementById('psh-protocolo-fecha').value=p.protocolo_fecha||'';
+    document.getElementById('psh-protocolo-hora').value=p.protocolo_hora||'';
+    document.getElementById('psh-protocolo-solicitante').value=p.protocolo_solicitante||'';
+    document.getElementById('psh-protocolo-motivo').value=p.protocolo_motivo||'';
     if(document.getElementById('psh-lat'))document.getElementById('psh-lat').value=p.lat||''
     if(document.getElementById('psh-lon'))document.getElementById('psh-lon').value=p.lon||''
     if(document.getElementById('psh-radio'))document.getElementById('psh-radio').value=p.radio||50;
@@ -5023,7 +5139,39 @@ async function guardarPsh(){
   let protocolos=[];try{protocolos=JSON.parse(document.getElementById('psh-protocolos-json').value||'[]');}catch(e){}
   let derivaciones=[];try{derivaciones=JSON.parse(document.getElementById('psh-derivaciones-json').value||'[]');}catch(e){}
   const psh=getPsh();const idx=psh.findIndex(x=>x.id===id);
-  const nuevo={id,alias,edad:document.getElementById('psh-edad').value||'',sexo:document.getElementById('psh-sexo').value||'',desc:document.getElementById('psh-desc').value.trim(),dir:document.getElementById('psh-dir').value.trim(),lat:parseFloat(document.getElementById('psh-lat').value)||null,lon:parseFloat(document.getElementById('psh-lon').value)||null,radio:parseInt(document.getElementById('psh-radio').value)||50,situacion:document.getElementById('psh-situacion').value,fecha:document.getElementById('psh-fecha').value,obs:document.getElementById('psh-obs').value.trim(),incidencias:document.getElementById('psh-incs').value.trim(),fotoUrl,alertas,contactos,archivos,ubicaciones,protocolos,derivaciones,updated:new Date().toISOString()};
+  const nuevo={
+    id,alias,
+    nombre_completo:document.getElementById('psh-nombre-completo').value.trim(),
+    doc_tipo:document.getElementById('psh-doc-tipo').value,
+    doc_num:document.getElementById('psh-doc-num').value.trim(),
+    fnac:document.getElementById('psh-fnac').value,
+    nacionalidad:document.getElementById('psh-nacionalidad').value.trim(),
+    otros_filiacion:document.getElementById('psh-otros-filiacion').value.trim(),
+    edad:document.getElementById('psh-edad').value||'',
+    sexo:document.getElementById('psh-sexo').value||'',
+    desc:document.getElementById('psh-desc').value.trim(),
+    dir:document.getElementById('psh-dir').value.trim(),
+    lat:parseFloat(document.getElementById('psh-lat').value)||null,
+    lon:parseFloat(document.getElementById('psh-lon').value)||null,
+    radio:parseInt(document.getElementById('psh-radio').value)||50,
+    situacion:document.getElementById('psh-situacion').value,
+    fecha:document.getElementById('psh-fecha').value,
+    obs:document.getElementById('psh-obs').value.trim(),
+    incidencias:document.getElementById('psh-incs').value.trim(),
+    gedie_num:document.getElementById('psh-gedie-num').value.trim(),
+    gedie_estado:document.getElementById('psh-gedie-estado').value,
+    gedie_obs:document.getElementById('psh-gedie-obs').value.trim(),
+    ultima_fecha:document.getElementById('psh-ultima-fecha').value,
+    ultima_desc:document.getElementById('psh-ultima-desc').value.trim(),
+    proxima_fecha:document.getElementById('psh-proxima-fecha').value,
+    proxima_desc:document.getElementById('psh-proxima-desc').value.trim(),
+    protocolo_fecha:document.getElementById('psh-protocolo-fecha').value,
+    protocolo_hora:document.getElementById('psh-protocolo-hora').value,
+    protocolo_solicitante:document.getElementById('psh-protocolo-solicitante').value.trim(),
+    protocolo_motivo:document.getElementById('psh-protocolo-motivo').value.trim(),
+    fotoUrl,alertas,contactos,archivos,ubicaciones,protocolos,derivaciones,
+    updated:new Date().toISOString()
+  };
   if(idx>=0)psh[idx]=nuevo;else psh.push(nuevo);
   savePsh(psh);closeModal('modal-psh');renderPshMarkers();renderPshList();
 }
@@ -5213,10 +5361,141 @@ function removePshDerivacion(idx){
   renderPshDerivacionesList(derivaciones);
 }
 
+function imprimirPshListado(){
+  const psh=getPshFiltrado();
+  const colSit={activo:'#7c3aed',derivado:'#16a34a',desaparecido:'#d97706'};
+  const lblSit={activo:'Activo',derivado:'Derivado',desaparecido:'No localizado'};
+  const filas=psh.map(p=>{
+    const alertas=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>({antecedentes:'⚠️',salud_mental:'🧠',sustancias:'💊',violento:'🔴',vulnerable:'💙',menor:'👶',animal:'🐕'})[k]||'').join(' '):'';
+    return`<tr>
+      <td>${p.alias||'—'}</td>
+      <td>${p.nombre_completo||'—'}</td>
+      <td>${p.doc_tipo?p.doc_tipo.toUpperCase()+' '+p.doc_num:''}</td>
+      <td>${p.dir||'—'}</td>
+      <td style="color:${colSit[p.situacion]||'#7c3aed'};font-weight:600">${lblSit[p.situacion]||p.situacion||'—'}</td>
+      <td>${alertas||'—'}</td>
+      <td>${p.gedie_num||'—'}</td>
+      <td>${p.protocolo_fecha?p.protocolo_fecha+' '+( p.protocolo_hora||''):'—'}</td>
+      <td>${p.proxima_fecha||'—'}</td>
+    </tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Censo PSH</title>
+  <style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:8.5pt;padding:10mm}h1{font-size:13pt;margin:0}p{font-size:8pt;color:#666;margin:2mm 0 4mm}table{width:100%;border-collapse:collapse}th{background:#7c3aed;color:#fff;padding:3px 5px;text-align:left;font-size:8pt}td{padding:2px 5px;border:0.5px solid #ddd;font-size:8pt}tr:nth-child(even){background:#f8f5ff}@page{size:A4 landscape;margin:8mm}</style>
+  </head><body>
+  <h1>Censo PSH — Policía Municipal Arganzuela</h1>
+  <p>Generado: ${new Date().toLocaleString('es-ES')} · ${psh.length} registros · Filtros activos</p>
+  <table><thead><tr><th>Alias</th><th>Nombre</th><th>Documento</th><th>Ubicación</th><th>Situación</th><th>Alertas</th><th>GEDIE</th><th>Protocolo</th><th>Próx. actuación</th></tr></thead>
+  <tbody>${filas}</tbody></table>
+  <script>window.onload=()=>window.print()<\/script></body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+function imprimirPshMapa(){
+  const psh=getPshFiltrado().filter(p=>p.lat&&p.lon);
+  if(!psh.length){alert('No hay personas con ubicación en los filtros actuales');return;}
+
+  const lats=psh.map(p=>parseFloat(p.lat));
+  const lons=psh.map(p=>parseFloat(p.lon));
+  const clat=((Math.max(...lats)+Math.min(...lats))/2).toFixed(5);
+  const clon=((Math.max(...lons)+Math.min(...lons))/2).toFixed(5);
+  const zoom=pshMapInst?pshMapInst.getZoom():15;
+
+  const colHex={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b'};
+  const lblSit={activo:'Activo',derivado:'Derivado',desaparecido:'No localizado'};
+
+  const marcadoresJS=psh.map((p,i)=>{
+    const color=colHex[p.situacion]||'#a78bfa';
+    const alertas=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>({antecedentes:'⚠️',salud_mental:'🧠',sustancias:'💊',violento:'🔴',vulnerable:'💙',menor:'👶',animal:'🐕'})[k]||'').join(''):'';
+    return `L.marker([${p.lat},${p.lon}],{icon:L.divIcon({html:'<div style="background:${color};color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)">${i+1}</div>',className:'',iconSize:[22,22],iconAnchor:[11,11]})}).bindPopup('<b>${(p.alias||'').replace(/'/g,"\\'")} </b><br>${(p.dir||'').replace(/'/g,"\\'")}').addTo(map);`;
+  }).join('\n');
+
+  const leyendaHtml=psh.map((p,i)=>{
+    const color=colHex[p.situacion]||'#a78bfa';
+    const alertas=p.alertas?Object.entries(p.alertas).filter(([k,v])=>v).map(([k])=>({antecedentes:'⚠️',salud_mental:'🧠',sustancias:'💊',violento:'🔴',vulnerable:'💙',menor:'👶',animal:'🐕'})[k]||'').join(''):'';
+    return`<tr><td style="text-align:center"><span style="background:${color};color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:7pt;font-weight:700">${i+1}</span></td><td><strong>${p.alias||'—'}</strong></td><td>${p.dir||'—'}</td><td style="color:${color};font-weight:600">${lblSit[p.situacion]||'—'}</td><td>${alertas||'—'}</td><td>${p.protocolo_fecha?'🔔 '+p.protocolo_fecha:''}</td></tr>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mapa PSH</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:8.5pt;padding:6mm}
+    h1{font-size:12pt;margin-bottom:1mm}
+    p{font-size:8pt;color:#666;margin-bottom:3mm}
+    #map{width:100%;height:200mm;border:1px solid #ccc;border-radius:4px;margin-bottom:4mm}
+    table{width:100%;border-collapse:collapse;font-size:8pt}
+    th{background:#7c3aed;color:#fff;padding:3px 5px;text-align:left}
+    td{padding:2px 5px;border:0.5px solid #ddd}
+    tr:nth-child(even){background:#f8f5ff}
+    @page{size:A4 landscape;margin:6mm}
+    @media print{#map{height:160mm}}
+  </style></head><body>
+  <h1>🗺️ Mapa PSH — Policía Municipal Arganzuela</h1>
+  <p>Generado: ${new Date().toLocaleString('es-ES')} · ${psh.length} personas geolocalizadas</p>
+  <div id="map"></div>
+  <table><thead><tr><th>#</th><th>Alias</th><th>Ubicación</th><th>Situación</th><th>Alertas</th><th>Protocolo</th></tr></thead>
+  <tbody>${leyendaHtml}</tbody></table>
+  <script>
+    var map=L.map('map',{zoomControl:false,attributionControl:false}).setView([${clat},${clon}],${zoom});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    ${marcadoresJS}
+    setTimeout(()=>window.print(),2500);
+  <\/script></body></html>`;
+
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+function getPshFiltrado(){
+  const q=(document.getElementById('psh-search')?.value||'').toLowerCase();
+  const filtSit=document.getElementById('psh-filter-sit')?.value||'';
+  const filtAlerta=document.getElementById('psh-filter-alerta')?.value||'';
+  const filtGedie=document.getElementById('psh-filter-gedie')?.value||'';
+  const filtProtocolo=document.getElementById('psh-filter-protocolo')?.value||'';
+  const filtDesde=document.getElementById('psh-filter-desde')?.value||'';
+  const filtHasta=document.getElementById('psh-filter-hasta')?.value||'';
+  const ahora=new Date();const en48h=new Date(ahora.getTime()+48*3600*1000);
+  return getPsh().filter(p=>{
+    if(q&&![p.alias,p.nombre_completo,p.doc_num,p.desc,p.dir,p.nacionalidad,p.otros_filiacion,p.obs,p.incidencias,p.gedie_num].some(v=>(v||'').toLowerCase().includes(q)))return false;
+    if(filtSit&&p.situacion!==filtSit)return false;
+    if(filtAlerta&&!(p.alertas&&p.alertas[filtAlerta]))return false;
+    if(filtGedie){if(filtGedie==='con_gedie'&&!p.gedie_num)return false;if(filtGedie==='sin_gedie'&&p.gedie_num)return false;if(['abierto','cerrado','pendiente'].includes(filtGedie)&&p.gedie_estado!==filtGedie)return false;}
+    if(filtProtocolo){if(filtProtocolo==='con_protocolo'&&!p.protocolo_fecha)return false;if(filtProtocolo==='sin_protocolo'&&p.protocolo_fecha)return false;if(filtProtocolo==='proximo'){if(!p.protocolo_fecha)return false;const fp=new Date(p.protocolo_fecha+'T'+(p.protocolo_hora||'00:00'));if(fp<ahora||fp>en48h)return false;}}
+    if(filtDesde&&p.fecha&&p.fecha<filtDesde)return false;
+    if(filtHasta&&p.fecha&&p.fecha>filtHasta)return false;
+    return true;
+  });
+}
+
+function checkPshAlarmaProtocolo(){
+  const ahora=new Date();
+  const en48h=new Date(ahora.getTime()+48*3600*1000);
+  const proximos=getPsh().filter(p=>{
+    if(!p.protocolo_fecha)return false;
+    const fp=new Date(p.protocolo_fecha+'T'+(p.protocolo_hora||'00:00'));
+    return fp>=ahora&&fp<=en48h;
+  });
+  const div=document.getElementById('psh-alarma-protocolo');
+  const lista=document.getElementById('psh-alarma-lista');
+  if(!div||!lista)return;
+  if(proximos.length>0){
+    div.style.display='block';
+    lista.innerHTML=proximos.map(p=>{
+      const fp=new Date(p.protocolo_fecha+'T'+(p.protocolo_hora||'00:00'));
+      const horas=Math.round((fp-ahora)/3600000);
+      return `<div>• <strong>${p.alias}</strong> — Protocolo en ${horas}h (${p.protocolo_fecha} ${p.protocolo_hora||''}) · Solicitado por: ${p.protocolo_solicitante||'—'}</div>`;
+    }).join('');
+  } else {
+    div.style.display='none';
+  }
+}
+
 function limpiarFiltrosPsh(){
-  const s=document.getElementById('psh-search');if(s)s.value='';
-  const sit=document.getElementById('psh-filter-sit');if(sit)sit.value='';
-  const al=document.getElementById('psh-filter-alerta');if(al)al.value='';
+  ['psh-search','psh-filter-sit','psh-filter-alerta','psh-filter-gedie','psh-filter-protocolo','psh-filter-desde','psh-filter-hasta'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
   renderPshList();
 }
 
@@ -5303,7 +5582,23 @@ function imprimirFichaPsh(id){
   const ubicacionesHtml=p.ubicaciones&&p.ubicaciones.length?p.ubicaciones.map(u=>`<tr><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${u.fecha}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${u.agente}</td><td style="padding:3px 6px;border:0.5px solid #e2e8f0">${u.ubicacion}</td></tr>`).join(''):'<tr><td colspan="3" style="padding:3px 6px;color:#999">Sin historial de ubicaciones</td></tr>';
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ficha PSH — ${p.alias}</title><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#111;padding:15mm;max-width:190mm;margin:0 auto}h1{font-size:14pt;margin:0}h2{font-size:10pt;color:#666;margin:0 0 8mm}.header{display:flex;align-items:center;gap:8mm;margin-bottom:6mm;padding-bottom:4mm;border-bottom:2px solid ${color}}.foto{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid ${color}}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:4mm}.field{margin-bottom:3mm}.field label{font-size:8pt;color:#666;display:block;text-transform:uppercase}.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;color:${color};background:${color}22;border:1px solid ${color}}table{width:100%;border-collapse:collapse;font-size:9pt}th{background:#ede9fe;color:#5b21b6;padding:4px 6px;text-align:left}.section-title{font-size:9pt;text-transform:uppercase;color:#5b21b6;font-weight:700;margin:6mm 0 2mm}@page{size:A4;margin:10mm}</style></head><body>
   <div class="header">${p.fotoUrl?`<img src="${p.fotoUrl}" class="foto">`:"<div style='width:60px;height:60px;border-radius:50%;background:#ede9fe;border:2px solid "+color+";display:flex;align-items:center;justify-content:center;font-size:24pt'>👤</div>"}<div><h1>${p.alias||'Sin alias'}</h1><h2>COPOL — Ficha PSH · ${p.id}</h2><span class="badge">${LBL_SIT[p.situacion]||'Activo'}</span></div><div style="margin-left:auto;text-align:right;font-size:8pt;color:#666">Generado: ${new Date().toLocaleString('es-ES')}<br>Por: ${CU?CU.name:''}</div></div>
-  <div class="grid"><div class="field"><label>Sexo</label>${p.sexo||'—'}</div><div class="field"><label>Edad aprox.</label>${p.edad?'~'+p.edad+' años':'—'}</div><div class="field" style="grid-column:1/-1"><label>Descripción física</label>${p.desc||'—'}</div><div class="field" style="grid-column:1/-1"><label>Ubicación habitual</label>${p.dir||'—'}${p.lat?' ('+parseFloat(p.lat).toFixed(4)+', '+parseFloat(p.lon).toFixed(4)+')':''}${p.radio?' · Radio: '+p.radio+'m':''}</div><div class="field"><label>Primer contacto</label>${p.fecha||'—'}</div><div class="field"><label>Incidencias vinculadas</label>${p.incidencias||'—'}</div></div>
+  <div class="grid">
+    <div class="field"><label>Nombre completo</label>${p.nombre_completo||'—'}</div>
+    <div class="field"><label>Documento</label>${p.doc_tipo?p.doc_tipo.toUpperCase()+': '+p.doc_num:'—'}</div>
+    <div class="field"><label>Fecha nacimiento</label>${p.fnac||'—'}</div>
+    <div class="field"><label>Nacionalidad</label>${p.nacionalidad||'—'}</div>
+    <div class="field"><label>Sexo</label>${p.sexo||'—'}</div>
+    <div class="field"><label>Edad aprox.</label>${p.edad?'~'+p.edad+' años':'—'}</div>
+    ${p.otros_filiacion?`<div class="field" style="grid-column:1/-1"><label>Otros datos filiación</label>${p.otros_filiacion}</div>`:''}
+    <div class="field" style="grid-column:1/-1"><label>Descripción física</label>${p.desc||'—'}</div>
+    <div class="field" style="grid-column:1/-1"><label>Ubicación habitual</label>${p.dir||'—'}${p.lat?' ('+parseFloat(p.lat).toFixed(4)+', '+parseFloat(p.lon).toFixed(4)+')':''}${p.radio?' · Radio: '+p.radio+'m':''}</div>
+    <div class="field"><label>Primer contacto</label>${p.fecha||'—'}</div>
+    <div class="field"><label>Incidencias vinculadas</label>${p.incidencias||'—'}</div>
+  </div>
+  ${p.gedie_num||p.gedie_estado?`<div class="field"><label>GEDIE</label>Exp. ${p.gedie_num||'—'} · Estado: ${p.gedie_estado||'—'}${p.gedie_obs?' · '+p.gedie_obs:''}</div>`:''}
+  ${p.ultima_fecha||p.ultima_desc?`<div class="field"><label>Última actuación</label>${p.ultima_fecha||''} ${p.ultima_desc||''}</div>`:''}
+  ${p.proxima_fecha||p.proxima_desc?`<div class="field"><label>Próxima actuación</label>${p.proxima_fecha||''} ${p.proxima_desc||''}</div>`:''}
+  ${p.protocolo_fecha?`<div class="field" style="background:#f5f3ff;padding:4px 8px;border-radius:4px;border-left:3px solid #7c3aed"><label>🔔 Protocolo PSH activado</label>${p.protocolo_fecha} ${p.protocolo_hora||''} · Solicitado por: ${p.protocolo_solicitante||'—'}${p.protocolo_motivo?' · '+p.protocolo_motivo:''}</div>`:''}
   <div class="field"><label>Alertas</label><div style="margin-top:3px">${alertasHtml}</div></div>
   <div class="field"><label>Observaciones</label>${p.obs||'—'}</div>
   <div class="section-title">Historial de contactos</div>
