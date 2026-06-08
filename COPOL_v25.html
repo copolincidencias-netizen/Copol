@@ -1278,6 +1278,7 @@ select option{background:#111827;color:#e2e8f0}
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="mp-has" onchange="updateMap()"></div>
         <button class="btn-map" onclick="updateMap()"><i class="ti ti-flame"></i> Actualizar</button>
         <button class="btn-map" id="btn-satellite" onclick="toggleMapLayer()" style="background:#0f4c81" title="Cambiar entre callejero y satelite"><i class="ti ti-satellite"></i> Satelite</button>
+        <button class="btn-map" id="btn-toggle-labels" onclick="toggleMapLabels()" style="background:#1e3a5f" title="Mostrar/ocultar etiquetas INC"><i class="ti ti-tag"></i> Etiquetas</button>
         <button class="btn-print" onclick="printMapa()"><i class="ti ti-printer"></i> Imprimir</button>
       </div>
       <div class="radius-row">
@@ -2663,14 +2664,23 @@ function updateMap(){
   pts.forEach(function(i,n){
     var cat = (i.tip||'').charAt(0).toUpperCase();
     var col = TIPO_COLORS[cat]||'#475569';
-    // Borde mas grueso si es prioritario
     var border = i.prioridad==='prioritaria'?'3px solid #fbbf24':'2px solid #fff';
     var shadow = 'rgba(0,0,0,.35)';
-    var icon = L.divIcon({
-      className:'',
-      html:'<div style="background:'+col+';color:#fff;padding:2px 5px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:'+border+';box-shadow:0 2px 8px '+shadow+';cursor:pointer;white-space:nowrap;position:relative">'+i.id+(i.prioridad==='prioritaria'?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #fff"></span>':'')+'</div>',
-      iconSize:[60,20],iconAnchor:[30,10]
-    });
+    var icon;
+    if(_mapShowLabels){
+      icon = L.divIcon({
+        className:'',
+        html:'<div style="background:'+col+';color:#fff;padding:2px 5px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:'+border+';box-shadow:0 2px 8px '+shadow+';cursor:pointer;white-space:nowrap;position:relative">'+i.id+(i.prioridad==='prioritaria'?'<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:#fbbf24;border-radius:50%;border:1px solid #fff"></span>':'')+'</div>',
+        iconSize:[60,20],iconAnchor:[30,10]
+      });
+    } else {
+      var sz = i.prioridad==='prioritaria' ? 12 : 8;
+      icon = L.divIcon({
+        className:'',
+        html:'<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+col+';border:'+border+';box-shadow:0 1px 4px '+shadow+';cursor:pointer"></div>',
+        iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
+      });
+    }
     var popup = '<div style="font-size:12px;min-width:210px;font-family:sans-serif">' +
       '<b style="color:'+col+';font-size:13px">'+i.id+'</b> &mdash; <span style="background:'+col+'22;color:'+col+';padding:1px 5px;border-radius:3px;font-weight:600;font-size:11px">'+i.tip+'</span><br>' +
       '<b style="color:#1e293b">'+i.dir+'</b><br>' +
@@ -2678,7 +2688,11 @@ function updateMap(){
       '<small><b>Estado:</b> '+i.est+' | <b>Agente:</b> '+(i.ini||'--')+(i.hfi?' | <b>Fin:</b> '+i.hfi:'')+'</small><br>' +
       '<button onclick="abrirModalEst(\'' + i.id + '\')" style="margin-top:6px;background:'+col+';color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600">Ver ficha</button>' +
       '</div>';
-    L.marker([i.lat,i.lon],{icon:icon}).bindPopup(popup,{maxWidth:260}).addTo(mapInst);
+    var marker = L.marker([i.lat,i.lon],{icon:icon}).bindPopup(popup,{maxWidth:260});
+    if(!_mapShowLabels){
+      marker.on('mouseover', function(){ this.openPopup(); });
+    }
+    marker.addTo(mapInst);
   });
 }
 
@@ -3967,6 +3981,19 @@ function initTheme(){
 //  MAPA — VISTA SATELITE / CALLEJERO
 // ══════════════════════════════════════════
 var _mapLayerSat = false;
+var _mapShowLabels = true;
+
+function toggleMapLabels(){
+  _mapShowLabels = !_mapShowLabels;
+  const btn = document.getElementById('btn-toggle-labels');
+  if(btn){
+    btn.style.background = _mapShowLabels ? '#1e3a5f' : '#7c3aed';
+    btn.innerHTML = _mapShowLabels
+      ? '<i class="ti ti-tag"></i> Etiquetas'
+      : '<i class="ti ti-point"></i> Puntos';
+  }
+  updateMap();
+}
 var _tileStreet = null;
 var _tileSat = null;
 function toggleMapLayer(){
