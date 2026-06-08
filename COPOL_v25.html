@@ -2107,7 +2107,21 @@ function showP(name){
   if(name==='listado')renderLst();
   if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
-  if(name==='mapa')setTimeout(()=>{initMap();if(mapInst)mapInst.invalidateSize();},200);
+  if(name==='mapa'){
+    setTimeout(()=>{
+      const hm=document.getElementById('heat-map');
+      if(hm)hm.style.height='460px';
+      if(!mapInst){
+        mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
+        const osmLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+        const sateliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
+        osmLayer.addTo(mapInst);
+        L.control.layers({'🗺️ Callejero':osmLayer,'🛰️ Satélite':sateliteLayer},{},{position:'topright'}).addTo(mapInst);
+      }
+      mapInst.invalidateSize();
+      setTimeout(()=>updateMap(),300);
+    },200);
+  }
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
   if(name==='psh'){
@@ -2549,18 +2563,16 @@ function elimInc(id){
 //  MAPA DE CALOR — CARTO Voyager (estilo Google)
 // ════════════════════════════════════════════════
 function initMap(){
-  if(!mapInst){
-    mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
-    const osmLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      attribution:'© OpenStreetMap',maxZoom:19
-    });
-    const sateliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
-      attribution:'© Esri',maxZoom:19
-    });
-    osmLayer.addTo(mapInst);
-    L.control.layers({'🗺️ Callejero':osmLayer,'🛰️ Satélite':sateliteLayer},{},{position:'topright'}).addTo(mapInst);
-  }
-  updateMap();
+  if(mapInst){mapInst.invalidateSize();updateMap();return;}
+  const hm=document.getElementById('heat-map');
+  if(hm&&hm.offsetHeight===0)hm.style.height='460px';
+  mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
+  const osmLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+  const sateliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
+  osmLayer.addTo(mapInst);
+  L.control.layers({'🗺️ Callejero':osmLayer,'🛰️ Satélite':sateliteLayer},{},{position:'topright'}).addTo(mapInst);
+  mapInst.invalidateSize();
+  setTimeout(()=>updateMap(),300);
 }
 
 function updateHeatOptions(){
