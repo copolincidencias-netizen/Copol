@@ -78,9 +78,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 .logout-btn:hover{color:#ef4444;border-color:#ef444433}
 
 /* ── PANELS ── */
-.panel{display:none;padding:1.1rem;overflow-y:auto;overflow-x:hidden;position:relative}
+.panel{display:none;padding:1.1rem;overflow-y:auto;overflow-x:hidden}
 .panel.active{display:block;height:calc(100vh - 58px)}
-#panel-mapa.active{overflow:hidden}
 .sec-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;gap:.5rem;flex-wrap:wrap}
 .sec-hdr h2{font-size:1.05rem;font-weight:700;color:#f1f5f9}
 .sec-hdr p{font-size:.74rem;color:#475569;margin-top:.1rem}
@@ -942,6 +941,7 @@ select option{background:#111827;color:#e2e8f0}
         </div>
         <div id="psh-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
       </div>
+    </div>
   </div>
 
   <!-- MODAL PSH -->
@@ -1206,45 +1206,79 @@ select option{background:#111827;color:#e2e8f0}
   </div>
 
   <!-- MAPA DE CALOR -->
-  <!-- MAPA DE CALOR -->
-  <!-- MAPA DE CALOR -->
   <div class="panel" id="panel-mapa">
-    <div class="sec-hdr"><div><h2>Mapa de calor</h2><p>Concentración de incidencias por zona</p></div>
-      <button class="btn-map" id="btn-satellite" onclick="toggleMapLayer()" style="background:#0f4c81" title="Cambiar entre callejero y satelite"><i class="ti ti-satellite"></i> Satélite</button>
-    </div>
+    <div class="sec-hdr"><div><h2>Mapa de calor</h2><p>Tiles estilo Google Maps (CARTO Voyager) · Concentración por proximidad</p></div></div>
     <div class="map-ctrl">
       <div class="map-ctrl-grid">
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Prioridad</label><select class="map-sel" id="mp-prio" onchange="updateMap()"><option value="">Todas</option><option value="prioritaria">⚡ Prioritaria</option><option value="no_prioritaria">No Prioritaria</option></select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Tipo</label><select class="map-sel" id="mp-tip" onchange="updateMap()">
-          <option value="">Todos los tipos</option>
-          <optgroup label="🟢 Verde — Convivencia">
-            <option value="V">Todos Convivencia (V)</option>
-            <option value="V1">V1 – Venta ambulante</option><option value="V2">V2 – Ruidos molestos</option><option value="V3">V3 – Consumo alcohol/drogas VP</option><option value="V4">V4 – Infraccion OO.MM.</option><option value="V5">V5 – Normas de convivencia</option><option value="V6">V6 – Resolucion conflictos privados</option><option value="V7">V7 – Actuaciones locales publicos</option><option value="V8">V8 – Anomalias via publica</option><option value="V9">V9 – Colaboracion servicios</option>
-          </optgroup>
-          <optgroup label="🟤 Marrón — Seguridad Ciudadana">
-            <option value="M">Todos Seg. Ciudadana (M)</option>
-            <option value="M1">M1 – Hurtos</option><option value="M2">M2 – Robos con fuerza</option><option value="M3">M3 – Robos con violencia</option><option value="M4">M4 – Sustraccion vehiculo</option><option value="M5">M5 – Reyertas/agresiones</option><option value="M6">M6 – Atentado empleado publico</option><option value="M7">M7 – Violencia genero/familiar</option><option value="M8">M8 – Delitos animales/medio ambiente</option><option value="M9">M9 – Accidentes laborales</option><option value="M10">M10 – Otros delitos</option><option value="M11">M11 – Fallecidos</option><option value="M12">M12 – Amenazas</option><option value="M13">M13 – Manifestaciones</option><option value="M14">M14 – Infracciones Ley Seg.</option><option value="M15">M15 – Colaboracion cuerpos</option>
-          </optgroup>
-          <optgroup label="🟠 Naranja — Sucesos">
-            <option value="N">Todos Naranja (N)</option>
-            <option value="N1">N1 – Bomberos</option><option value="N2">N2 – SAMUR/SUMMA</option><option value="N3">N3 – Grandes sucesos</option><option value="N4">N4 – Colaboracion (N)</option><option value="N5">N5 – Simulacros</option>
-          </optgroup>
-          <optgroup label="⚫ Gris — Serv. Especiales">
-            <option value="G">Todos Gris (G)</option>
-            <option value="G1">G1 – Proteccion especial</option><option value="G2">G2 – Servicios especiales</option>
-          </optgroup>
-          <optgroup label="🔴 Rojo — Siniestralidad">
-            <option value="R">Todos Rojo (R)</option>
-            <option value="R1">R1 – Atropellos</option><option value="R2">R2 – Accidente con heridos</option><option value="R3">R3 – Accidente sin heridos</option><option value="R4">R4 – Delitos seg. vial</option>
-          </optgroup>
-          <optgroup label="🔵 Azul — Movilidad">
-            <option value="A">Todos Azul (A)</option>
-            <option value="A1">A1 – Infracciones trafico</option><option value="A2">A2 – Alteraciones trafico</option><option value="A3">A3 – Colaboracion trafico</option>
-          </optgroup>
-        </select></div>
+  <option value="">Todos los tipos</option>
+  <optgroup label="🟢 Verde — Convivencia">
+    <option value="V">Todos Convivencia (V)</option>
+    <option value="V1">V1 – Venta ambulante</option>
+    <option value="V2">V2 – Ruidos molestos</option>
+    <option value="V3">V3 – Consumo alcohol/drogas VP</option>
+    <option value="V4">V4 – Infraccion OO.MM.</option>
+    <option value="V5">V5 – Normas de convivencia</option>
+    <option value="V6">V6 – Resolucion conflictos privados</option>
+    <option value="V7">V7 – Actuaciones locales publicos</option>
+    <option value="V8">V8 – Anomalias via publica</option>
+    <option value="V9">V9 – Colaboracion servicios</option>
+  </optgroup>
+  <optgroup label="🟤 Marron — Seguridad Ciudadana">
+    <option value="M">Todos Seg. Ciudadana (M)</option>
+    <option value="M1">M1 – Hurtos</option>
+    <option value="M2">M2 – Robos con fuerza</option>
+    <option value="M3">M3 – Robos con violencia</option>
+    <option value="M4">M4 – Sustraccion vehiculo</option>
+    <option value="M5">M5 – Reyertas/agresiones</option>
+    <option value="M6">M6 – Atentado empleado publico</option>
+    <option value="M7">M7 – Violencia genero/familiar</option>
+    <option value="M8">M8 – Delitos animales/medio ambiente</option>
+    <option value="M9">M9 – Accidentes laborales</option>
+    <option value="M10">M10 – Otros delitos</option>
+    <option value="M11">M11 – Fallecidos delito/desconocida</option>
+    <option value="M12">M12 – Amenazas terroristas</option>
+    <option value="M13">M13 – Manifestaciones</option>
+    <option value="M14">M14 – Infracciones Ley Seg. Ciudadana</option>
+    <option value="M15">M15 – Colaboracion cuerpos</option>
+  </optgroup>
+  <optgroup label="🟠 Naranja — Sucesos y Catastrofes">
+    <option value="N">Todos Sucesos (N)</option>
+    <option value="N1">N1 – Actuacion bomberos</option>
+    <option value="N2">N2 – Actuacion SAMUR/SUMMA</option>
+    <option value="N3">N3 – Grandes sucesos</option>
+    <option value="N4">N4 – Colaboracion servicios</option>
+    <option value="N5">N5 – Simulacros</option>
+  </optgroup>
+  <optgroup label="⚫ Gris — Servicios Especiales">
+    <option value="G">Todos Servicios Especiales (G)</option>
+    <option value="G1">G1 – Servicio especial proteccion</option>
+    <option value="G2">G2 – Servicios especiales diversos</option>
+  </optgroup>
+  <optgroup label="🔴 Rojo — Siniestralidad Vial">
+    <option value="R">Todos Siniestralidad (R)</option>
+    <option value="R1">R1 – Atropellos</option>
+    <option value="R2">R2 – Accidente con heridos</option>
+    <option value="R3">R3 – Accidente sin heridos</option>
+    <option value="R4">R4 – Delitos seg. vial</option>
+  </optgroup>
+  <optgroup label="🔵 Azul — Movilidad Vial">
+    <option value="A">Todos Movilidad (A)</option>
+    <option value="A1">A1 – Infracciones trafico</option>
+    <option value="A2">A2 – Alteraciones trafico</option>
+    <option value="A3">A3 – Colaboracion trafico</option>
+  </optgroup>
+  <optgroup label="⬜ Blanco — Otros">
+    <option value="0.0">0.0 – Otro</option>
+  </optgroup>
+</select></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Desde</label><input type="date" class="map-inp" id="mp-des" onchange="updateMap()"></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="mp-has" onchange="updateMap()"></div>
+        <button class="btn-map" onclick="updateMap()"><i class="ti ti-flame"></i> Actualizar</button>
+        <button class="btn-map" id="btn-satellite" onclick="toggleMapLayer()" style="background:#0f4c81" title="Cambiar entre callejero y satelite"><i class="ti ti-satellite"></i> Satelite</button>
+        <button class="btn-print" onclick="printMapa()"><i class="ti ti-printer"></i> Imprimir</button>
       </div>
       <div class="radius-row">
         <label><i class="ti ti-circle-dashed" style="font-size:14px;margin-right:.25rem;vertical-align:-2px"></i> Radio de agrupación por proximidad:</label>
@@ -1262,7 +1296,7 @@ select option{background:#111827;color:#e2e8f0}
         <span id="heat-radius-val">42px</span>
       </div>
     </div>
-    <div id="heat-map" style="height:460px;border-radius:11px;overflow:hidden;border:1px solid #1e293b"></div>
+    <div id="heat-map"></div>
     <div style="margin-top:.5rem;font-size:.7rem;color:#475569;display:flex;gap:1rem;align-items:center;justify-content:center;flex-wrap:wrap">
       <span>🔴 Mayor concentración</span><span>🟡 Media</span><span>🟢 Baja</span>
       <span id="map-count" style="color:#3b82f6;margin-left:1rem;font-weight:600"></span>
@@ -2108,19 +2142,7 @@ function showP(name){
   if(name==='listado')renderLst();
   if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
-  if(name==='mapa'){
-    setTimeout(()=>{
-      const panel=document.getElementById('panel-mapa');
-      const hm=document.getElementById('heat-map');
-      const ctrl=panel?.querySelector('.map-ctrl');
-      const sh=panel?.querySelector('.sec-hdr');
-      const panelH=window.innerHeight-58;
-      const used=(ctrl?.offsetHeight||180)+(sh?.offsetHeight||50)+60;
-      const mapaH=Math.max(300,panelH-used);
-      if(hm){hm.style.height=mapaH+'px';}
-      initMap();
-    },100);
-  }
+  if(name==='mapa')setTimeout(()=>initMap(),150);
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
   if(name==='psh'){
@@ -2562,16 +2584,14 @@ function elimInc(id){
 //  MAPA DE CALOR — CARTO Voyager (estilo Google)
 // ════════════════════════════════════════════════
 function initMap(){
-  if(mapInst){mapInst.invalidateSize();updateMap();return;}
-  const hm=document.getElementById('heat-map');
-  if(hm&&hm.offsetHeight===0)hm.style.height='460px';
-  mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
-  const osmLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
-  const sateliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
-  osmLayer.addTo(mapInst);
-  L.control.layers({'🗺️ Callejero':osmLayer,'🛰️ Satélite':sateliteLayer},{},{position:'topright'}).addTo(mapInst);
-  mapInst.invalidateSize();
-  setTimeout(()=>updateMap(),300);
+  if(!mapInst){
+    mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains:'abcd',maxZoom:20,crossOrigin:'anonymous'
+    }).addTo(mapInst);
+  }
+  updateMap();
 }
 
 function updateHeatOptions(){
