@@ -78,8 +78,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 .logout-btn:hover{color:#ef4444;border-color:#ef444433}
 
 /* ── PANELS ── */
-.panel{display:none;padding:1.1rem;overflow-y:auto;overflow-x:hidden}
+.panel{display:none;padding:1.1rem;overflow-y:auto;overflow-x:hidden;position:relative}
 .panel.active{display:block;height:calc(100vh - 58px)}
+#panel-mapa.active{overflow:hidden}
 .sec-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;gap:.5rem;flex-wrap:wrap}
 .sec-hdr h2{font-size:1.05rem;font-weight:700;color:#f1f5f9}
 .sec-hdr p{font-size:.74rem;color:#475569;margin-top:.1rem}
@@ -2108,16 +2109,17 @@ function showP(name){
   if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
   if(name==='mapa'){
-    const panel=document.getElementById('panel-mapa');
-    const hm=document.getElementById('heat-map');
-    if(panel&&hm){
-      const panelH=panel.offsetHeight||window.innerHeight-58;
-      const ctrlH=panel.querySelector('.map-ctrl')?.offsetHeight||200;
-      const mapaH=Math.max(300, panelH-ctrlH-120);
-      hm.style.height=mapaH+'px';
-      hm.style.minHeight=mapaH+'px';
-    }
-    setTimeout(()=>initMap(),250);
+    setTimeout(()=>{
+      const panel=document.getElementById('panel-mapa');
+      const hm=document.getElementById('heat-map');
+      const ctrl=panel?.querySelector('.map-ctrl');
+      const sh=panel?.querySelector('.sec-hdr');
+      const panelH=window.innerHeight-58;
+      const used=(ctrl?.offsetHeight||180)+(sh?.offsetHeight||50)+60;
+      const mapaH=Math.max(300,panelH-used);
+      if(hm){hm.style.height=mapaH+'px';}
+      initMap();
+    },100);
   }
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
