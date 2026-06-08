@@ -1302,6 +1302,68 @@ select option{background:#111827;color:#e2e8f0}
     </div>
   </div>
 
+  <!-- MAPA DE CALOR -->
+  <div class="panel" id="panel-mapa">
+    <div class="sec-hdr"><div><h2>Mapa de calor</h2><p>Concentración de incidencias por zona</p></div>
+      <button class="btn-map" id="btn-satellite" onclick="toggleMapLayer()" style="background:#0f4c81" title="Cambiar entre callejero y satelite"><i class="ti ti-satellite"></i> Satélite</button>
+    </div>
+    <div class="map-ctrl">
+      <div class="map-ctrl-grid">
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="mp-est" onchange="updateMap()"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Prioridad</label><select class="map-sel" id="mp-prio" onchange="updateMap()"><option value="">Todas</option><option value="prioritaria">⚡ Prioritaria</option><option value="no_prioritaria">No Prioritaria</option></select></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Tipo</label><select class="map-sel" id="mp-tip" onchange="updateMap()">
+          <option value="">Todos los tipos</option>
+          <optgroup label="🟢 Verde — Convivencia">
+            <option value="V">Todos Convivencia (V)</option>
+            <option value="V1">V1 – Venta ambulante</option><option value="V2">V2 – Ruidos molestos</option><option value="V3">V3 – Consumo alcohol/drogas VP</option><option value="V4">V4 – Infraccion OO.MM.</option><option value="V5">V5 – Normas de convivencia</option><option value="V6">V6 – Resolucion conflictos privados</option><option value="V7">V7 – Actuaciones locales publicos</option><option value="V8">V8 – Anomalias via publica</option><option value="V9">V9 – Colaboracion servicios</option>
+          </optgroup>
+          <optgroup label="🟤 Marrón — Seguridad Ciudadana">
+            <option value="M">Todos Seg. Ciudadana (M)</option>
+            <option value="M1">M1 – Hurtos</option><option value="M2">M2 – Robos con fuerza</option><option value="M3">M3 – Robos con violencia</option><option value="M4">M4 – Sustraccion vehiculo</option><option value="M5">M5 – Reyertas/agresiones</option><option value="M6">M6 – Atentado empleado publico</option><option value="M7">M7 – Violencia genero/familiar</option><option value="M8">M8 – Delitos animales/medio ambiente</option><option value="M9">M9 – Accidentes laborales</option><option value="M10">M10 – Otros delitos</option><option value="M11">M11 – Fallecidos</option><option value="M12">M12 – Amenazas</option><option value="M13">M13 – Manifestaciones</option><option value="M14">M14 – Infracciones Ley Seg.</option><option value="M15">M15 – Colaboracion cuerpos</option>
+          </optgroup>
+          <optgroup label="🟠 Naranja — Sucesos">
+            <option value="N">Todos Naranja (N)</option>
+            <option value="N1">N1 – Bomberos</option><option value="N2">N2 – SAMUR/SUMMA</option><option value="N3">N3 – Grandes sucesos</option><option value="N4">N4 – Colaboracion (N)</option><option value="N5">N5 – Simulacros</option>
+          </optgroup>
+          <optgroup label="⚫ Gris — Serv. Especiales">
+            <option value="G">Todos Gris (G)</option>
+            <option value="G1">G1 – Proteccion especial</option><option value="G2">G2 – Servicios especiales</option>
+          </optgroup>
+          <optgroup label="🔴 Rojo — Siniestralidad">
+            <option value="R">Todos Rojo (R)</option>
+            <option value="R1">R1 – Atropellos</option><option value="R2">R2 – Accidente con heridos</option><option value="R3">R3 – Accidente sin heridos</option><option value="R4">R4 – Delitos seg. vial</option>
+          </optgroup>
+          <optgroup label="🔵 Azul — Movilidad">
+            <option value="A">Todos Azul (A)</option>
+            <option value="A1">A1 – Infracciones trafico</option><option value="A2">A2 – Alteraciones trafico</option><option value="A3">A3 – Colaboracion trafico</option>
+          </optgroup>
+        </select></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Desde</label><input type="date" class="map-inp" id="mp-des" onchange="updateMap()"></div>
+        <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="mp-has" onchange="updateMap()"></div>
+      </div>
+      <div class="radius-row">
+        <label><i class="ti ti-circle-dashed" style="font-size:14px;margin-right:.25rem;vertical-align:-2px"></i> Radio de agrupación por proximidad:</label>
+        <input type="range" id="prox-radius" min="0.1" max="3" value="1" step="0.1" oninput="document.getElementById('prox-val').textContent=this.value+'km';updateMap()">
+        <span id="prox-val">1km</span>
+      </div>
+      <div class="radius-row">
+        <label><i class="ti ti-flame" style="font-size:14px;margin-right:.25rem;vertical-align:-2px;color:#ef4444"></i> Intensidad del calor:</label>
+        <input type="range" id="heat-intensity" min="1" max="10" value="5" step="1" oninput="document.getElementById('heat-intensity-val').textContent=this.value;updateHeatOptions()">
+        <span id="heat-intensity-val">5</span>
+      </div>
+      <div class="radius-row">
+        <label><i class="ti ti-blur" style="font-size:14px;margin-right:.25rem;vertical-align:-2px;color:#60a5fa"></i> Radio del punto de calor:</label>
+        <input type="range" id="heat-radius" min="10" max="80" value="42" step="2" oninput="document.getElementById('heat-radius-val').textContent=this.value+'px';updateHeatOptions()">
+        <span id="heat-radius-val">42px</span>
+      </div>
+    </div>
+    <div id="heat-map"></div>
+    <div style="margin-top:.5rem;font-size:.7rem;color:#475569;display:flex;gap:1rem;align-items:center;justify-content:center;flex-wrap:wrap">
+      <span>🔴 Mayor concentración</span><span>🟡 Media</span><span>🟢 Baja</span>
+      <span id="map-count" style="color:#3b82f6;margin-left:1rem;font-weight:600"></span>
+    </div>
+  </div>
+
   <!-- INFORMES -->
   <div class="panel" id="panel-informes">
     <div class="sec-hdr"><div><h2>Informes</h2><p>Generación de reportes con filtros</p></div></div>
