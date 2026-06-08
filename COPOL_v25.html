@@ -1261,7 +1261,7 @@ select option{background:#111827;color:#e2e8f0}
         <span id="heat-radius-val">42px</span>
       </div>
     </div>
-    <div id="heat-map"></div>
+    <div id="heat-map" style="height:460px;border-radius:11px;overflow:hidden;border:1px solid #1e293b"></div>
     <div style="margin-top:.5rem;font-size:.7rem;color:#475569;display:flex;gap:1rem;align-items:center;justify-content:center;flex-wrap:wrap">
       <span>🔴 Mayor concentración</span><span>🟡 Media</span><span>🟢 Baja</span>
       <span id="map-count" style="color:#3b82f6;margin-left:1rem;font-weight:600"></span>
@@ -2107,7 +2107,7 @@ function showP(name){
   if(name==='listado')renderLst();
   if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
-  if(name==='mapa')setTimeout(()=>initMap(),150);
+  if(name==='mapa')setTimeout(()=>{initMap();if(mapInst)mapInst.invalidateSize();},200);
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
   if(name==='psh'){
