@@ -2585,13 +2585,14 @@ function elimInc(id){
 function initMap(){
   if(!mapInst){
     mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
-    // CARTO Voyager: visualmente muy similar a Google Maps, sin API key, CORS habilitado
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains:'abcd',
-      maxZoom:20,
-      crossOrigin:'anonymous'
-    }).addTo(mapInst);
+    const osmLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution:'© OpenStreetMap',maxZoom:19
+    });
+    const sateliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+      attribution:'© Esri',maxZoom:19
+    });
+    osmLayer.addTo(mapInst);
+    L.control.layers({'🗺️ Callejero':osmLayer,'🛰️ Satélite':sateliteLayer},{},{position:'topright'}).addTo(mapInst);
   }
   updateMap();
 }
