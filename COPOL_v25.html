@@ -1409,6 +1409,13 @@ select option{background:#111827;color:#e2e8f0}
           <label>Contexto (opcional)</label>
           <input type="text" id="ia-contexto" class="map-inp" placeholder="Ej: turno noche, zona Centro, operativo especial..." oninput="updateIaCount()">
         </div>
+        <div class="fg" style="min-width:150px">
+          <label>Modelo IA</label>
+          <select id="ia-modelo" class="map-sel" onchange="onIaModeloChange()">
+            <option value="claude">Claude (rápido)</option>
+            <option value="gemini">Gemini (análisis masivo)</option>
+          </select>
+        </div>
       </div>
       <div id="ia-count-info" style="font-size:.75rem;padding:.4rem .7rem;border-radius:7px;margin-bottom:.6rem;display:none"></div>
 
@@ -1437,6 +1444,7 @@ select option{background:#111827;color:#e2e8f0}
         <button class="btn-sec" onclick="iaQuick('redactar_parte')"><i class="ti ti-pencil"></i> Redactar parte</button>
         <button class="btn-sec" onclick="iaQuick('top_calles')"><i class="ti ti-map-pin"></i> Top calles</button>
         <button class="btn-sec" onclick="iaClearChat()"><i class="ti ti-trash"></i> Limpiar chat</button>
+        <button class="btn-sec" onclick="showGeminiKeyNeeded()" style="border-color:#4285f433"><i class="ti ti-key"></i> Config. Gemini</button>
       </div>
 
       <div style="margin-top:.9rem;color:#64748b;font-size:.72rem;line-height:1.5">
@@ -3595,6 +3603,72 @@ function saveApiKey(v){
   if(v&&v.trim())localStorage.setItem('sigi_anthropic_key',v.trim());
   else localStorage.removeItem('sigi_anthropic_key');
 }
+function getGeminiKey(){
+  return (localStorage.getItem('sigi_gemini_key')||'').trim();
+}
+function saveGeminiKey(v){
+  if(v&&v.trim())localStorage.setItem('sigi_gemini_key',v.trim());
+  else localStorage.removeItem('sigi_gemini_key');
+}
+function onIaModeloChange(){
+  const modelo=document.getElementById('ia-modelo')?.value||'claude';
+  if(modelo==='gemini'&&!getGeminiKey()){
+    showGeminiKeyNeeded();
+  }
+}
+function showGeminiKeyNeeded(){
+  const ov=document.createElement('div');
+  ov.id='gemini-key-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:flex;align-items:center;justify-content:center;padding:1rem';
+  ov.innerHTML=`<div style="background:#0f172a;border:1px solid #334155;border-radius:14px;padding:1.5rem;max-width:440px;width:100%">
+    <h3 style="color:#f1f5f9;font-size:1rem;margin-bottom:.3rem"><i class="ti ti-sparkles" style="color:#4285f4;margin-right:.4rem"></i>Clave API Google Gemini</h3>
+    <p style="color:#94a3b8;font-size:.8rem;margin-bottom:.7rem">Gemini permite analizar miles de incidencias a la vez (contexto de 1M tokens). Obtén tu clave gratuita en <strong>aistudio.google.com/apikey</strong></p>
+    <input type="password" id="gemini-key-input" placeholder="AIza..." value="${getGeminiKey()}" style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.68rem 1rem;color:#e2e8f0;font-size:.85rem;font-family:monospace;outline:none;margin-bottom:.7rem">
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button onclick="document.getElementById('gemini-key-overlay').remove()" style="background:#334155;color:#e2e8f0;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.82rem;cursor:pointer">Cancelar</button>
+      <button onclick="saveGeminiKey(document.getElementById('gemini-key-input').value);document.getElementById('gemini-key-overlay').remove()" style="background:#4285f4;color:#fff;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.82rem;cursor:pointer;font-weight:600">Guardar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+async function callGemini(system,messages,maxTokens=2000){
+  if(!CU||(CU.role!=='admin'&&CU.role!=='superadmin')){
+    throw new Error('Acceso IA restringido a administradores.');
+  }
+  const key=getGeminiKey();
+  if(!key){showGeminiKeyNeeded();throw new Error('Clave API Gemini no configurada.');}
+  // Gemini combina system + mensajes en formato contents
+  const contents=[];
+  // El system se manda como systemInstruction
+  messages.forEach(m=>{
+    if(!m||!m.content)return;
+    const c=typeof m.content==='string'?m.content:String(m.content);
+    if(!c.trim())return;
+    contents.push({role:m.role==='assistant'?'model':'user',parts:[{text:c}]});
+  });
+  if(!contents.length||contents[0].role!=='user')return '';
+  const body={
+    systemInstruction:{parts:[{text:system}]},
+    contents:contents,
+    generationConfig:{maxOutputTokens:maxTokens,temperature:0.4}
+  };
+  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(key);
+  let r;
+  try{
+    r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  }catch(e){
+    throw new Error('Error de red al contactar Gemini: '+e.message);
+  }
+  if(!r.ok){
+    let msg='Error '+r.status;
+    try{const j=await r.json();msg=j.error?.message||msg;}catch(_){}
+    console.error('Gemini Error '+r.status+':',msg);
+    throw new Error(msg);
+  }
+  const data=await r.json();
+  const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+  return text;
+}
 async function callClaudeWithSystem(system,messages,maxTokens=1000){
   if(!CU||(CU.role!=='admin'&&CU.role!=='superadmin')){
     throw new Error('Acceso IA restringido a administradores.');
@@ -4715,10 +4789,12 @@ async function iaSend(){
 
   const inc=iaGetFilteredInc();
   const ctx=document.getElementById('ia-contexto')?.value||'';
+  const modelo=document.getElementById('ia-modelo')?.value||'claude';
 
   // Pre-calcular estadísticas para no enviar miles de incidencias en JSON
   const totalInc=inc.length;
-  const limite=50;
+  // Gemini tiene 1M tokens de contexto: puede con muchas más incidencias en detalle
+  const limite=modelo==='gemini'?1500:50;
   const incDetalle=inc.slice(0,limite);
 
   // Resumen estadístico
@@ -4778,12 +4854,18 @@ ${JSON.stringify(summary)}`;
     iaChatLoader(true);
 
     const messages=IA_CHAT_HISTORY.filter(m=>m&&m.content&&String(m.content).trim().length>0);
-    const resp=await callClaudeWithSystem(sysPrompt,messages,900);
+    const resp = modelo==='gemini'
+      ? await callGemini(sysPrompt,messages,2000)
+      : await callClaudeWithSystem(sysPrompt,messages,900);
     iaChatLoader(false);
-    iaChatAppend('bot',resp.trim());
-    IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
-    if(IA_CHAT_HISTORY.length>8)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-8);
-    saveIAHistory();
+    if(!resp||!resp.trim()){
+      iaChatAppend('bot','No se obtuvo respuesta del modelo. Revisa la clave API o inténtalo de nuevo.');
+    }else{
+      iaChatAppend('bot',resp.trim());
+      IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
+      if(IA_CHAT_HISTORY.length>8)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-8);
+      saveIAHistory();
+    }
   }catch(e){
     iaChatLoader(false);
     iaChatAppend('bot','Error IA: '+(e.message||e));
@@ -4828,10 +4910,12 @@ async function iaQuick(mode){
   if(mode==='redactar_parte') task='Redacta un parte breve (estilo policial) basado en incidencias del periodo.';
 
   const datosIA = compact;
+  const modelo=document.getElementById('ia-modelo')?.value||'claude';
+  const limiteQuick=modelo==='gemini'?1500:60;
 
   const SYSTEM_PROMPT='Eres un operador virtual de apoyo para Policía Municipal de Madrid. Responde SIEMPRE en español. Sé conciso, operativo y objetivo. No inventes datos.';
 
-  const promptTexto=`${task}\n\nFiltros: Desde: ${des||'inicio'} Hasta: ${has||'hoy'} Estado: ${est||'todos'}\nContexto: ${ctx||'ninguno'}\n\nIncidencias (JSON):\n${JSON.stringify(datosIA.slice(0,60))}`;
+  const promptTexto=`${task}\n\nFiltros: Desde: ${des||'inicio'} Hasta: ${has||'hoy'} Estado: ${est||'todos'}\nContexto: ${ctx||'ninguno'}\n\nIncidencias (JSON, ${Math.min(datosIA.length,limiteQuick)} de ${datosIA.length}):\n${JSON.stringify(datosIA.slice(0,limiteQuick))}`;
 
   iaChatAppend('user','[Acción rápida] '+task);
   IA_CHAT_HISTORY.push({role:'user',content:promptTexto});
@@ -4840,12 +4924,18 @@ async function iaQuick(mode){
   try{
     iaChatLoader(true);
     const messages=IA_CHAT_HISTORY.filter(m=>m&&m.content&&String(m.content).trim().length>0);
-    const resp=await callClaudeWithSystem(SYSTEM_PROMPT,messages,900);
+    const resp = modelo==='gemini'
+      ? await callGemini(SYSTEM_PROMPT,messages,2000)
+      : await callClaudeWithSystem(SYSTEM_PROMPT,messages,900);
     iaChatLoader(false);
-    iaChatAppend('bot',resp.trim());
-    IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
-    if(IA_CHAT_HISTORY.length>8)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-8);
-    saveIAHistory();
+    if(!resp||!resp.trim()){
+      iaChatAppend('bot','No se obtuvo respuesta del modelo. Revisa la clave API o inténtalo de nuevo.');
+    }else{
+      iaChatAppend('bot',resp.trim());
+      IA_CHAT_HISTORY.push({role:'assistant',content:resp.trim()});
+      if(IA_CHAT_HISTORY.length>8)IA_CHAT_HISTORY=IA_CHAT_HISTORY.slice(-8);
+      saveIAHistory();
+    }
   }catch(e){
     iaChatLoader(false);
     iaChatAppend('bot','Error IA: '+(e.message||e));
