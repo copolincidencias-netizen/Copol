@@ -3596,6 +3596,8 @@ function autoRellenarTipoBusqueda(val){
 // ════════════════════════════════════════════════
 //  WRAPPER API ANTHROPIC
 // ════════════════════════════════════════════════
+const CALLEJERO_ARGANZUELA = `BARRIOS DE ARGANZUELA (callejero completo, vías por barrio):\nIMPERIAL: Alejandro Dumas, Bajo De La Virgen Del Puerto, Bercial, Casimiro Mahou Bierhans, Chulapos, Cobos De Segovia, Duque De Tovar, Etreros, Fosforo, Francisco Morano, Francisco Nieva, Gil Imon, Imperial, Jemenuño, Juan Antonio Vallejo-Najera Botas, Juan Duque, Leonor De La Vega, Linneo, M-30, Manzanares, Marmol, Mazarredo, Melancolicos, Mercado, Moreno Nieto, Muñopedro, Nati Mistral, Nogales, Paradinas, Particular, Pinos, Piramides, Pizarra, Pontones, Puerta De Toledo, Ruy Gonzalez De Clavijo, San Alejandro, San Epifanio, San Isidro, Sangarcia, Santa Casilda, Santa Maria La Real De Nieva, Segovia, Teatro, Toledo, Villoslada, Virgen Del Puerto\nACACIAS: A-42, Acacias, Arganda, Arquitectura, Baños De Montemayor, Caoba, Carmen Cobeña, Carvajales, Ceiba, Cigarreras, Concejal Benito Martin Lozano, Embajadores, Ercilla, Esperanza, Gargantilla, Gasometro, Juan Antonio Vallejo-Najera Botas, Labrador, Laurel, M-30, Majuelo, Manzanares, Martin De Vargas, Melilla, Moratines, Naves, Nogales, Olmos, Ortega Y Munilla, Palo De Rosa, Peñuelas, Pinos, Piramides, Pozuelo De Zarzon, Praga, Puerta De Toledo, Ribera De Curtidores, San Anastasio, San Isidoro De Sevilla, Santa Maria De La Cabeza, Santocildes, Soria, Toledo, Valdelaguna, Valdelasierra, Villa De Arbancon, Yeserias\nCHOPERA: Aguilon, Aldea Del Fresno, Alejandro Saint Aubin, Algete, Alonso Carbonell, Beata Maria Ana De Jesus, Benito Valderas, Caceres, Chopera, Comandante Benitez, Delicias, Divino Valles, Domingo Perez Del Val, Embajadores, Enrique Trompeta, Eugenio Selles, Fernando Poo, Gasometro, General Maroto, General Palanca, Guillermo De Osma, Jaime El Conquistador, Jose De Villarreal, Jose Miguel Gordoa, M-30, Manzanares, Miguel Arredondo, Parroco Julio Morate, Praga, Princesa, Rutilio Gaci, San Daniel, San Evaristo, San Felix, San Victor, Santa Maria De La Cabeza, Tomas Borras, Torres Miranda, Vado De Santa Catalina, Voluntarios Macabebes\nLEGAZPI: Algete, Andres De Urdaneta, Antracita, Ariel, Bolivar, Bronce, Candelaria Mora, Carabaña, Cromo, El Soto, Embajadores, Enrique Simonis, Eros, Estrella Hadar, Frigiliana, Gasometro, Hierro, Italia, Jesus Goldero, Jose Antonio Zapata, Juan Duque, Julian Rabanedo, Legazpi, Litio, M-30, Maestro Arbos, Manuel Aleixandre, Manzanares, Mendez Alvaro, Meneses, Molino, Nereida, Nerja, Nestares, Onice, Paz, Planeta Tierra, Planetario, Plomo, Princesa, Puerto De Bejar, Puerto De La Cruz Verde, Puerto De Miravete, Puerto Serrano, Ricardo Damas, Ricardo Goizueta, Rodio, Rodriguez Villarejo, Sodio, Teniente Coronel Noreña, Teresa Lopez Valcarcel, Titan, Vado De Santa Catalina, Valdemorillo, Villarrobledo, Viñuelas\nDELICIAS: Alabastro, Alejandro Ferrant, Alicante, Alonso Martos, Amaltea, Amanecer En Mendez Alvaro, Batalla Del Salado, Beata Maria Ana De Jesus, Berilo, Bolivar, Bronce, Bustamante, Caceres, Caolin, Casar De Caceres, Castor Y Polux, Circon, Circonita, Ciudad Real, Cobre, Cristo Del Camino, Daniel Segovia, Delicias, Divino Valles, El Atazar, Embajadores, Estrella Denebola, Estrella Naos, Estrella Shaula, Ferrocarril, Gasometro, General Lacy, General Palanca, Granito, Hierro, Isidoro Alvarez Alvarez, Juan De Mariana, Juan De Vera, Juan Martin El Empecinado, Juana Doña, Legazpi, Luis Paret, Mejorada Del Campo, Mendez Alvaro, Meneses, Mezquite, Nebulosas, Onice, Oriana, Parroco Eusebio Cuenca, Planetario, Plomo, Rafael De Riego, Ramirez De Prado, Sabal, Santa Maria De La Cabeza, Tomas Breton, Turmalina, Vara De Rey, Villa Del Prado, Watteau, Zinc, Ancora, Atocha, Bernardino Obregon, Canarias, Cardenal Solis, Emperador Carlos V, Fray Luis De Leon, Jose Antonio De Armona, Jose Maria Roquero, Juan Sebastian Elcano, Luca De Tena, Marques De La Valdavia, Martin Soler, Murcia, Palos De La Frontera, Pedro Unanue, Sebastian Herrera, Tarragona, Tortosa, Valencia, Vizcaya\nPALOS DE MOGUER: Alonso Del Barco, Ancora, Atocha, Batalla Del Salado, Bernardino Obregon, Bustamante, Canarias, Cardenal Solis, Delicias, Embajadores, Emperador Carlos V, Ferrocarril, Fray Luis De Leon, General Lacy, Jose Antonio De Armona, Jose Maria Roquero, Juan Martin El Empecinado, Juan Sebastian Elcano, Luca De Tena, Marques De La Valdavia, Martin Soler, Mendez Alvaro, Murcia, Palos De La Frontera, Pedro Unanue, Rafael De Riego, Santa Maria De La Cabeza, Sebastian Herrera, Tarragona, Tortosa, Valencia, Vara De Rey, Vizcaya\nATOCHA: Acanto, Alamedilla, Alberche, Almez, Alpedrete, Antonio Nebrija, Ciudad De Barcelona, Comercio, Emperador Carlos V, Garganta De Los Montes, Gasometro, Jacaranda, Kentia, Leganes, M-30, Mendez Alvaro, Ombu, Paz, Pedro Bosch, Provisional Talleres Generales Mza, Retama, Tamarindo, Tejo`;
+
 function getApiKey(){
   return (localStorage.getItem('sigi_anthropic_key')||'').trim();
 }
@@ -3655,35 +3657,39 @@ async function callGemini(system,messages,maxTokens=2000){
     contents:contents,
     generationConfig:{maxOutputTokens:maxTokens,temperature:0.4}
   };
-  const url='https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key='+encodeURIComponent(key);
-  const maxReintentos=3;
-  for(let intento=1;intento<=maxReintentos;intento++){
-    let r;
-    try{
-      r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    }catch(e){
-      if(intento<maxReintentos){await new Promise(s=>setTimeout(s,1500*intento));continue;}
-      throw new Error('Error de red al contactar Gemini: '+e.message);
+  // Lista de modelos en orden de preferencia — si uno está saturado (503), prueba el siguiente
+  const modelos=['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.5-pro'];
+  let ultimoError='';
+  for(const modelo of modelos){
+    const url='https://generativelanguage.googleapis.com/v1/models/'+modelo+':generateContent?key='+encodeURIComponent(key);
+    for(let intento=1;intento<=2;intento++){
+      let r;
+      try{
+        r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      }catch(e){
+        ultimoError='Error de red: '+e.message;
+        if(intento<2){await new Promise(s=>setTimeout(s,1200));continue;}
+        break;
+      }
+      if(r.ok){
+        const data=await r.json();
+        return data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+      }
+      // 503/429 → reintentar una vez, luego pasar al siguiente modelo
+      if(r.status===503||r.status===429){
+        ultimoError='Modelo '+modelo+' saturado ('+r.status+')';
+        console.warn(ultimoError+(intento<2?', reintentando...':', probando siguiente modelo...'));
+        if(intento<2){await new Promise(s=>setTimeout(s,1500));continue;}
+        break; // pasar al siguiente modelo
+      }
+      // Otros errores: no tiene sentido cambiar de modelo
+      let msg='Error '+r.status;
+      try{const j=await r.json();msg=j.error?.message||msg;}catch(_){}
+      console.error('Gemini Error '+r.status+':',msg);
+      throw new Error(msg);
     }
-    if(r.ok){
-      const data=await r.json();
-      return data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
-    }
-    // Errores temporales: 503 (saturado), 429 (cuota) → reintentar
-    if((r.status===503||r.status===429)&&intento<maxReintentos){
-      const espera=2000*intento;
-      console.warn(`Gemini ${r.status}, reintentando en ${espera}ms (intento ${intento}/${maxReintentos})...`);
-      await new Promise(s=>setTimeout(s,espera));
-      continue;
-    }
-    // Otros errores o último intento agotado
-    let msg='Error '+r.status;
-    try{const j=await r.json();msg=j.error?.message||msg;}catch(_){}
-    console.error('Gemini Error '+r.status+':',msg);
-    if(r.status===503)throw new Error('Gemini está saturado ahora mismo. Inténtalo de nuevo en unos segundos.');
-    throw new Error(msg);
   }
-  return '';
+  throw new Error('Todos los modelos de Gemini están saturados ahora mismo. Inténtalo de nuevo en unos segundos. ('+ultimoError+')');
 }
 async function callClaudeWithSystem(system,messages,maxTokens=1000){
   if(!CU||(CU.role!=='admin'&&CU.role!=='superadmin')){
@@ -4849,14 +4855,14 @@ Normas:
 - Para tiempos de resolución usa hora_apertura y hora_cierre (formato HH:MM).
 - Si hay más incidencias de las que se muestran en detalle, usa el resumen estadístico para responder preguntas generales.
 
-BARRIOS DE ARGANZUELA:
-IMPERIAL: Cobos de Segovia, Gil Imón, Paseo Imperial, Toledo, Pirámides
-ACACIAS: Arganda, Embajadores, Ercilla, Peñuelas, Yeserías, Ronda de Toledo
-CHOPERA: Paseo de la Chopera, Paseo de las Delicias, General Palanca, Legazpi
-LEGAZPI: Mendez Álvaro, Maestro Arbos, Puerto de Béjar, Teniente Coronel Noreña
-DELICIAS: Paseo de las Delicias, Rafael de Riego, Tomas Bretón, Palos de la Frontera, Murcia, Tarragona
-PALOS DE MOGUER: Ronda de Atocha, Palos de la Frontera, Juan Sebastián Elcano, Vizcaya
-ATOCHA: Ciudad de Barcelona, Mendez Álvaro, Avenida de la Paz
+BARRIOS DE ARGANZUELA (callejero completo, vías por barrio):
+IMPERIAL: Alejandro Dumas, Bajo De La Virgen Del Puerto, Bercial, Casimiro Mahou Bierhans, Chulapos, Cobos De Segovia, Duque De Tovar, Etreros, Fosforo, Francisco Morano, Francisco Nieva, Gil Imon, Imperial, Jemenuño, Juan Antonio Vallejo-Najera Botas, Juan Duque, Leonor De La Vega, Linneo, M-30, Manzanares, Marmol, Mazarredo, Melancolicos, Mercado, Moreno Nieto, Muñopedro, Nati Mistral, Nogales, Paradinas, Particular, Pinos, Piramides, Pizarra, Pontones, Puerta De Toledo, Ruy Gonzalez De Clavijo, San Alejandro, San Epifanio, San Isidro, Sangarcia, Santa Casilda, Santa Maria La Real De Nieva, Segovia, Teatro, Toledo, Villoslada, Virgen Del Puerto
+ACACIAS: A-42, Acacias, Arganda, Arquitectura, Baños De Montemayor, Caoba, Carmen Cobeña, Carvajales, Ceiba, Cigarreras, Concejal Benito Martin Lozano, Embajadores, Ercilla, Esperanza, Gargantilla, Gasometro, Juan Antonio Vallejo-Najera Botas, Labrador, Laurel, M-30, Majuelo, Manzanares, Martin De Vargas, Melilla, Moratines, Naves, Nogales, Olmos, Ortega Y Munilla, Palo De Rosa, Peñuelas, Pinos, Piramides, Pozuelo De Zarzon, Praga, Puerta De Toledo, Ribera De Curtidores, San Anastasio, San Isidoro De Sevilla, Santa Maria De La Cabeza, Santocildes, Soria, Toledo, Valdelaguna, Valdelasierra, Villa De Arbancon, Yeserias
+CHOPERA: Aguilon, Aldea Del Fresno, Alejandro Saint Aubin, Algete, Alonso Carbonell, Beata Maria Ana De Jesus, Benito Valderas, Caceres, Chopera, Comandante Benitez, Delicias, Divino Valles, Domingo Perez Del Val, Embajadores, Enrique Trompeta, Eugenio Selles, Fernando Poo, Gasometro, General Maroto, General Palanca, Guillermo De Osma, Jaime El Conquistador, Jose De Villarreal, Jose Miguel Gordoa, M-30, Manzanares, Miguel Arredondo, Parroco Julio Morate, Praga, Princesa, Rutilio Gaci, San Daniel, San Evaristo, San Felix, San Victor, Santa Maria De La Cabeza, Tomas Borras, Torres Miranda, Vado De Santa Catalina, Voluntarios Macabebes
+LEGAZPI: Algete, Andres De Urdaneta, Antracita, Ariel, Bolivar, Bronce, Candelaria Mora, Carabaña, Cromo, El Soto, Embajadores, Enrique Simonis, Eros, Estrella Hadar, Frigiliana, Gasometro, Hierro, Italia, Jesus Goldero, Jose Antonio Zapata, Juan Duque, Julian Rabanedo, Legazpi, Litio, M-30, Maestro Arbos, Manuel Aleixandre, Manzanares, Mendez Alvaro, Meneses, Molino, Nereida, Nerja, Nestares, Onice, Paz, Planeta Tierra, Planetario, Plomo, Princesa, Puerto De Bejar, Puerto De La Cruz Verde, Puerto De Miravete, Puerto Serrano, Ricardo Damas, Ricardo Goizueta, Rodio, Rodriguez Villarejo, Sodio, Teniente Coronel Noreña, Teresa Lopez Valcarcel, Titan, Vado De Santa Catalina, Valdemorillo, Villarrobledo, Viñuelas
+DELICIAS: Alabastro, Alejandro Ferrant, Alicante, Alonso Martos, Amaltea, Amanecer En Mendez Alvaro, Batalla Del Salado, Beata Maria Ana De Jesus, Berilo, Bolivar, Bronce, Bustamante, Caceres, Caolin, Casar De Caceres, Castor Y Polux, Circon, Circonita, Ciudad Real, Cobre, Cristo Del Camino, Daniel Segovia, Delicias, Divino Valles, El Atazar, Embajadores, Estrella Denebola, Estrella Naos, Estrella Shaula, Ferrocarril, Gasometro, General Lacy, General Palanca, Granito, Hierro, Isidoro Alvarez Alvarez, Juan De Mariana, Juan De Vera, Juan Martin El Empecinado, Juana Doña, Legazpi, Luis Paret, Mejorada Del Campo, Mendez Alvaro, Meneses, Mezquite, Nebulosas, Onice, Oriana, Parroco Eusebio Cuenca, Planetario, Plomo, Rafael De Riego, Ramirez De Prado, Sabal, Santa Maria De La Cabeza, Tomas Breton, Turmalina, Vara De Rey, Villa Del Prado, Watteau, Zinc, Ancora, Atocha, Bernardino Obregon, Canarias, Cardenal Solis, Emperador Carlos V, Fray Luis De Leon, Jose Antonio De Armona, Jose Maria Roquero, Juan Sebastian Elcano, Luca De Tena, Marques De La Valdavia, Martin Soler, Murcia, Palos De La Frontera, Pedro Unanue, Sebastian Herrera, Tarragona, Tortosa, Valencia, Vizcaya
+PALOS DE MOGUER: Alonso Del Barco, Ancora, Atocha, Batalla Del Salado, Bernardino Obregon, Bustamante, Canarias, Cardenal Solis, Delicias, Embajadores, Emperador Carlos V, Ferrocarril, Fray Luis De Leon, General Lacy, Jose Antonio De Armona, Jose Maria Roquero, Juan Martin El Empecinado, Juan Sebastian Elcano, Luca De Tena, Marques De La Valdavia, Martin Soler, Mendez Alvaro, Murcia, Palos De La Frontera, Pedro Unanue, Rafael De Riego, Santa Maria De La Cabeza, Sebastian Herrera, Tarragona, Tortosa, Valencia, Vara De Rey, Vizcaya
+ATOCHA: Acanto, Alamedilla, Alberche, Almez, Alpedrete, Antonio Nebrija, Ciudad De Barcelona, Comercio, Emperador Carlos V, Garganta De Los Montes, Gasometro, Jacaranda, Kentia, Leganes, M-30, Mendez Alvaro, Ombu, Paz, Pedro Bosch, Provisional Talleres Generales Mza, Retama, Tamarindo, Tejo
 
 Contexto: ${ctx||'ninguno'}
 
@@ -4929,7 +4935,7 @@ async function iaQuick(mode){
   const modelo=document.getElementById('ia-modelo')?.value||'claude';
   const limiteQuick=modelo==='gemini'?1500:60;
 
-  const SYSTEM_PROMPT='Eres un operador virtual de apoyo para Policía Municipal de Madrid. Responde SIEMPRE en español. Sé conciso, operativo y objetivo. No inventes datos.';
+  const SYSTEM_PROMPT='Eres un operador virtual de apoyo para Policía Municipal de Madrid. Responde SIEMPRE en español. Sé conciso, operativo y objetivo. No inventes datos.\n\n'+CALLEJERO_ARGANZUELA;
 
   const promptTexto=`${task}\n\nFiltros: Desde: ${des||'inicio'} Hasta: ${has||'hoy'} Estado: ${est||'todos'}\nContexto: ${ctx||'ninguno'}\n\nIncidencias (JSON, ${Math.min(datosIA.length,limiteQuick)} de ${datosIA.length}):\n${JSON.stringify(datosIA.slice(0,limiteQuick))}`;
 
