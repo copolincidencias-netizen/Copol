@@ -920,6 +920,7 @@ select option{background:#111827;color:#e2e8f0}
       <button onclick="limpiarFiltrosPsh()" style="background:none;border:1px solid #334155;border-radius:7px;color:#64748b;font-size:.75rem;cursor:pointer;padding:.35rem .6rem"><i class="ti ti-x"></i> Limpiar</button>
       <span id="psh-filter-count" style="font-size:.7rem;color:#475569;margin-left:.2rem"></span>
       <div style="margin-left:auto;display:flex;gap:.35rem">
+        <button onclick="abrirCalendarioPsh()" class="btn-sec" style="font-size:.75rem;padding:.35rem .7rem"><i class="ti ti-calendar"></i> Calendario</button>
         <button onclick="imprimirPshListado()" class="btn-sec" style="font-size:.75rem;padding:.35rem .7rem"><i class="ti ti-list"></i> Listado</button>
         <button onclick="imprimirPshMapa()" class="btn-sec" style="font-size:.75rem;padding:.35rem .7rem"><i class="ti ti-map"></i> Mapa</button>
       </div>
@@ -941,6 +942,23 @@ select option{background:#111827;color:#e2e8f0}
         </div>
         <div id="psh-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL CALENDARIO PROTOCOLOS PSH -->
+  <div id="psh-calendario-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:14px;padding:1.2rem;max-width:680px;width:100%;max-height:90vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+        <h3 style="color:#f1f5f9;font-size:1rem;margin:0"><i class="ti ti-calendar-event" style="color:#c084fc;margin-right:.4rem"></i>Calendario de Protocolos PSH</h3>
+        <button onclick="document.getElementById('psh-calendario-modal').style.display='none'" style="background:#334155;color:#e2e8f0;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:1rem">×</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+        <button onclick="cambiarMesPsh(-1)" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:.35rem .8rem;cursor:pointer"><i class="ti ti-chevron-left"></i></button>
+        <span id="psh-cal-titulo" style="color:#f1f5f9;font-weight:600;font-size:.95rem"></span>
+        <button onclick="cambiarMesPsh(1)" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:.35rem .8rem;cursor:pointer"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div id="psh-cal-grid"></div>
+      <div id="psh-cal-detalle" style="margin-top:.8rem"></div>
     </div>
   </div>
 
@@ -980,9 +998,9 @@ select option{background:#111827;color:#e2e8f0}
               </select>
             </div>
             <div class="fg"><label>Número de documento</label><input type="text" id="psh-doc-num" placeholder="Ej: 12345678A"></div>
-            <div class="fg"><label>Fecha de nacimiento</label><input type="date" id="psh-fnac"></div>
+            <div class="fg"><label>Fecha de nacimiento</label><input type="date" id="psh-fnac" onchange="calcularEdadPsh()"></div>
             <div class="fg"><label>Nacionalidad</label><input type="text" id="psh-nacionalidad" placeholder="Ej: Española"></div>
-            <div class="fg"><label>Edad aproximada</label><input type="number" id="psh-edad" placeholder="Ej: 45" min="0" max="120"></div>
+            <div class="fg"><label>Edad (automática)</label><input type="number" id="psh-edad" placeholder="Se calcula sola" min="0" max="120"></div>
             <div class="fg"><label>Sexo</label>
               <select id="psh-sexo"><option value="">—</option><option value="hombre">Hombre</option><option value="mujer">Mujer</option><option value="otro">Otro/No determinado</option></select>
             </div>
@@ -5233,6 +5251,92 @@ function removePshContacto(idx){
   try{contactos=JSON.parse(document.getElementById('psh-contactos-json').value||'[]');}catch(e){}
   contactos.splice(idx,1);
   renderPshContactosList(contactos);
+}
+
+function calcularEdadPsh(){
+  const fnac=document.getElementById('psh-fnac')?.value;
+  const edadEl=document.getElementById('psh-edad');
+  if(!fnac||!edadEl)return;
+  const nac=new Date(fnac);
+  if(isNaN(nac.getTime()))return;
+  const hoy=new Date();
+  let edad=hoy.getFullYear()-nac.getFullYear();
+  const m=hoy.getMonth()-nac.getMonth();
+  if(m<0||(m===0&&hoy.getDate()<nac.getDate()))edad--;
+  if(edad>=0&&edad<=120)edadEl.value=edad;
+}
+
+let _pshCalMes=new Date().getMonth();
+let _pshCalAnio=new Date().getFullYear();
+
+function abrirCalendarioPsh(){
+  _pshCalMes=new Date().getMonth();
+  _pshCalAnio=new Date().getFullYear();
+  document.getElementById('psh-calendario-modal').style.display='flex';
+  renderCalendarioPsh();
+}
+
+function cambiarMesPsh(delta){
+  _pshCalMes+=delta;
+  if(_pshCalMes<0){_pshCalMes=11;_pshCalAnio--;}
+  if(_pshCalMes>11){_pshCalMes=0;_pshCalAnio++;}
+  renderCalendarioPsh();
+}
+
+function renderCalendarioPsh(){
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('psh-cal-titulo').textContent=meses[_pshCalMes]+' '+_pshCalAnio;
+
+  // Agrupar protocolos por fecha (YYYY-MM-DD)
+  const protocolos={};
+  getPsh().forEach(p=>{
+    if(p.protocolo_fecha){
+      if(!protocolos[p.protocolo_fecha])protocolos[p.protocolo_fecha]=[];
+      protocolos[p.protocolo_fecha].push(p);
+    }
+  });
+
+  const primerDia=new Date(_pshCalAnio,_pshCalMes,1);
+  const ultimoDia=new Date(_pshCalAnio,_pshCalMes+1,0);
+  // getDay: 0=domingo. Queremos lunes como primer día
+  let inicioSemana=primerDia.getDay()-1; if(inicioSemana<0)inicioSemana=6;
+  const hoyStr=new Date().toISOString().slice(0,10);
+
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
+  ['L','M','X','J','V','S','D'].forEach(d=>{
+    html+=`<div style="text-align:center;font-size:.7rem;color:#64748b;font-weight:600;padding:.3rem 0">${d}</div>`;
+  });
+  for(let i=0;i<inicioSemana;i++)html+='<div></div>';
+  for(let dia=1;dia<=ultimoDia.getDate();dia++){
+    const fechaStr=`${_pshCalAnio}-${String(_pshCalMes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const tiene=protocolos[fechaStr];
+    const esHoy=fechaStr===hoyStr;
+    let estilo='background:#1e293b;color:#94a3b8;border:1px solid #334155;';
+    if(tiene)estilo='background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:1px solid #a78bfa;font-weight:700;cursor:pointer;';
+    if(esHoy)estilo+='outline:2px solid #34d399;';
+    const onclick=tiene?`onclick="verDiaPsh('${fechaStr}')"`:'';
+    const badge=tiene?`<span style="display:block;font-size:.6rem;margin-top:1px">${tiene.length} 🔔</span>`:'';
+    html+=`<div ${onclick} style="${estilo}border-radius:7px;padding:.4rem .2rem;text-align:center;font-size:.8rem;min-height:42px">${dia}${badge}</div>`;
+  }
+  html+='</div>';
+  document.getElementById('psh-cal-grid').innerHTML=html;
+  document.getElementById('psh-cal-detalle').innerHTML='<p style="color:#64748b;font-size:.78rem;text-align:center;margin-top:.5rem">Los días en morado tienen protocolo PSH programado. Pulsa para ver el detalle.</p>';
+}
+
+function verDiaPsh(fechaStr){
+  const lista=getPsh().filter(p=>p.protocolo_fecha===fechaStr);
+  if(!lista.length)return;
+  const [a,m,d]=fechaStr.split('-');
+  let html=`<div style="background:#1a0a2e;border:1px solid #7c3aed;border-radius:10px;padding:.8rem;margin-top:.5rem">
+    <div style="color:#c084fc;font-weight:600;font-size:.85rem;margin-bottom:.5rem"><i class="ti ti-calendar-event"></i> Protocolos del ${d}/${m}/${a}</div>`;
+  lista.forEach(p=>{
+    html+=`<div style="background:#0f172a;border-radius:8px;padding:.6rem;margin-bottom:.4rem;cursor:pointer" onclick="document.getElementById('psh-calendario-modal').style.display='none';openPshModal('${p.id}')">
+      <div style="color:#f1f5f9;font-weight:600;font-size:.82rem">${p.alias||'Sin alias'} ${p.protocolo_hora?'· '+p.protocolo_hora:''}</div>
+      <div style="color:#94a3b8;font-size:.72rem;margin-top:.2rem">Solicitado por: ${p.protocolo_solicitante||'—'}${p.protocolo_motivo?' · '+p.protocolo_motivo:''}</div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('psh-cal-detalle').innerHTML=html;
 }
 
 function openPshModal(id){
