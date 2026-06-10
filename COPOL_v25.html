@@ -4865,6 +4865,7 @@ Normas:
 - No inventes datos. Calcula todo desde los datos proporcionados.
 - Para tiempos de resolución usa hora_apertura y hora_cierre (formato HH:MM).
 - Si hay más incidencias de las que se muestran en detalle, usa el resumen estadístico para responder preguntas generales.
+- IMPORTANTE: Cuando el usuario pregunte por incidencias en un BARRIO, COLONIA o ZONA, busca automáticamente en TODAS las vías que la componen (según el callejero de abajo) y agrupa el resultado. NUNCA pidas al usuario que concrete una calle: cruza tú mismo todas las direcciones de las incidencias con las vías de esa zona y devuelve el listado completo agrupado.
 
 ${CALLEJERO_ARGANZUELA}
 
