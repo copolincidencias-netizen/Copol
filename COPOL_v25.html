@@ -4831,6 +4831,7 @@ function iaChatLoader(show=true){
 
 function iaClearChat(){
   IA_CHAT_HISTORY=[];
+  saveIAHistory();
   const box=document.getElementById('ia-chat');
   if(!box)return;
   box.innerHTML='';
