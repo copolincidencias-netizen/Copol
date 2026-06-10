@@ -3637,18 +3637,20 @@ async function callGemini(system,messages,maxTokens=2000){
   }
   const key=getGeminiKey();
   if(!key){showGeminiKeyNeeded();throw new Error('Clave API Gemini no configurada.');}
-  // Gemini combina system + mensajes en formato contents
+  // Gemini API v1 no acepta system_instruction: incluir como primer turno user + ack
   const contents=[];
-  // El system se manda como systemInstruction
+  if(system&&system.trim()){
+    contents.push({role:'user',parts:[{text:system}]});
+    contents.push({role:'model',parts:[{text:'Entendido. Responderé siguiendo esas instrucciones.'}]});
+  }
   messages.forEach(m=>{
     if(!m||!m.content)return;
     const c=typeof m.content==='string'?m.content:String(m.content);
     if(!c.trim())return;
     contents.push({role:m.role==='assistant'?'model':'user',parts:[{text:c}]});
   });
-  if(!contents.length||contents[0].role!=='user')return '';
+  if(!contents.length)return '';
   const body={
-    systemInstruction:{parts:[{text:system}]},
     contents:contents,
     generationConfig:{maxOutputTokens:maxTokens,temperature:0.4}
   };
