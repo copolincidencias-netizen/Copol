@@ -3615,6 +3615,7 @@ function onIaModeloChange(){
   if(modelo==='gemini'&&!getGeminiKey()){
     showGeminiKeyNeeded();
   }
+  updateIaCount();
 }
 function showGeminiKeyNeeded(){
   const ov=document.createElement('div');
@@ -3655,21 +3656,34 @@ async function callGemini(system,messages,maxTokens=2000){
     generationConfig:{maxOutputTokens:maxTokens,temperature:0.4}
   };
   const url='https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key='+encodeURIComponent(key);
-  let r;
-  try{
-    r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  }catch(e){
-    throw new Error('Error de red al contactar Gemini: '+e.message);
-  }
-  if(!r.ok){
+  const maxReintentos=3;
+  for(let intento=1;intento<=maxReintentos;intento++){
+    let r;
+    try{
+      r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }catch(e){
+      if(intento<maxReintentos){await new Promise(s=>setTimeout(s,1500*intento));continue;}
+      throw new Error('Error de red al contactar Gemini: '+e.message);
+    }
+    if(r.ok){
+      const data=await r.json();
+      return data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+    }
+    // Errores temporales: 503 (saturado), 429 (cuota) → reintentar
+    if((r.status===503||r.status===429)&&intento<maxReintentos){
+      const espera=2000*intento;
+      console.warn(`Gemini ${r.status}, reintentando en ${espera}ms (intento ${intento}/${maxReintentos})...`);
+      await new Promise(s=>setTimeout(s,espera));
+      continue;
+    }
+    // Otros errores o último intento agotado
     let msg='Error '+r.status;
     try{const j=await r.json();msg=j.error?.message||msg;}catch(_){}
     console.error('Gemini Error '+r.status+':',msg);
+    if(r.status===503)throw new Error('Gemini está saturado ahora mismo. Inténtalo de nuevo en unos segundos.');
     throw new Error(msg);
   }
-  const data=await r.json();
-  const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
-  return text;
+  return '';
 }
 async function callClaudeWithSystem(system,messages,maxTokens=1000){
   if(!CU||(CU.role!=='admin'&&CU.role!=='superadmin')){
@@ -4948,7 +4962,9 @@ function updateIaCount(){
   const el=document.getElementById('ia-count-info');
   if(!el)return;
   const n=iaGetFilteredInc().length;
-  const limite=60;
+  const modelo=document.getElementById('ia-modelo')?.value||'claude';
+  const limite=modelo==='gemini'?1500:60;
+  const nomModelo=modelo==='gemini'?'Gemini':'Claude';
   if(n===0){
     el.style.display='block';
     el.style.background='#1e293b';
@@ -4958,12 +4974,12 @@ function updateIaCount(){
     el.style.display='block';
     el.style.background='#450a0a';
     el.style.color='#fca5a5';
-    el.innerHTML=`⚠️ ${n} incidencias — se enviarán las ${limite} más recientes al agente. Usa filtros de fecha para mayor precisión.`;
+    el.innerHTML=`⚠️ ${n} incidencias — ${nomModelo} analizará las ${limite} más recientes. Usa filtros de fecha o cambia a Gemini para analizar más.`;
   } else {
     el.style.display='block';
     el.style.background='#0f2723';
     el.style.color='#34d399';
-    el.innerHTML=`✓ ${n} incidencia${n!==1?'s':''} en el periodo seleccionado — se enviarán todas al agente.`;
+    el.innerHTML=`✓ ${n} incidencia${n!==1?'s':''} en el periodo — ${nomModelo} las analizará todas.`;
   }
 }
 
