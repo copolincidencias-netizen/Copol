@@ -2080,6 +2080,7 @@ function loginAs(u){
   initTheme();
   showP('dashboard');
   updateIaStatus();
+  if(isAdmin)loadGeminiKeyFirebase();
   logAudit('login','','Sesión iniciada como '+roleLabel);
   if(u.firstLogin||u.pass==='123456') openChangePassModal(u);
   if(fbActive()){
@@ -3649,8 +3650,23 @@ function getGeminiKey(){
   return (localStorage.getItem('sigi_gemini_key')||'').trim();
 }
 function saveGeminiKey(v){
-  if(v&&v.trim())localStorage.setItem('sigi_gemini_key',v.trim());
+  const val=(v||'').trim();
+  if(val)localStorage.setItem('sigi_gemini_key',val);
   else localStorage.removeItem('sigi_gemini_key');
+  // Sincronizar con Firebase para que esté disponible en todas las sesiones y usuarios
+  if(typeof gsActive==='function'&&gsActive()&&_DB){
+    _DB.collection('config').doc('gemini').set({key:val,updated:new Date().toISOString()}).catch(e=>console.warn('No se pudo guardar la key Gemini en Firebase:',e.message));
+  }
+}
+async function loadGeminiKeyFirebase(){
+  if(typeof gsActive!=='function'||!gsActive()||!_DB)return;
+  try{
+    const snap=await _DB.collection('config').doc('gemini').get();
+    if(snap.exists){
+      const k=(snap.data().key||'').trim();
+      if(k)localStorage.setItem('sigi_gemini_key',k);
+    }
+  }catch(e){ console.warn('No se pudo cargar la key Gemini de Firebase:',e.message); }
 }
 function onIaModeloChange(){
   const modelo=document.getElementById('ia-modelo')?.value||'claude';
@@ -3665,7 +3681,7 @@ function showGeminiKeyNeeded(){
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:flex;align-items:center;justify-content:center;padding:1rem';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #334155;border-radius:14px;padding:1.5rem;max-width:440px;width:100%">
     <h3 style="color:#f1f5f9;font-size:1rem;margin-bottom:.3rem"><i class="ti ti-sparkles" style="color:#4285f4;margin-right:.4rem"></i>Clave API Google Gemini</h3>
-    <p style="color:#94a3b8;font-size:.8rem;margin-bottom:.7rem">Gemini permite analizar miles de incidencias a la vez (contexto de 1M tokens). Obtén tu clave gratuita en <strong>aistudio.google.com/apikey</strong></p>
+    <p style="color:#94a3b8;font-size:.8rem;margin-bottom:.7rem">Gemini permite analizar miles de incidencias a la vez (contexto de 1M tokens). Obtén tu clave gratuita en <strong>aistudio.google.com/apikey</strong>. Se guarda en la nube y queda disponible para todos los administradores sin tener que volver a introducirla.</p>
     <input type="password" id="gemini-key-input" placeholder="AIza..." value="${getGeminiKey()}" style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.68rem 1rem;color:#e2e8f0;font-size:.85rem;font-family:monospace;outline:none;margin-bottom:.7rem">
     <div style="display:flex;gap:.5rem;justify-content:flex-end">
       <button onclick="document.getElementById('gemini-key-overlay').remove()" style="background:#334155;color:#e2e8f0;border:none;border-radius:8px;padding:.55rem 1rem;font-size:.82rem;cursor:pointer">Cancelar</button>
