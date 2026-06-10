@@ -3596,6 +3596,35 @@ function autoRellenarTipoBusqueda(val){
 // ════════════════════════════════════════════════
 //  WRAPPER API ANTHROPIC
 // ════════════════════════════════════════════════
+const ZONAS_VIAS = {"Imperial":["alejandro dumas","bercial","casimiro mahou bierhans","chulapos","cobos de segovia","duque de tovar","etreros","fosforo","francisco morano","francisco nieva","gil imon","imperial","jemenuno","juan antonio vallejo-najera botas","juan duque","leonor de la vega","linneo","m-30","manzanares","marmol","mazarredo","melancolicos","mercado","moreno nieto","munopedro","nati mistral","nogales","paradinas","particular","pinos","piramides","pizarra","pontones","puerta de toledo","ruy gonzalez de clavijo","san alejandro","san epifanio","san isidro","sangarcia","santa casilda","santa maria la real de nieva","segovia","teatro","toledo","villoslada","virgen del puerto"],"Acacias":["a-42","acacias","arganda","arquitectura","banos de montemayor","caoba","carmen cobena","carvajales","ceiba","cigarreras","concejal benito martin lozano","embajadores","ercilla","esperanza","gargantilla","gasometro","juan antonio vallejo-najera botas","labrador","laurel","m-30","majuelo","manzanares","martin de vargas","melilla","moratines","naves","nogales","olmos","ortega y munilla","palo de rosa","penuelas","pinos","piramides","pozuelo de zarzon","praga","puerta de toledo","ribera de curtidores","san anastasio","san isidoro de sevilla","santa maria de la cabeza","santocildes","soria","toledo","valdelaguna","valdelasierra","villa de arbancon","yeserias"],"Chopera":["aguilon","aldea del fresno","alejandro saint aubin","algete","alonso carbonell","beata maria ana de jesus","benito valderas","caceres","chopera","comandante benitez","delicias","divino valles","domingo perez del val","embajadores","enrique trompeta","eugenio selles","fernando poo","gasometro","general maroto","general palanca","guillermo de osma","jaime el conquistador","jose de villarreal","jose miguel gordoa","m-30","manzanares","miguel arredondo","parroco julio morate","praga","princesa","rutilio gaci","san daniel","san evaristo","san felix","san victor","santa maria de la cabeza","tomas borras","torres miranda","vado de santa catalina","voluntarios macabebes"],"Legazpi":["algete","andres de urdaneta","antracita","ariel","bolivar","bronce","candelaria mora","carabana","cromo","el soto","embajadores","enrique simonis","eros","estrella hadar","frigiliana","gasometro","hierro","italia","jesus goldero","jose antonio zapata","juan duque","julian rabanedo","legazpi","litio","m-30","maestro arbos","manuel aleixandre","manzanares","mendez alvaro","meneses","molino","nereida","nerja","nestares","onice","paz","planeta tierra","planetario","plomo","princesa","puerto de bejar","puerto de la cruz verde","puerto de miravete","puerto serrano","ricardo damas","ricardo goizueta","rodio","rodriguez villarejo","sodio","teniente coronel norena","teresa lopez valcarcel","titan","vado de santa catalina","valdemorillo","villarrobledo","vinuelas"],"Delicias":["alabastro","alejandro ferrant","alicante","alonso martos","amaltea","amanecer en mendez alvaro","ancora","atocha","batalla del salado","beata maria ana de jesus","berilo","bernardino obregon","bolivar","bronce","bustamante","caceres","canarias","caolin","cardenal solis","casar de caceres","castor y polux","circon","circonita","ciudad real","cobre","cristo del camino","daniel segovia","delicias","divino valles","el atazar","embajadores","emperador carlos v","estrella denebola","estrella naos","estrella shaula","ferrocarril","fray luis de leon","gasometro","general lacy","general palanca","granito","hierro","isidoro alvarez alvarez","jose antonio de armona","jose maria roquero","juan de mariana","juan de vera","juan martin el empecinado","juan sebastian elcano","juana dona","legazpi","luca de tena","luis paret","marques de la valdavia","martin soler","mejorada del campo","mendez alvaro","meneses","mezquite","murcia","nebulosas","onice","oriana","palos de la frontera","parroco eusebio cuenca","pedro unanue","planetario","plomo","rafael de riego","ramirez de prado","sabal","santa maria de la cabeza","sebastian herrera","tarragona","tomas breton","tortosa","turmalina","valencia","vara de rey","villa del prado","vizcaya","watteau","zinc"],"Palos De Moguer":["alonso del barco","ancora","atocha","batalla del salado","bernardino obregon","bustamante","canarias","cardenal solis","delicias","embajadores","emperador carlos v","ferrocarril","fray luis de leon","general lacy","jose antonio de armona","jose maria roquero","juan martin el empecinado","juan sebastian elcano","luca de tena","marques de la valdavia","martin soler","mendez alvaro","murcia","palos de la frontera","pedro unanue","rafael de riego","santa maria de la cabeza","sebastian herrera","tarragona","tortosa","valencia","vara de rey","vizcaya"],"Atocha":["acanto","alamedilla","alberche","almez","alpedrete","antonio nebrija","ciudad de barcelona","comercio","emperador carlos v","garganta de los montes","gasometro","jacaranda","kentia","leganes","m-30","mendez alvaro","ombu","paz","pedro bosch","provisional talleres generales mza","retama","tamarindo","tejo"],"Colonia Pico Del Pañuelo":["alejandro saint aubin","domingo perez del val","jose miguel gordoa","san daniel","san evaristo","san felix","voluntarios macabebes"],"Colonia Ferroviarios":["alonso martos.","tomas breton"]};
+
+
+function _normVia(s){
+  s=(s||'').toLowerCase().trim();
+  s=s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const pref=['calle de los ','calle de las ','calle de la ','calle del ','calle de ','calle ','paseo de las ','paseo de la ','paseo del ','paseo de ','paseo ','ronda de ','ronda ','avenida de la ','avenida de ','avenida ','avda de ','avda ','plaza de ','plaza ','glorieta de ','glorieta ','bajo de la ','travesia de ','travesia ','c/ ','c/'];
+  for(const p of pref){ if(s.startsWith(p)){ s=s.slice(p.length); break; } }
+  return s.trim();
+}
+function detectarZona(dir){
+  if(!dir)return '';
+  let via=String(dir).split(',')[0].trim();
+  via=via.replace(/\s+\d+.*$/,'').trim();
+  const vn=_normVia(via);
+  if(!vn)return '';
+  const encontradas=[];
+  for(const [zona,vias] of Object.entries(ZONAS_VIAS)){
+    for(const v of vias){
+      if(vn===v || vn.startsWith(v+' ') || v.startsWith(vn+' ') || (vn.length>4 && v.includes(vn)) || (v.length>4 && vn.includes(v))){
+        encontradas.push(zona);
+        break;
+      }
+    }
+  }
+  return encontradas.join(' / ');
+}
+
+
 const CALLEJERO_ARGANZUELA = `BARRIOS DE ARGANZUELA (callejero completo, vías por barrio):
 IMPERIAL: Alejandro Dumas, Bajo De La Virgen Del Puerto, Bercial, Casimiro Mahou Bierhans, Chulapos, Cobos De Segovia, Duque De Tovar, Etreros, Fosforo, Francisco Morano, Francisco Nieva, Gil Imon, Imperial, Jemenuño, Juan Antonio Vallejo-Najera Botas, Juan Duque, Leonor De La Vega, Linneo, M-30, Manzanares, Marmol, Mazarredo, Melancolicos, Mercado, Moreno Nieto, Muñopedro, Nati Mistral, Nogales, Paradinas, Particular, Pinos, Piramides, Pizarra, Pontones, Puerta De Toledo, Ruy Gonzalez De Clavijo, San Alejandro, San Epifanio, San Isidro, Sangarcia, Santa Casilda, Santa Maria La Real De Nieva, Segovia, Teatro, Toledo, Villoslada, Virgen Del Puerto
 ACACIAS: A-42, Acacias, Arganda, Arquitectura, Baños De Montemayor, Caoba, Carmen Cobeña, Carvajales, Ceiba, Cigarreras, Concejal Benito Martin Lozano, Embajadores, Ercilla, Esperanza, Gargantilla, Gasometro, Juan Antonio Vallejo-Najera Botas, Labrador, Laurel, M-30, Majuelo, Manzanares, Martin De Vargas, Melilla, Moratines, Naves, Nogales, Olmos, Ortega Y Munilla, Palo De Rosa, Peñuelas, Pinos, Piramides, Pozuelo De Zarzon, Praga, Puerta De Toledo, Ribera De Curtidores, San Anastasio, San Isidoro De Sevilla, Santa Maria De La Cabeza, Santocildes, Soria, Toledo, Valdelaguna, Valdelasierra, Villa De Arbancon, Yeserias
@@ -4851,6 +4880,7 @@ async function iaSend(){
     id:i.id, fecha:i.fec, hora_apertura:i.hor, estado:i.est,
     prioridad:i.prioridad||'no_prioritaria',
     tipo:tipoL(i.tip), codigo:i.tip, direccion:i.dir,
+    zona:detectarZona(i.dir)||'(sin determinar)',
     descripcion:i.des, asignado:i.asi, origen:i.ori,
     hora_asignacion:i.has||'',
     hora_llegada:i.hlleg||'',
@@ -4865,7 +4895,7 @@ Normas:
 - No inventes datos. Calcula todo desde los datos proporcionados.
 - Para tiempos de resolución usa hora_apertura y hora_cierre (formato HH:MM).
 - Si hay más incidencias de las que se muestran en detalle, usa el resumen estadístico para responder preguntas generales.
-- IMPORTANTE: Cuando el usuario pregunte por incidencias en un BARRIO, COLONIA o ZONA, busca automáticamente en TODAS las vías que la componen (según el callejero de abajo) y agrupa el resultado. NUNCA pidas al usuario que concrete una calle: cruza tú mismo todas las direcciones de las incidencias con las vías de esa zona y devuelve el listado completo agrupado.
+- IMPORTANTE: Cada incidencia incluye un campo "zona" ya calculado con precisión (barrio o colonia al que pertenece su dirección). Cuando el usuario pregunte por incidencias en un BARRIO, COLONIA o ZONA, filtra EXCLUSIVAMENTE por el campo "zona" de cada incidencia — NO interpretes las direcciones tú mismo. Si el campo zona no coincide con lo que pregunta el usuario, esa incidencia NO pertenece a esa zona. Nombres de zonas válidos: Imperial, Acacias, Chopera, Legazpi, Delicias, Palos De Moguer, Atocha, Colonia Pico Del Pañuelo, Colonia Ferroviarios.
 
 ${CALLEJERO_ARGANZUELA}
 
@@ -4919,7 +4949,7 @@ async function iaQuick(mode){
     id:i.id, fecha:i.fec, hora_apertura:i.hor, estado:i.est,
     prioridad:i.prioridad||'no_prioritaria',
     tipo:tipoL(i.tip), codigo:i.tip,
-    direccion:i.dir, descripcion:i.des,
+    direccion:i.dir, zona:detectarZona(i.dir)||'(sin determinar)', descripcion:i.des,
     asignado:i.asi||'sin asignar', origen:i.ori,
     hora_asignacion:i.has||'',
     hora_llegada:i.hlleg||'',
