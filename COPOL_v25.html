@@ -563,6 +563,7 @@ select option{background:#111827;color:#e2e8f0}
       <button class="ntab ao-psh" onclick="showP('psh')"><i class="ti ti-map-pin-heart"></i> PSH</button>
       <button class="ntab" onclick="showP('prioritario')"><i class="ti ti-alert-triangle"></i> Prioritarias<span class="prio-dot" id="prio-dot"></span></button>
       <button class="ntab ao" onclick="showP('mapa')"><i class="ti ti-map-2"></i> Mapa calor</button>
+      <button class="ntab ao" onclick="showP('zonas')"><i class="ti ti-chart-bar"></i> Zonas</button>
       <button class="ntab ao" onclick="showP('informes')"><i class="ti ti-file-analytics"></i> Informes</button>
       <button class="ntab ao" onclick="showP('usuarios')"><i class="ti ti-users"></i> Usuarios</button>
       <button class="ntab" onclick="showP('directorio')"><i class="ti ti-phone-call"></i> Directorio</button>
@@ -1320,6 +1321,18 @@ select option{background:#111827;color:#e2e8f0}
       <span>🔴 Mayor concentración</span><span>🟡 Media</span><span>🟢 Baja</span>
       <span id="map-count" style="color:#3b82f6;margin-left:1rem;font-weight:600"></span>
     </div>
+  </div>
+
+  <!-- ESTADÍSTICAS POR ZONA -->
+  <div class="panel" id="panel-zonas">
+    <div class="sec-hdr"><div><h2>Estadísticas por Zona</h2><p>Análisis de incidencias por barrio y colonia de Arganzuela</p></div></div>
+    <div class="report-flt"><div class="flt-grid">
+      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Desde</label><input type="date" class="map-inp" id="z-des"></div>
+      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="z-has"></div>
+      <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="z-est"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select></div>
+      <button class="btn-map" onclick="genEstadisticasZona()"><i class="ti ti-chart-bar"></i> Calcular</button>
+    </div></div>
+    <div id="zonas-out"></div>
   </div>
 
   <!-- INFORMES -->
@@ -2171,6 +2184,7 @@ function showP(name){
   if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
   if(name==='mapa')setTimeout(()=>initMap(),150);
+  if(name==='zonas')genEstadisticasZona();
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
   if(name==='psh'){
@@ -3345,6 +3359,127 @@ function limpiarForm(){
 // ════════════════════════════════════════════════
 //  INFORMES
 // ════════════════════════════════════════════════
+function genEstadisticasZona(){
+  const out=document.getElementById('zonas-out');
+  if(!out)return;
+  const des=document.getElementById('z-des')?.value||'';
+  const has=document.getElementById('z-has')?.value||'';
+  const est=document.getElementById('z-est')?.value||'';
+  let inc=getInc().filter(i=>i&&i.id&&i.id.startsWith('INC'));
+  if(des)inc=inc.filter(i=>i.fec>=des);
+  if(has)inc=inc.filter(i=>i.fec<=has);
+  if(est)inc=inc.filter(i=>i.est===est);
+  if(!inc.length){out.innerHTML='<div style="padding:2rem;text-align:center;color:#475569">No hay incidencias con los filtros seleccionados</div>';return}
+
+  // Lista de zonas conocidas (orden barrios primero, colonias después)
+  const ordenZonas=['Imperial','Acacias','Chopera','Legazpi','Delicias','Palos De Moguer','Atocha','Colonia Pico Del Pañuelo','Colonia Ferroviarios'];
+  // Contar incidencias por zona (una incidencia puede contar en barrio Y colonia)
+  const porZona={}; ordenZonas.forEach(z=>porZona[z]={total:0,prioritarias:0,cerradas:0,tipos:{}});
+  let sinZona=0;
+  inc.forEach(i=>{
+    const zonaStr=detectarZona(i.dir);
+    if(!zonaStr){sinZona++;return;}
+    // Puede ser "Barrio / Colonia" → contar en cada una
+    zonaStr.split(' / ').forEach(z=>{
+      if(!porZona[z])porZona[z]={total:0,prioritarias:0,cerradas:0,tipos:{}};
+      porZona[z].total++;
+      if(i.prioridad==='prioritaria')porZona[z].prioritarias++;
+      if(i.est==='cerrada')porZona[z].cerradas++;
+      const t=tipoL(i.tip);porZona[z].tipos[t]=(porZona[z].tipos[t]||0)+1;
+    });
+  });
+
+  // Máximo para escalar las barras
+  const maxTotal=Math.max(1,...ordenZonas.map(z=>porZona[z].total));
+  const totalDetectadas=inc.length-sinZona;
+
+  // Top zona
+  const zonasOrdenadas=ordenZonas.filter(z=>porZona[z].total>0).sort((a,b)=>porZona[b].total-porZona[a].total);
+  const topZona=zonasOrdenadas[0]||'—';
+
+  let html=`
+    <div class="report-sec">
+      <div class="dash-hdr"><h3>Resumen por zona</h3><button class="btn-exp" onclick="exportZonasCSV()"><i class="ti ti-download"></i> Exportar CSV</button></div>
+      <div class="sum-grid">
+        <div class="sum-item"><div class="num">${inc.length}</div><div class="lbl">Total incidencias</div></div>
+        <div class="sum-item"><div class="num">${totalDetectadas}</div><div class="lbl">Ubicadas en zona</div></div>
+        <div class="sum-item"><div class="num">${topZona}</div><div class="lbl">Zona más activa</div></div>
+        <div class="sum-item"><div class="num">${sinZona}</div><div class="lbl">Sin zona detectada</div></div>
+      </div>
+    </div>
+
+    <div class="report-sec" style="margin-top:.7rem">
+      <div class="dash-hdr"><h3>Incidencias por zona</h3></div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;padding:.3rem 0">`;
+
+  ordenZonas.forEach(z=>{
+    const d=porZona[z];
+    const pct=Math.round(d.total/maxTotal*100);
+    const esColonia=z.startsWith('Colonia');
+    const color=esColonia?'#a78bfa':'#3b82f6';
+    html+=`
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="width:160px;font-size:.8rem;color:#cbd5e1;text-align:right;flex-shrink:0">${z}${esColonia?' <i class="ti ti-map-pin" style="font-size:.7rem;color:#a78bfa"></i>':''}</div>
+        <div style="flex:1;background:#1e293b;border-radius:6px;height:26px;position:relative;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${color},${color}aa);border-radius:6px;min-width:${d.total>0?'28px':'0'};transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:.5rem">
+            <span style="font-size:.75rem;font-weight:700;color:#fff">${d.total||''}</span>
+          </div>
+        </div>
+        <div style="width:90px;font-size:.7rem;color:#94a3b8;flex-shrink:0">${d.prioritarias>0?`<span style="color:#fbbf24">${d.prioritarias} prior.</span>`:'—'}</div>
+      </div>`;
+  });
+  html+='</div></div>';
+
+  // Tabla detallada por zona
+  html+=`
+    <div class="report-sec" style="margin-top:.7rem">
+      <div class="dash-hdr"><h3>Detalle por zona</h3></div>
+      <table><thead><tr><th>Zona</th><th>Total</th><th>Prioritarias</th><th>Cerradas</th><th>Tipo más frecuente</th></tr></thead>
+      <tbody>`;
+  zonasOrdenadas.forEach(z=>{
+    const d=porZona[z];
+    const tipoTop=Object.entries(d.tipos).sort((a,b)=>b[1]-a[1])[0];
+    html+=`<tr>
+      <td><b>${z}</b></td>
+      <td>${d.total}</td>
+      <td>${d.prioritarias>0?`<span style="color:#fbbf24;font-weight:600">${d.prioritarias}</span>`:'0'}</td>
+      <td>${d.cerradas}</td>
+      <td style="color:#94a3b8;font-size:.85rem">${tipoTop?tipoTop[0]+' ('+tipoTop[1]+')':'—'}</td>
+    </tr>`;
+  });
+  if(!zonasOrdenadas.length)html+='<tr><td colspan="5" style="color:#475569;text-align:center;padding:.875rem">Ninguna incidencia ubicada en zona conocida</td></tr>';
+  html+='</tbody></table>';
+  if(sinZona>0)html+=`<p style="font-size:.72rem;color:#64748b;margin-top:.5rem"><i class="ti ti-info-circle"></i> ${sinZona} incidencia${sinZona!==1?'s':''} no se pudo${sinZona!==1?'ieron':''} ubicar en una zona (dirección fuera de Arganzuela o no reconocida). Las incidencias en calles compartidas entre un barrio y una colonia se cuentan en ambos.</p>`;
+  html+='</div>';
+
+  out.innerHTML=html;
+}
+
+function exportZonasCSV(){
+  const des=document.getElementById('z-des')?.value||'';
+  const has=document.getElementById('z-has')?.value||'';
+  const est=document.getElementById('z-est')?.value||'';
+  let inc=getInc().filter(i=>i&&i.id&&i.id.startsWith('INC'));
+  if(des)inc=inc.filter(i=>i.fec>=des);
+  if(has)inc=inc.filter(i=>i.fec<=has);
+  if(est)inc=inc.filter(i=>i.est===est);
+  const ordenZonas=['Imperial','Acacias','Chopera','Legazpi','Delicias','Palos De Moguer','Atocha','Colonia Pico Del Pañuelo','Colonia Ferroviarios'];
+  const porZona={}; ordenZonas.forEach(z=>porZona[z]={total:0,prioritarias:0,cerradas:0});
+  inc.forEach(i=>{
+    const zs=detectarZona(i.dir); if(!zs)return;
+    zs.split(' / ').forEach(z=>{
+      if(!porZona[z])porZona[z]={total:0,prioritarias:0,cerradas:0};
+      porZona[z].total++;
+      if(i.prioridad==='prioritaria')porZona[z].prioritarias++;
+      if(i.est==='cerrada')porZona[z].cerradas++;
+    });
+  });
+  let csv='Zona;Total;Prioritarias;Cerradas\n';
+  ordenZonas.forEach(z=>{const d=porZona[z];csv+=`${z};${d.total};${d.prioritarias};${d.cerradas}\n`;});
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estadisticas_zona.csv';a.click();
+}
+
 function genInforme(){
   const des=document.getElementById('r-des').value,has=document.getElementById('r-has').value,est=document.getElementById('r-est').value;
   let inc=getInc();
