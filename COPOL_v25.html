@@ -641,11 +641,13 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg full">
           <label>Dirección <span style="color:#475569;font-size:.68rem;font-weight:400">(geocodificación automática)</span></label>
           <div class="geo-row">
-            <div style="flex:1"><input type="text" id="f-dir" placeholder="Calle Mayor 1, Madrid" oninput="clearGeo()"></div>
+            <div style="flex:1"><input type="text" id="f-dir" placeholder="Calle Mayor 1, Madrid" list="callejero-datalist" oninput="clearGeo();mostrarZonaDir()" autocomplete="off"></div>
             <button class="geo-btn btn-voz" onclick="iniciarVoz('f-dir')" id="voz-f-dir" title="Dictar dirección"><i class="ti ti-microphone"></i></button>
             <button class="geo-btn" onclick="geocodificar()"><i class="ti ti-map-pin"></i> Obtener coords</button>
           </div>
+          <datalist id="callejero-datalist"></datalist>
           <div class="geo-status" id="geo-status"></div>
+          <div id="f-dir-zona" style="font-size:.72rem;color:#60a5fa;margin-top:.25rem"></div>
         </div>
         <div class="fg"><label>Latitud</label><input type="number" id="f-lat" placeholder="40.4168" step="any"></div>
         <div class="fg"><label>Longitud</label><input type="number" id="f-lon" placeholder="-3.7038" step="any"></div>
@@ -2180,6 +2182,7 @@ function showP(name){
   document.getElementById('panel-'+name).classList.add('active');
   document.querySelectorAll('.ntab').forEach(t=>{if((t.getAttribute('onclick')||'').includes("'"+name+"'"))t.classList.add('active')});
   if(name==='dashboard')renderDash();
+  if(name==='nueva')poblarCallejeroDatalist();
   if(name==='listado')renderLst();
   if(name==='historico')renderHist();
   if(name==='prioritario')renderPrio();
@@ -3760,22 +3763,73 @@ function _normVia(s){
   for(const p of pref){ if(s.startsWith(p)){ s=s.slice(p.length); break; } }
   return s.trim();
 }
-function detectarZona(dir){
-  if(!dir)return '';
-  let via=String(dir).split(',')[0].trim();
-  via=via.replace(/\s+\d+.*$/,'').trim();
-  const vn=_normVia(via);
-  if(!vn)return '';
-  const encontradas=[];
+function poblarCallejeroDatalist(){
+  const dl=document.getElementById('callejero-datalist');
+  if(!dl||typeof ZONAS_VIAS==='undefined')return;
+  if(dl.children.length>0)return; // ya poblado
+  const vistas=new Set();
+  Object.values(ZONAS_VIAS).forEach(vias=>{
+    vias.forEach(v=>{
+      // Capitalizar cada palabra para mostrar bonito
+      const nombre=v.split(' ').map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+      if(!vistas.has(nombre)){ vistas.add(nombre); }
+    });
+  });
+  const frag=document.createDocumentFragment();
+  Array.from(vistas).sort().forEach(n=>{
+    const o=document.createElement('option');
+    o.value='Calle '+n+', Arganzuela, Madrid';
+    frag.appendChild(o);
+  });
+  dl.appendChild(frag);
+}
+function mostrarZonaDir(){
+  const dir=document.getElementById('f-dir')?.value||'';
+  const el=document.getElementById('f-dir-zona');
+  if(!el)return;
+  if(!dir.trim()){el.textContent='';return;}
+  const zona=detectarZona(dir);
+  if(zona){
+    el.innerHTML='<i class="ti ti-map-pin"></i> Zona detectada: <b>'+zona+'</b>';
+    el.style.color='#34d399';
+  } else {
+    el.innerHTML='<i class="ti ti-alert-triangle"></i> Dirección no reconocida en el callejero de Arganzuela';
+    el.style.color='#f59e0b';
+  }
+}
+
+function _buscarZonaVia(vn){
+  // Devuelve array de zonas donde aparece la vía normalizada vn
+  const res=[];
+  if(!vn||vn.length<3)return res;
   for(const [zona,vias] of Object.entries(ZONAS_VIAS)){
     for(const v of vias){
       if(vn===v || vn.startsWith(v+' ') || v.startsWith(vn+' ') || (vn.length>4 && v.includes(vn)) || (v.length>4 && vn.includes(v))){
-        encontradas.push(zona);
+        res.push(zona);
         break;
       }
     }
   }
-  return encontradas.join(' / ');
+  return res;
+}
+function detectarZona(dir){
+  if(!dir)return '';
+  // Tomar la parte antes de la primera coma (descarta "Arganzuela, 28045, Madrid")
+  let base=String(dir).split(',')[0].trim();
+  // Detectar si es un cruce de calles
+  const trozos=base.split(/\s+con\s+|\s+esquina\s+|\s+esq\.?\s+|\s*\/\s*|\s+x\s+|\s+y\s+/i)
+    .map(t=>t.replace(/\s+\d+.*$/,'').replace(/\(.*?\)/g,'').trim())
+    .filter(t=>t.length>0);
+  // Zonas de cada calle del cruce
+  const listas=trozos.map(t=>_buscarZonaVia(_normVia(t))).filter(l=>l.length>0);
+  if(!listas.length)return '';
+  if(listas.length===1)return listas[0].join(' / ');
+  // Hay cruce de varias calles: intersección de zonas (las comunes a todas)
+  let interseccion=listas[0].filter(z=>listas.every(l=>l.includes(z)));
+  if(interseccion.length)return interseccion.join(' / ');
+  // Si no hay zona común, devolver la unión (mejor algo que nada)
+  const union=new Set(); listas.forEach(l=>l.forEach(z=>union.add(z)));
+  return Array.from(union).join(' / ');
 }
 
 
