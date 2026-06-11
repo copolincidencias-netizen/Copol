@@ -2191,10 +2191,17 @@ function showP(name){
   if(name==='usuarios')renderUsers();
   if(name==='superadmin'){renderSAUsers();renderAudit();checkStorageSize();}
   if(name==='psh'){
-    loadPshFirebase().then(()=>{
-      renderPshList();
-      checkPshAlarmaProtocolo();
-      setTimeout(()=>{initPshMap();renderPshMarkers();},150);
+    // Renderizar la lista SIEMPRE, aunque Firebase falle, para que la pestaña nunca quede vacía
+    const cargarPshUI=()=>{
+      try{ renderPshList(); }catch(e){ console.warn('renderPshList error:',e); }
+      try{ checkPshAlarmaProtocolo(); }catch(e){ console.warn('checkPshAlarmaProtocolo error:',e); }
+      setTimeout(()=>{
+        try{ initPshMap(); renderPshMarkers(); }catch(e){ console.warn('PSH map error:',e); }
+      },200);
+    };
+    loadPshFirebase().then(cargarPshUI).catch(e=>{
+      console.warn('loadPshFirebase falló, cargando con datos locales:',e);
+      cargarPshUI();
     });
   }
   if(name==='agenteia'){loadIAHistory();setTimeout(updateIaCount,500);}
@@ -5315,21 +5322,39 @@ const COL_SIT={activo:'#a78bfa',derivado:'#34d399',desaparecido:'#f59e0b',fallec
 const LBL_SIT={activo:'Activo',derivado:'Derivado',desaparecido:'No localizado',fallecido:'Fallecido'};
 
 function initPshMap(){
-  if(pshMapInst){pshMapInst.invalidateSize();renderPshMarkers();return;}
-  pshMapInst=L.map('psh-map',{preferCanvas:false}).setView([40.3980,-3.7030],14);
-  const callejero=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
-  const satelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
-  callejero.addTo(pshMapInst);
-  L.control.layers({'🗺️ Callejero':callejero,'🛰️ Satélite':satelite},{},{position:'topright'}).addTo(pshMapInst);
-  pshMapInst.on('click',function(e){
-    if(document.getElementById('modal-psh').classList.contains('open')){
-      document.getElementById('psh-lat').value=e.latlng.lat.toFixed(6);
-      document.getElementById('psh-lon').value=e.latlng.lng.toFixed(6);
-      document.getElementById('psh-geo-status').textContent='✓ ['+e.latlng.lat.toFixed(4)+', '+e.latlng.lng.toFixed(4)+']';
-      document.getElementById('psh-geo-status').style.color='#34d399';
-    }
-  });
-  renderPshMarkers();
+  // Verificar que Leaflet está cargado
+  if(typeof L==='undefined'){ console.warn('Leaflet no cargado aún'); return; }
+  const cont=document.getElementById('psh-map');
+  if(!cont){ console.warn('Contenedor psh-map no existe'); return; }
+  if(pshMapInst){
+    try{ pshMapInst.invalidateSize(); }catch(e){}
+    renderPshMarkers();
+    return;
+  }
+  // Si el contenedor no tiene dimensiones todavía, reintentar
+  if(cont.offsetWidth===0||cont.offsetHeight===0){
+    setTimeout(()=>{ try{ initPshMap(); }catch(e){ console.warn('reintento initPshMap:',e); } },250);
+    return;
+  }
+  try{
+    pshMapInst=L.map('psh-map',{preferCanvas:false}).setView([40.3980,-3.7030],14);
+    const callejero=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19});
+    const satelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri',maxZoom:19});
+    callejero.addTo(pshMapInst);
+    L.control.layers({'🗺️ Callejero':callejero,'🛰️ Satélite':satelite},{},{position:'topright'}).addTo(pshMapInst);
+    pshMapInst.on('click',function(e){
+      if(document.getElementById('modal-psh').classList.contains('open')){
+        document.getElementById('psh-lat').value=e.latlng.lat.toFixed(6);
+        document.getElementById('psh-lon').value=e.latlng.lng.toFixed(6);
+        document.getElementById('psh-geo-status').textContent='✓ ['+e.latlng.lat.toFixed(4)+', '+e.latlng.lng.toFixed(4)+']';
+        document.getElementById('psh-geo-status').style.color='#34d399';
+      }
+    });
+    renderPshMarkers();
+  }catch(e){
+    console.warn('Error al inicializar mapa PSH:',e);
+    pshMapInst=null;
+  }
 }
 
 function renderPshMarkers(){
