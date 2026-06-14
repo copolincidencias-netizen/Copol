@@ -90,6 +90,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#e2e8f
 .alarm-row{animation:alarmPulse 1.1s ease-in-out infinite}
 .alarm-icon{animation:alarmBlink .9s ease-in-out infinite;color:#ef4444;font-size:15px}
 .alarm-strip{background:#ef444415;border:1px solid #ef444444;border-radius:9px;padding:.55rem 1rem;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:#f87171;font-weight:500}
+.alarm-strip-rec{background:#f9731615;border:1px solid #f9731644;color:#fb923c}
+.alarm-strip-rec i{color:#f97316;font-size:15px}
+.rec-row{box-shadow:inset 3px 0 0 #f97316}
+.rec-row:hover{background:#f9731608}
 
 /* ── TABLES ── */
 .dash-wrap{background:#111827;border:1px solid #1e293b;border-radius:12px;overflow:visible}
@@ -585,6 +589,7 @@ select option{background:#111827;color:#e2e8f0}
   <div class="panel active" id="panel-dashboard">
     <div class="sec-hdr"><div><h2><span class="live-dot"></span>Tablón operativo</h2><p id="dash-sub">Incidencias activas y pendientes de asignar</p></div></div>
     <div id="alarm-strip-dash" style="display:none" class="alarm-strip"><i class="ti ti-alarm alarm-icon"></i><span id="alarm-strip-msg"></span></div>
+    <div id="alarm-strip-rec" style="display:none;cursor:pointer" class="alarm-strip alarm-strip-rec" onclick="abrirRecurrentes()" title="Ver detalle de incidencias recurrentes"><i class="ti ti-repeat"></i><span id="alarm-strip-rec-msg"></span><i class="ti ti-chevron-right" style="margin-left:auto"></i></div>
 
     <!-- STATS KPI -->
     <div class="kpi-grid" id="kpi-grid"></div>
@@ -606,7 +611,15 @@ select option{background:#111827;color:#e2e8f0}
     </div>
 
     <div class="dash-wrap">
-      <div class="dash-hdr"><h3>Activas / Sin asignar</h3><span style="font-size:.72rem;color:#475569" id="dash-count">0 incidencias</span></div>
+      <div class="dash-hdr"><h3>Activas / Sin asignar</h3>
+        <div style="display:flex;align-items:center;gap:.7rem;margin-left:auto">
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:#94a3b8;cursor:pointer;user-select:none">
+            <input type="checkbox" id="dash-solo-recurrentes" onchange="renderDash()" style="cursor:pointer">
+            <i class="ti ti-repeat" style="color:#f97316"></i> Solo recurrentes
+          </label>
+          <span style="font-size:.72rem;color:#475569" id="dash-count">0 incidencias</span>
+        </div>
+      </div>
       <div style="overflow-x:auto">
         <table><thead><tr>
           <th style="width:84px">Día</th><th style="width:75px">H. asig.</th>
@@ -1294,6 +1307,7 @@ select option{background:#111827;color:#e2e8f0}
         <button class="btn-map" onclick="updateMap()"><i class="ti ti-flame"></i> Actualizar</button>
         <button class="btn-map" id="btn-satellite" onclick="toggleMapLayer()" style="background:#0f4c81" title="Cambiar entre callejero y satelite"><i class="ti ti-satellite"></i> Satelite</button>
         <button class="btn-map" id="btn-toggle-labels" onclick="toggleMapLabels()" style="background:#1e3a5f" title="Mostrar/ocultar etiquetas INC"><i class="ti ti-tag"></i> Etiquetas</button>
+        <button class="btn-map" id="btn-solo-recurrentes" onclick="toggleMapRecurrentes()" style="background:#1e3a5f" title="Mostrar solo incidencias en direcciones recurrentes"><i class="ti ti-repeat"></i> Recurrentes</button>
         <button class="btn-print" onclick="printMapa()"><i class="ti ti-printer"></i> Imprimir</button>
       </div>
       <div class="radius-row">
@@ -1653,6 +1667,18 @@ select option{background:#111827;color:#e2e8f0}
         <button class="btn-s" onclick="guardarEstado()"><i class="ti ti-check"></i> Guardar cambios</button>
         <button class="btn-sec" onclick="closeModal('modal-est')"><i class="ti ti-x"></i> Cancelar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL RECURRENTES -->
+  <div id="modal-recurrentes" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:14px;padding:1.2rem;max-width:640px;width:100%;max-height:90vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <h3 id="rec-modal-titulo" style="color:#f1f5f9;font-size:1rem;margin:0"><i class="ti ti-repeat" style="color:#f97316;margin-right:.4rem"></i>Incidencias recurrentes</h3>
+        <button onclick="document.getElementById('modal-recurrentes').style.display='none'" style="background:#334155;color:#e2e8f0;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:1rem">×</button>
+      </div>
+      <div id="rec-modal-breadcrumb" style="font-size:.74rem;color:#64748b;margin-bottom:.8rem"></div>
+      <div id="rec-modal-body"></div>
     </div>
   </div>
 
@@ -2280,19 +2306,39 @@ function renderDash(){
   const topAgents=Object.entries(agentCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
   document.getElementById('widget-agents').innerHTML=topAgents.length?`<div class="widget-list">${topAgents.map(([a,c],i)=>`<div class="widget-item"><div class="wi-rank ${i<3?'r'+(i+1):''}">${i+1}</div><div class="wi-name" title="${escHtml(a)}">${escHtml(a)}</div><div class="wi-count">${c}</div></div>`).join('')}</div>`:'<div class="widget-empty">Sin datos en los últimos 7 días</div>';
 
-  document.getElementById('dash-tbody').innerHTML=inc.length?inc.slice().reverse().map(i=>{
+  // Recurrencia: precalcular direcciones recurrentes
+  const recurrentes=getDireccionesRecurrentes();
+  const soloRec=document.getElementById('dash-solo-recurrentes')?.checked;
+  let incDash=inc;
+  if(soloRec){
+    incDash=inc.filter(i=>recurrentes[_normDireccion(i.dir)]);
+  }
+  // Aviso de recurrencia en la tira de alarma (independiente de prioritarias)
+  const numDirRec=Object.keys(recurrentes).length;
+  const stripRec=document.getElementById('alarm-strip-rec');
+  if(stripRec){
+    if(numDirRec>0){
+      stripRec.style.display='flex';
+      const totalInc=Object.values(recurrentes).reduce((a,arr)=>a+arr.length,0);
+      document.getElementById('alarm-strip-rec-msg').textContent=numDirRec+' dirección'+(numDirRec>1?'es':'')+' con incidencias recurrentes ('+totalInc+' incidencias en total) — posible punto conflictivo';
+    }else stripRec.style.display='none';
+  }
+
+  document.getElementById('dash-tbody').innerHTML=incDash.length?incDash.slice().reverse().map(i=>{
     const p=i.prioridad==='prioritaria';
-    return`<tr class="${p?'alarm-row':''}">
-      <td>${p?`<i class="ti ti-alarm alarm-icon" title="Prioritario"></i> `:''}${fmtFec(i.fec)}</td>
+    const repe=recurrentes[_normDireccion(i.dir)];
+    const esRec=repe&&repe.length>=UMBRAL_RECURRENCIA;
+    return`<tr class="${p?'alarm-row':''}${esRec?' rec-row':''}">
+      <td>${p?`<i class="ti ti-alarm alarm-icon" title="Prioritario"></i> `:''}${esRec?`<i class="ti ti-repeat" style="color:#f97316" title="Dirección recurrente: ${repe.length} incidencias"></i> `:''}${fmtFec(i.fec)}</td>
       <td>${i.has||'—'}</td><td>${i.ori||'—'}</td>
       <td>${i.asi||'<span style="color:#475569;font-style:italic">Sin asignar</span>'}</td>
       <td>${i.hlleg||'—'}</td>
-      <td title="${i.dir}">${i.dir}</td>
+      <td title="${i.dir}">${i.dir}${esRec?` <span style="background:#f9731622;color:#fb923c;font-size:.62rem;padding:.05rem .35rem;border-radius:6px;font-weight:700;white-space:nowrap">×${repe.length}</span>`:''}</td>
       <td title="${i.des}">${i.des}</td>
       <td><span class="sbadge s-${i.est}">${i.est}</span></td>
       <td><button class="btn-cierre" onclick="abrirCierre('${i.id}')"><i class="ti ti-circle-check"></i> Cerrar</button></td>
     </tr>`;
-  }).join(''):'<tr><td colspan="9" style="text-align:center;color:#334155;padding:2rem">No hay incidencias activas</td></tr>';
+  }).join(''):`<tr><td colspan="9" style="text-align:center;color:#334155;padding:2rem">${soloRec?'No hay incidencias activas en direcciones recurrentes':'No hay incidencias activas'}</td></tr>`;
 }
 
 // ════════════════════════════════════════════════
@@ -2673,6 +2719,11 @@ function updateMap(){
   }
   if(des)inc=inc.filter(i=>i.fec>=des);
   if(has)inc=inc.filter(i=>i.fec<=has);
+  // Filtro de recurrentes: solo incidencias en direcciones con >= umbral
+  if(_mapSoloRecurrentes){
+    const rec=getDireccionesRecurrentes();
+    inc=inc.filter(i=>rec[_normDireccion(i.dir)]);
+  }
   currentMapInc=[...inc];
   const pts=inc.filter(i=>i.lat&&i.lon);
   document.getElementById('map-count').textContent=pts.length+' incidencias visibles';
@@ -3833,6 +3884,117 @@ function detectarZona(dir){
   return Array.from(union).join(' / ');
 }
 
+// ── RECURRENCIA POR DIRECCIÓN EXACTA ──
+// Umbral configurable: a partir de cuántas incidencias en la misma dirección se considera recurrente
+let UMBRAL_RECURRENCIA = 3;
+
+// Normaliza una dirección para comparar (minúsculas, sin tildes, sin "calle de", sin código postal)
+function _normDireccion(dir){
+  if(!dir)return '';
+  let s=String(dir).split(',')[0].trim(); // descartar "Arganzuela, 28045, Madrid"
+  s=s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  s=s.replace(/[.\-º°ª]/g,' ').replace(/\s+/g,' ').trim();
+  const pref=['calle de los ','calle de las ','calle de la ','calle del ','calle de ','calle ','paseo de las ','paseo de la ','paseo del ','paseo de ','paseo ','ronda de ','ronda ','avenida de la ','avenida de ','avenida ','avda de ','avda ','plaza de ','plaza ','glorieta de ','glorieta ','c/ ','c/'];
+  for(const p of pref){ if(s.startsWith(p)){ s=s.slice(p.length); break; } }
+  return s.trim();
+}
+
+// Devuelve un mapa {direccionNormalizada: [lista de incidencias]} solo con las que se repiten >= umbral
+function getDireccionesRecurrentes(){
+  const porDir={};
+  getInc().filter(i=>i&&i.id&&i.id.startsWith('INC')&&i.est!=='anulado').forEach(i=>{
+    const k=_normDireccion(i.dir);
+    if(!k)return;
+    if(!porDir[k])porDir[k]=[];
+    porDir[k].push(i);
+  });
+  const recurrentes={};
+  Object.entries(porDir).forEach(([k,arr])=>{
+    if(arr.length>=UMBRAL_RECURRENCIA)recurrentes[k]=arr;
+  });
+  return recurrentes;
+}
+
+// ¿Esta incidencia está en una dirección recurrente? Devuelve el nº de repeticiones o 0
+function esIncidenciaRecurrente(inc){
+  if(!inc||!inc.dir)return 0;
+  const rec=getDireccionesRecurrentes();
+  const k=_normDireccion(inc.dir);
+  return rec[k]?rec[k].length:0;
+}
+
+// ── MODAL DE RECURRENCIAS (navegación 2 niveles) ──
+// Nivel 1: listado de direcciones recurrentes
+function abrirRecurrentes(){
+  document.getElementById('modal-recurrentes').style.display='flex';
+  renderRecurrentesDirecciones();
+}
+function renderRecurrentesDirecciones(){
+  const rec=getDireccionesRecurrentes();
+  document.getElementById('rec-modal-titulo').innerHTML='<i class="ti ti-repeat" style="color:#f97316;margin-right:.4rem"></i>Direcciones recurrentes';
+  document.getElementById('rec-modal-breadcrumb').innerHTML='Direcciones con '+UMBRAL_RECURRENCIA+' o más incidencias registradas';
+  // Ordenar por número de incidencias (descendente)
+  const dirs=Object.entries(rec).sort((a,b)=>b[1].length-a[1].length);
+  if(!dirs.length){
+    document.getElementById('rec-modal-body').innerHTML='<div style="padding:2rem;text-align:center;color:#475569">No hay direcciones recurrentes</div>';
+    return;
+  }
+  let html='<div style="display:flex;flex-direction:column;gap:.5rem">';
+  dirs.forEach(([k,arr])=>{
+    // Usar la dirección más completa del grupo como etiqueta
+    const dirMostrar=arr.map(i=>i.dir).sort((a,b)=>b.length-a.length)[0];
+    const zona=detectarZona(dirMostrar);
+    const prioritarias=arr.filter(i=>i.prioridad==='prioritaria').length;
+    const abiertas=arr.filter(i=>i.est!=='cerrada'&&i.est!=='anulado').length;
+    html+=`<div onclick="renderRecurrentesIncidencias('${k.replace(/'/g,"\\'")}')" style="background:#1a1206;border:1px solid #f9731633;border-radius:10px;padding:.7rem .9rem;cursor:pointer;transition:.15s" onmouseover="this.style.background='#241a0a'" onmouseout="this.style.background='#1a1206'">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="background:#f97316;color:#fff;font-weight:800;font-size:.95rem;min-width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center">${arr.length}</div>
+        <div style="flex:1;min-width:0">
+          <div style="color:#f1f5f9;font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(dirMostrar)}</div>
+          <div style="color:#94a3b8;font-size:.72rem;margin-top:.15rem">${zona?'<i class="ti ti-map-pin" style="font-size:.7rem"></i> '+zona+' · ':''}${abiertas} activa${abiertas!==1?'s':''}${prioritarias>0?' · <span style="color:#fbbf24">'+prioritarias+' prioritaria'+(prioritarias!==1?'s':'')+'</span>':''}</div>
+        </div>
+        <i class="ti ti-chevron-right" style="color:#f97316"></i>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('rec-modal-body').innerHTML=html;
+}
+// Nivel 2: incidencias de una dirección concreta
+function renderRecurrentesIncidencias(dirNorm){
+  const rec=getDireccionesRecurrentes();
+  const arr=rec[dirNorm];
+  if(!arr)return;
+  const dirMostrar=arr.map(i=>i.dir).sort((a,b)=>b.length-a.length)[0];
+  document.getElementById('rec-modal-titulo').innerHTML='<i class="ti ti-map-pin" style="color:#f97316;margin-right:.4rem"></i>'+escHtml(dirMostrar);
+  document.getElementById('rec-modal-breadcrumb').innerHTML='<span onclick="renderRecurrentesDirecciones()" style="cursor:pointer;color:#60a5fa"><i class="ti ti-arrow-left" style="font-size:.7rem"></i> Volver a direcciones</span> · '+arr.length+' incidencias en este punto';
+  // Ordenar por fecha descendente
+  const ordenadas=arr.slice().sort((a,b)=>(b.fec+(b.hor||'')).localeCompare(a.fec+(a.hor||'')));
+  let html='<div style="display:flex;flex-direction:column;gap:.45rem">';
+  ordenadas.forEach(i=>{
+    const p=i.prioridad==='prioritaria';
+    const estCol={abierta:'#3b82f6',asignada:'#f59e0b',cerrada:'#10b981',anulado:'#64748b'}[i.est]||'#64748b';
+    html+=`<div onclick="document.getElementById('modal-recurrentes').style.display='none';verFichaIncidencia('${i.id}')" style="background:#0b1220;border:1px solid #1e293b;border-radius:9px;padding:.6rem .75rem;cursor:pointer${p?';box-shadow:inset 3px 0 0 #ef4444':''}" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem">
+        <span style="color:#f1f5f9;font-weight:700;font-size:.82rem">${i.id}</span>
+        ${p?'<i class="ti ti-alarm" style="color:#ef4444;font-size:.8rem" title="Prioritaria"></i>':''}
+        <span style="background:${estCol}22;color:${estCol};font-size:.66rem;padding:.1rem .4rem;border-radius:5px;font-weight:600">${i.est}</span>
+        <span style="margin-left:auto;color:#64748b;font-size:.72rem">${fmtFec(i.fec)}${i.hor?' · '+i.hor:''}</span>
+      </div>
+      <div style="color:#cbd5e1;font-size:.76rem">${escHtml(tipoL(i.tip)||i.tip||'')}</div>
+      ${i.des?`<div style="color:#94a3b8;font-size:.72rem;margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(i.des)}</div>`:''}
+      ${i.asi?`<div style="color:#64748b;font-size:.68rem;margin-top:.2rem"><i class="ti ti-user" style="font-size:.65rem"></i> ${escHtml(i.asi)}${i.res?' · '+escHtml(resL(i.res)):''}</div>`:''}
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('rec-modal-body').innerHTML=html;
+}
+// Abrir ficha de incidencia
+function verFichaIncidencia(id){
+  if(typeof abrirModalEst==='function')return abrirModalEst(id);
+  if(typeof showP==='function')showP('listado');
+}
+
 
 const CALLEJERO_ARGANZUELA = `BARRIOS DE ARGANZUELA (callejero completo, vías por barrio):
 IMPERIAL: Alejandro Dumas, Bajo De La Virgen Del Puerto, Bercial, Casimiro Mahou Bierhans, Chulapos, Cobos De Segovia, Duque De Tovar, Etreros, Fosforo, Francisco Morano, Francisco Nieva, Gil Imon, Imperial, Jemenuño, Juan Antonio Vallejo-Najera Botas, Juan Duque, Leonor De La Vega, Linneo, M-30, Manzanares, Marmol, Mazarredo, Melancolicos, Mercado, Moreno Nieto, Muñopedro, Nati Mistral, Nogales, Paradinas, Particular, Pinos, Piramides, Pizarra, Pontones, Puerta De Toledo, Ruy Gonzalez De Clavijo, San Alejandro, San Epifanio, San Isidro, Sangarcia, Santa Casilda, Santa Maria La Real De Nieva, Segovia, Teatro, Toledo, Villoslada, Virgen Del Puerto
@@ -4342,6 +4504,16 @@ function initTheme(){
 // ══════════════════════════════════════════
 var _mapLayerSat = false;
 var _mapShowLabels = true;
+var _mapSoloRecurrentes = false;
+
+function toggleMapRecurrentes(){
+  _mapSoloRecurrentes = !_mapSoloRecurrentes;
+  const btn = document.getElementById('btn-solo-recurrentes');
+  if(btn){
+    btn.style.background = _mapSoloRecurrentes ? '#ea580c' : '#1e3a5f';
+  }
+  updateMap();
+}
 
 function toggleMapLabels(){
   _mapShowLabels = !_mapShowLabels;
