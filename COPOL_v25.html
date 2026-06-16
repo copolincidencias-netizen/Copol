@@ -887,7 +887,7 @@ select option{background:#111827;color:#e2e8f0}
   <div class="panel" id="panel-psh">
     <div class="sec-hdr">
       <div><h2><i class="ti ti-map-pin-heart" style="color:#a78bfa"></i> Censo PSH — Personas Sin Hogar</h2><p id="psh-count">0 personas registradas</p></div>
-      <button class="btn-s" onclick="openPshModal(null)" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="ti ti-plus"></i> Registrar PSH</button>
+      <button class="btn-s psh-edit-only" onclick="openPshModal(null)" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)"><i class="ti ti-plus"></i> Registrar PSH</button>
     </div>
     <!-- BARRA DE FILTROS -->
     <div style="display:flex;flex-wrap:wrap;gap:.35rem;padding:.5rem 0;margin-bottom:.5rem;border-bottom:1px solid #1e293b;align-items:center">
@@ -1353,8 +1353,10 @@ select option{background:#111827;color:#e2e8f0}
       <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="r-has"></div>
       <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Estado</label><select class="map-sel" id="r-est"><option value="">Todos</option><option value="abierta">Abierta</option><option value="asignada">Asignada</option><option value="cerrada">Cerrada</option><option value="anulado">Anulado</option></select></div>
       <button class="btn-map" onclick="genInforme()"><i class="ti ti-file-analytics"></i> Generar informe</button>
+      <button class="btn-map" onclick="genComparativas()" style="background:#0f4c81"><i class="ti ti-chart-bar"></i> Comparativas</button>
       <button id="btn-ia-narrar" class="btn-map" onclick="iaNarrarInforme()" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);display:none"><i class="ti ti-sparkles"></i> Narrar con IA</button>
     </div></div>
+    <div id="comparativas-out"></div>
     <div id="ia-narrador-out"></div>
     <div id="informe-out"></div>
   </div>
@@ -2112,8 +2114,11 @@ function loginAs(u){
   const isSocial=u.role==='social';
   document.querySelectorAll('.ao').forEach(el=>el.style.display=isAdmin?'flex':'none');
   document.querySelectorAll('.ao-sa').forEach(el=>el.style.display=isSA?'flex':'none');
-  // PSH visible para admin, superadmin y social
-  document.querySelectorAll('.ao-psh').forEach(el=>el.style.display=(isAdmin||isSocial)?'flex':'none');
+  // PSH visible para todos los roles (agente en modo solo lectura)
+  document.querySelectorAll('.ao-psh').forEach(el=>el.style.display='flex');
+  // Botones de añadir/editar PSH solo para admin, superadmin y social (no agentes)
+  const pshPuedeEditar=isAdmin||isSocial;
+  document.querySelectorAll('.psh-edit-only').forEach(el=>el.style.display=pshPuedeEditar?'':'none');
   const iaVisible=isAdmin;
   const iakeyBtn=document.getElementById('ia-key-btn');
   if(iakeyBtn)iakeyBtn.style.display=iaVisible?'flex':'none';
@@ -2444,15 +2449,18 @@ function renderLst(){
     else el.textContent='';
   });
   const ia=CU&&(CU.role==='admin'||CU.role==='superadmin');
+  const recurrentes=getDireccionesRecurrentes();
   document.getElementById('lst-tbody').innerHTML=fVisible.length?fVisible.map(i=>{
     const isPrioAlert=i.prioridad==='prioritaria'&&!i.res;
+    const repe=recurrentes[_normDireccion(i.dir)];
+    const esRec=repe&&repe.length>=UMBRAL_RECURRENCIA;
     return`
-    <tr class="${isPrioAlert?'alarm-row':''}">
-      <td style="color:#3b82f6;font-weight:600">${isPrioAlert?`<i class="ti ti-alarm alarm-icon" style="font-size:13px;margin-right:3px"></i>`:''}${i.id}</td>
+    <tr class="${isPrioAlert?'alarm-row':''}${esRec?' rec-row':''}">
+      <td style="color:#3b82f6;font-weight:600">${isPrioAlert?`<i class="ti ti-alarm alarm-icon" style="font-size:13px;margin-right:3px"></i>`:''}${esRec?`<i class="ti ti-repeat" style="color:#f97316;font-size:13px;margin-right:3px" title="Dirección recurrente: ${repe.length} incidencias"></i>`:''}${i.id}</td>
       <td>${fmtFec(i.fec)}</td><td>${i.hor}</td>
       <td style="font-size:.78rem;color:#94a3b8">${i.asi||'—'}</td>
       <td style="font-size:.7rem"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${tipoBadgeColor(i.tip)};margin-right:4px;vertical-align:middle"></span>${tipoL(i.tip)}</td>
-      <td title="${i.dir}">${i.dir}</td>
+      <td title="${i.dir}">${i.dir}${esRec?` <span style="background:#f9731622;color:#fb923c;font-size:.62rem;padding:.05rem .35rem;border-radius:6px;font-weight:700;white-space:nowrap;cursor:pointer" onclick="event.stopPropagation();abrirRecurrentes()" title="Ver direcciones recurrentes">×${repe.length}</span>`:''}</td>
       <td title="${i.des}">${i.des}</td>
       <td><span class="sbadge s-${i.est}">${i.est}</span></td>
       <td style="font-size:.75rem">${i.prioridad==='prioritaria'?'<span style="color:#f87171;font-weight:600">⚡ Prioritaria</span>':'<span style="color:#94a3b8">No prioritaria</span>'}</td>
@@ -3533,6 +3541,90 @@ function exportZonasCSV(){
   ordenZonas.forEach(z=>{const d=porZona[z];csv+=`${z};${d.total};${d.prioritarias};${d.cerradas}\n`;});
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estadisticas_zona.csv';a.click();
+}
+
+function genComparativas(){
+  const out=document.getElementById('comparativas-out');
+  if(!out)return;
+  const des=document.getElementById('r-des')?.value||'';
+  const has=document.getElementById('r-has')?.value||'';
+  const est=document.getElementById('r-est')?.value||'';
+  let inc=getInc().filter(i=>i&&i.id&&i.id.startsWith('INC'));
+  if(des)inc=inc.filter(i=>i.fec>=des);
+  if(has)inc=inc.filter(i=>i.fec<=has);
+  if(est)inc=inc.filter(i=>i.est===est);
+  if(!inc.length){out.innerHTML='<div style="padding:2rem;text-align:center;color:#475569">No hay incidencias con los filtros seleccionados</div>';return;}
+
+  // Helper para dibujar un grupo de barras
+  function barras(titulo, datos, color){
+    const max=Math.max(1,...datos.map(d=>d.v));
+    let h=`<div class="report-sec" style="margin-top:.7rem"><div class="dash-hdr"><h3>${titulo}</h3></div><div style="display:flex;flex-direction:column;gap:.4rem;padding:.4rem 0">`;
+    datos.forEach(d=>{
+      const pct=Math.round(d.v/max*100);
+      h+=`<div style="display:flex;align-items:center;gap:.6rem">
+        <div style="width:130px;font-size:.76rem;color:#cbd5e1;text-align:right;flex-shrink:0">${d.k}</div>
+        <div style="flex:1;background:#1e293b;border-radius:6px;height:24px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${color},${color}aa);border-radius:6px;min-width:${d.v>0?'26px':'0'};display:flex;align-items:center;justify-content:flex-end;padding-right:.5rem">
+            <span style="font-size:.72rem;font-weight:700;color:#fff">${d.v||''}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    h+='</div></div>';
+    return h;
+  }
+
+  // 1. POR TURNO (mañana 07:30-14:30, tarde 14:30-22:30, noche 22:30-07:30)
+  const turnos={'Mañana (07:30-14:30)':0,'Tarde (14:30-22:30)':0,'Noche (22:30-07:30)':0};
+  inc.forEach(i=>{
+    const partes=(i.hor||'00:00').split(':');
+    const min=parseInt(partes[0],10)*60+parseInt(partes[1]||'0',10);
+    if(min>=450&&min<870)turnos['Mañana (07:30-14:30)']++;       // 07:30=450, 14:30=870
+    else if(min>=870&&min<1350)turnos['Tarde (14:30-22:30)']++;  // 14:30=870, 22:30=1350
+    else turnos['Noche (22:30-07:30)']++;                        // resto
+  });
+  // 2. POR DÍA DE LA SEMANA
+  const dias=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const porDia={}; dias.forEach(d=>porDia[d]=0);
+  inc.forEach(i=>{try{let g=new Date(i.fec).getDay();g=g===0?6:g-1;porDia[dias[g]]++;}catch(e){}});
+  // 3. POR TIPO (categoría)
+  const catNom={V:'Convivencia (V)',M:'Seg. Ciudadana (M)',N:'Seg. Vial (N)',G:'Gestión (G)',R:'Requerimientos (R)',A:'Apoyo (A)'};
+  const porTipo={};
+  inc.forEach(i=>{const c=(i.tip||'?').charAt(0).toUpperCase();const n=catNom[c]||'Otros';porTipo[n]=(porTipo[n]||0)+1;});
+  // 4. POR MES
+  const porMes={};
+  inc.forEach(i=>{const m=(i.fec||'').slice(0,7);if(m)porMes[m]=(porMes[m]||0)+1;});
+  const mesesOrd=Object.keys(porMes).sort();
+  const mesNom=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  // 5. POR ESTADO
+  const porEstado={};
+  inc.forEach(i=>{porEstado[i.est]=(porEstado[i.est]||0)+1;});
+
+  // Métricas de cabecera
+  const turnoTop=Object.entries(turnos).sort((a,b)=>b[1]-a[1])[0];
+  const diaTop=Object.entries(porDia).sort((a,b)=>b[1]-a[1])[0];
+
+  let html=`
+    <div class="report-sec">
+      <div class="dash-hdr"><h3>Comparativas — ${inc.length} incidencias analizadas</h3><button class="btn-exp" onclick="document.getElementById('comparativas-out').innerHTML=''"><i class="ti ti-x"></i> Cerrar</button></div>
+      <div class="sum-grid">
+        <div class="sum-item"><div class="num">${inc.length}</div><div class="lbl">Total</div></div>
+        <div class="sum-item"><div class="num" style="font-size:1rem">${turnoTop[0].split(' ')[0]}</div><div class="lbl">Turno más activo</div></div>
+        <div class="sum-item"><div class="num" style="font-size:1rem">${diaTop[0]}</div><div class="lbl">Día más activo</div></div>
+        <div class="sum-item"><div class="num">${mesesOrd.length}</div><div class="lbl">Meses con datos</div></div>
+      </div>
+    </div>`;
+
+  html+=barras('Por turno', Object.entries(turnos).map(([k,v])=>({k,v})), '#3b82f6');
+  html+=barras('Por día de la semana', dias.map(d=>({k:d,v:porDia[d]})), '#8b5cf6');
+  html+=barras('Por tipo de incidencia', Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({k,v})), '#10b981');
+  html+=barras('Por estado', Object.entries(porEstado).map(([k,v])=>({k:k.charAt(0).toUpperCase()+k.slice(1),v})), '#f59e0b');
+  if(mesesOrd.length>1){
+    html+=barras('Evolución por mes', mesesOrd.map(m=>{const[a,mm]=m.split('-');return{k:mesNom[parseInt(mm,10)-1]+' '+a,v:porMes[m]};}), '#ec4899');
+  }
+
+  out.innerHTML=html;
+  out.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function genInforme(){
@@ -5557,7 +5649,7 @@ function renderPshMarkers(){
       <div style="font-size:.73rem;margin-bottom:.3rem">🔗 ${incsHtml}</div>
       ${contactosHtml}
       <div style="display:flex;gap:.3rem;margin-top:.5rem">
-        <button onclick="openPshModal('${p.id}')" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:.3rem .6rem;font-size:.72rem;cursor:pointer">✏️ Editar</button>
+        ${(CU&&(CU.role==='admin'||CU.role==='superadmin'||CU.role==='social'))?`<button onclick="openPshModal('${p.id}')" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:.3rem .6rem;font-size:.72rem;cursor:pointer">✏️ Editar</button>`:''}
         <button onclick="imprimirFichaPsh('${p.id}')" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:5px;padding:.3rem .6rem;font-size:.72rem;cursor:pointer">🖨️ Ficha</button>
       </div></div>`;
     const m=L.marker([p.lat,p.lon],{icon}).bindPopup(popup,{maxWidth:290}).addTo(pshMapInst);
@@ -5720,6 +5812,11 @@ function verDiaPsh(fechaStr){
 }
 
 function openPshModal(id){
+  // Bloqueo: los agentes (rol user) no pueden crear ni editar PSH
+  if(!CU||(CU.role!=='admin'&&CU.role!=='superadmin'&&CU.role!=='social')){
+    alert('Acceso de solo lectura: no tienes permiso para crear o modificar registros PSH.');
+    return;
+  }
   PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)el.checked=false;});
   ['psh-alias','psh-nombre-completo','psh-doc-tipo','psh-doc-num','psh-fnac','psh-nacionalidad','psh-otros-filiacion','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-radio','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id','psh-foto-url','psh-gedie-num','psh-gedie-estado','psh-gedie-obs','psh-ultima-fecha','psh-ultima-desc','psh-proxima-fecha','psh-proxima-desc','psh-protocolo-fecha','psh-protocolo-hora','psh-protocolo-solicitante','psh-protocolo-motivo'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
   const radioEl=document.getElementById('psh-radio');if(radioEl)radioEl.value='50';
@@ -5795,6 +5892,11 @@ function openPshModal(id){
 }
 
 async function guardarPsh(){
+  // Bloqueo de seguridad: los agentes (rol user) no pueden guardar PSH
+  if(!CU||(CU.role!=='admin'&&CU.role!=='superadmin'&&CU.role!=='social')){
+    alert('Acceso de solo lectura: no tienes permiso para guardar registros PSH.');
+    return;
+  }
   const alias=document.getElementById('psh-alias').value.trim();
   if(!alias){alert('El alias es obligatorio');return;}
   const id=document.getElementById('psh-id').value||'PSH-'+Date.now();
