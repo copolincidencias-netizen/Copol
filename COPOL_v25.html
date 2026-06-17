@@ -1588,7 +1588,13 @@ select option{background:#111827;color:#e2e8f0}
         <div class="fg"><label>Hora de asignación</label><input type="time" id="modal-has-hora" class="modal-sel"></div>
         <div class="fg"><label>Hora de llegada</label><input type="time" id="modal-hlleg" class="modal-sel"></div>
         <div class="fg"><label>Hora de finalización</label><input type="time" id="modal-hfi" class="modal-sel"></div>
-        <div class="fg" style="grid-column:1/-1"><label>Dirección</label><input type="text" id="modal-dir" class="modal-sel" placeholder="Calle, número, Madrid"></div>
+        <div class="fg" style="grid-column:1/-1"><label>Dirección</label>
+          <div style="display:flex;gap:.4rem;align-items:stretch">
+            <input type="text" id="modal-dir" class="modal-sel" style="flex:1" placeholder="Calle, número, Madrid">
+            <button type="button" class="geo-btn" onclick="geocodificarModal()" title="Buscar coordenadas" style="white-space:nowrap"><i class="ti ti-map-pin"></i> Coords</button>
+          </div>
+          <div class="geo-status" id="modal-geo-status" style="margin-top:.3rem"></div>
+        </div>
         <div class="fg"><label>Latitud</label><input type="number" id="modal-lat" class="modal-sel" step="any" placeholder="40.4168"></div>
         <div class="fg"><label>Longitud</label><input type="number" id="modal-lon" class="modal-sel" step="any" placeholder="-3.7038"></div>
         <div class="fg"><label>Estado</label>
@@ -3181,6 +3187,81 @@ function setGeoStatus(t,msg){
   el.textContent=msg;
 }
 function clearGeo(){document.getElementById('geo-status').textContent=''}
+
+// Geocodificación para la ficha de MODIFICAR incidencia (modal-est)
+async function geocodificarModal(){
+  const dirEl=document.getElementById('modal-dir');
+  const latEl=document.getElementById('modal-lat');
+  const lonEl=document.getElementById('modal-lon');
+  const statusEl=document.getElementById('modal-geo-status');
+  const setSt=(t,msg)=>{ if(statusEl){statusEl.className='geo-status geo-'+t;statusEl.textContent=msg;} };
+  const dirOriginal=(dirEl?.value||'').trim();
+  if(!dirOriginal){setSt('err','Introduce una dirección primero');return;}
+  setSt('loading','Buscando en Madrid...');
+
+  // Limpiar dirección de piso/puerta/etc.
+  const dirLimpia=dirOriginal
+    .replace(/,?\s*(piso|planta|pta?\.?|puerta|escalera|esc\.?|bloque|bl\.?|portal|letra|bajo|entresuelo|entlo?\.?|duplicado|bis|tr\.?|triplicado)\s*[a-zA-Z0-9]*/gi,'')
+    .replace(/\s*,\s*,/g,',').replace(/,\s*$/,'').trim();
+
+  // Confluencia "Calle A con/​/ Calle B"
+  const conf=dirLimpia.match(/^(.+?)\s+(?:con|\/|esquina)\s+(.+)$/i);
+  if(conf){
+    const c1=conf[1].trim(), c2=conf[2].trim();
+    setSt('loading','Buscando confluencia...');
+    try{
+      const [r1,r2]=await Promise.all([
+        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(c1+', Madrid')}&limit=5&lang=en`).then(r=>r.json()),
+        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(c2+', Madrid')}&limit=5&lang=en`).then(r=>r.json())
+      ]);
+      const f1=(r1.features||[]).filter(f=>f.properties?.city?.toLowerCase()==='madrid');
+      const f2=(r2.features||[]).filter(f=>f.properties?.city?.toLowerCase()==='madrid');
+      const b1=(f1.filter(f=>f.properties.type==='street')[0])||f1[0];
+      const b2=(f2.filter(f=>f.properties.type==='street')[0])||f2[0];
+      if(b1&&b2){
+        const [lo1,la1]=b1.geometry.coordinates,[lo2,la2]=b2.geometry.coordinates;
+        const lat=(parseFloat(la1)+parseFloat(la2))/2, lon=(parseFloat(lo1)+parseFloat(lo2))/2;
+        latEl.value=lat.toFixed(6); lonEl.value=lon.toFixed(6);
+        setSt('ok','✓ Confluencia ['+lat.toFixed(4)+', '+lon.toFixed(4)+']');
+        return;
+      }
+      setSt('err','No se encontró alguna de las calles en Madrid.');return;
+    }catch(e){setSt('err','Error de red. Introduce coordenadas manualmente.');return;}
+  }
+
+  // Búsqueda normal
+  const numMatch=dirLimpia.match(/\b(\d+)\b/);
+  const numUsuario=numMatch?numMatch[1]:'';
+  const query=dirLimpia.toLowerCase().includes('madrid')?dirLimpia:dirLimpia+', Madrid';
+  try{
+    const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10&lang=en`);
+    const d=await r.json();
+    const features=(d&&d.features)||[];
+    const madrid=features.filter(f=>f.properties?.city?.toLowerCase()==='madrid');
+    const pool=madrid.length?madrid:features;
+    const streets=pool.filter(f=>f.properties.type==='street');
+    const houses=pool.filter(f=>f.properties.type==='house');
+    const best=(streets.length?streets:houses.length?houses:pool)[0];
+    if(best){
+      const [lon,lat]=best.geometry.coordinates;
+      latEl.value=parseFloat(lat).toFixed(6);
+      lonEl.value=parseFloat(lon).toFixed(6);
+      const p=best.properties||{};
+      const calle=p.type==='street'?(p.name||''):(p.street||p.name||'');
+      const numero=p.housenumber||numUsuario||'';
+      const partes=[];
+      if(calle)partes.push(numero?calle+' '+numero:calle);
+      if(p.district)partes.push(p.district);
+      if(p.postcode)partes.push(p.postcode);
+      partes.push('Madrid');
+      const dirNorm=partes.join(', ');
+      if(dirEl)dirEl.value=dirNorm;
+      setSt('ok','✓ '+dirNorm+' ['+parseFloat(lat).toFixed(4)+', '+parseFloat(lon).toFixed(4)+']');
+    }else{
+      setSt('err','No encontrada en Madrid capital. Prueba con el nombre completo.');
+    }
+  }catch(e){setSt('err','Error de red. Introduce coordenadas manualmente.');}
+}
 
 function togglePrioField(fieldId,estado){
   // El campo prioridad siempre está visible
