@@ -967,6 +967,12 @@ select option{background:#111827;color:#e2e8f0}
         <span id="psh-cal-titulo" style="color:#f1f5f9;font-weight:600;font-size:.95rem"></span>
         <button onclick="cambiarMesPsh(1)" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:.35rem .8rem;cursor:pointer"><i class="ti ti-chevron-right"></i></button>
       </div>
+      <div id="psh-cal-filtros" style="display:flex;gap:.35rem;margin-bottom:.7rem;justify-content:center;flex-wrap:wrap">
+        <button onclick="setFiltroCalPsh('todos')" data-fcal="todos" class="fcal-btn" style="background:#7c3aed22;border:1px solid #7c3aed;border-radius:7px;padding:.3rem .7rem;color:#c084fc;font-size:.72rem;cursor:pointer;font-weight:600">Todos</button>
+        <button onclick="setFiltroCalPsh('pendiente')" data-fcal="pendiente" class="fcal-btn" style="background:#1e293b;border:1px solid #475569;border-radius:7px;padding:.3rem .7rem;color:#94a3b8;font-size:.72rem;cursor:pointer;font-weight:600"><i class="ti ti-clock"></i> Pendientes</button>
+        <button onclick="setFiltroCalPsh('realizado')" data-fcal="realizado" class="fcal-btn" style="background:#1e293b;border:1px solid #475569;border-radius:7px;padding:.3rem .7rem;color:#94a3b8;font-size:.72rem;cursor:pointer;font-weight:600"><i class="ti ti-circle-check"></i> Realizados</button>
+        <button onclick="setFiltroCalPsh('anulado')" data-fcal="anulado" class="fcal-btn" style="background:#1e293b;border:1px solid #475569;border-radius:7px;padding:.3rem .7rem;color:#94a3b8;font-size:.72rem;cursor:pointer;font-weight:600"><i class="ti ti-ban"></i> Anulados</button>
+      </div>
       <div id="psh-cal-grid"></div>
       <div id="psh-cal-detalle" style="margin-top:.8rem"></div>
     </div>
@@ -1061,6 +1067,19 @@ select option{background:#111827;color:#e2e8f0}
             <div class="fg"><label>Hora activación</label><input type="time" id="psh-protocolo-hora"></div>
             <div class="fg"><label>Solicitado por</label><input type="text" id="psh-protocolo-solicitante" placeholder="Nombre o servicio solicitante"></div>
             <div class="fg" style="grid-column:1/-1"><label>Motivo de activación</label><input type="text" id="psh-protocolo-motivo" placeholder="Descripción del motivo de activación del protocolo..."></div>
+            <div class="fg" style="grid-column:1/-1">
+              <label>Estado del protocolo</label>
+              <input type="hidden" id="psh-protocolo-estado" value="pendiente">
+              <div style="display:flex;gap:.4rem;margin-top:.2rem" id="psh-protocolo-estado-btns">
+                <button type="button" onclick="setProtocoloEstado('pendiente')" data-estado="pendiente" class="prot-est-btn" style="flex:1;background:#1e293b;border:1px solid #475569;border-radius:7px;padding:.45rem;color:#94a3b8;font-size:.74rem;cursor:pointer;font-weight:600"><i class="ti ti-clock"></i> Pendiente</button>
+                <button type="button" onclick="setProtocoloEstado('realizado')" data-estado="realizado" class="prot-est-btn" style="flex:1;background:#1e293b;border:1px solid #475569;border-radius:7px;padding:.45rem;color:#94a3b8;font-size:.74rem;cursor:pointer;font-weight:600"><i class="ti ti-circle-check"></i> Realizado</button>
+                <button type="button" onclick="setProtocoloEstado('anulado')" data-estado="anulado" class="prot-est-btn" style="flex:1;background:#1e293b;border:1px solid #475569;border-radius:7px;padding:.45rem;color:#94a3b8;font-size:.74rem;cursor:pointer;font-weight:600"><i class="ti ti-ban"></i> Anulado</button>
+              </div>
+            </div>
+            <div class="fg" style="grid-column:1/-1" id="psh-protocolo-anotaciones-wrap">
+              <label>Anotaciones del protocolo</label>
+              <textarea id="psh-protocolo-anotaciones" rows="2" placeholder="Anotaciones tras realizar o anular el protocolo (qué se hizo, resultado, incidencias...)" style="resize:vertical;font-family:inherit;font-size:.82rem;width:100%;background:#0a0e1a;border:1px solid #334155;border-radius:7px;padding:.5rem;color:#e2e8f0;outline:none"></textarea>
+            </div>
           </div>
         </div>
 
@@ -5806,6 +5825,26 @@ function removePshContacto(idx){
   renderPshContactosList(contactos);
 }
 
+function setProtocoloEstado(estado){
+  const hid=document.getElementById('psh-protocolo-estado');
+  if(hid)hid.value=estado;
+  // Estilar botones
+  const colores={pendiente:{bg:'#f59e0b',bd:'#f59e0b'},realizado:{bg:'#10b981',bd:'#10b981'},anulado:{bg:'#ef4444',bd:'#ef4444'}};
+  document.querySelectorAll('#psh-protocolo-estado-btns .prot-est-btn').forEach(b=>{
+    const e=b.getAttribute('data-estado');
+    if(e===estado){
+      const c=colores[e];
+      b.style.background=c.bg+'22';
+      b.style.borderColor=c.bd;
+      b.style.color=c.bg;
+    }else{
+      b.style.background='#1e293b';
+      b.style.borderColor='#475569';
+      b.style.color='#94a3b8';
+    }
+  });
+}
+
 function calcularEdadPsh(){
   const fnac=document.getElementById('psh-fnac')?.value;
   const edadEl=document.getElementById('psh-edad');
@@ -5836,24 +5875,41 @@ function cambiarMesPsh(delta){
   renderCalendarioPsh();
 }
 
+let _filtroCalPsh='todos';
+
+function setFiltroCalPsh(f){
+  _filtroCalPsh=f;
+  document.querySelectorAll('#psh-cal-filtros .fcal-btn').forEach(b=>{
+    const e=b.getAttribute('data-fcal');
+    const activo=e===f;
+    const colBase={todos:'#7c3aed',pendiente:'#f59e0b',realizado:'#10b981',anulado:'#ef4444'}[e];
+    if(activo){ b.style.background=colBase+'22'; b.style.borderColor=colBase; b.style.color=colBase; }
+    else{ b.style.background='#1e293b'; b.style.borderColor='#475569'; b.style.color='#94a3b8'; }
+  });
+  renderCalendarioPsh();
+}
+
+function _estadoProtocolo(p){ return p.protocolo_estado||'pendiente'; }
+
 function renderCalendarioPsh(){
   const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   document.getElementById('psh-cal-titulo').textContent=meses[_pshCalMes]+' '+_pshCalAnio;
 
-  // Agrupar protocolos por fecha (YYYY-MM-DD)
+  // Agrupar protocolos por fecha, aplicando el filtro de estado
   const protocolos={};
   getPsh().forEach(p=>{
-    if(p.protocolo_fecha){
-      if(!protocolos[p.protocolo_fecha])protocolos[p.protocolo_fecha]=[];
-      protocolos[p.protocolo_fecha].push(p);
-    }
+    if(!p.protocolo_fecha)return;
+    if(_filtroCalPsh!=='todos' && _estadoProtocolo(p)!==_filtroCalPsh)return;
+    if(!protocolos[p.protocolo_fecha])protocolos[p.protocolo_fecha]=[];
+    protocolos[p.protocolo_fecha].push(p);
   });
 
   const primerDia=new Date(_pshCalAnio,_pshCalMes,1);
   const ultimoDia=new Date(_pshCalAnio,_pshCalMes+1,0);
-  // getDay: 0=domingo. Queremos lunes como primer día
   let inicioSemana=primerDia.getDay()-1; if(inicioSemana<0)inicioSemana=6;
   const hoyStr=new Date().toISOString().slice(0,10);
+  // Color del día según el estado predominante (si hay varios, prioridad: pendiente > realizado > anulado)
+  const colorEstado={pendiente:['#f59e0b','#fbbf24'],realizado:['#10b981','#34d399'],anulado:['#ef4444','#f87171']};
 
   let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
   ['L','M','X','J','V','S','D'].forEach(d=>{
@@ -5865,27 +5921,46 @@ function renderCalendarioPsh(){
     const tiene=protocolos[fechaStr];
     const esHoy=fechaStr===hoyStr;
     let estilo='background:#1e293b;color:#94a3b8;border:1px solid #334155;';
-    if(tiene)estilo='background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:1px solid #a78bfa;font-weight:700;cursor:pointer;';
-    if(esHoy)estilo+='outline:2px solid #34d399;';
+    if(tiene){
+      // determinar estado predominante
+      let estPred='anulado';
+      if(tiene.some(p=>_estadoProtocolo(p)==='realizado'))estPred='realizado';
+      if(tiene.some(p=>_estadoProtocolo(p)==='pendiente'))estPred='pendiente';
+      const [c1,c2]=colorEstado[estPred];
+      estilo=`background:linear-gradient(135deg,${c1},${c2});color:#fff;border:1px solid ${c2};font-weight:700;cursor:pointer;`;
+    }
+    if(esHoy)estilo+='outline:2px solid #60a5fa;';
     const onclick=tiene?`onclick="verDiaPsh('${fechaStr}')"`:'';
     const badge=tiene?`<span style="display:block;font-size:.6rem;margin-top:1px">${tiene.length} 🔔</span>`:'';
     html+=`<div ${onclick} style="${estilo}border-radius:7px;padding:.4rem .2rem;text-align:center;font-size:.8rem;min-height:42px">${dia}${badge}</div>`;
   }
   html+='</div>';
   document.getElementById('psh-cal-grid').innerHTML=html;
-  document.getElementById('psh-cal-detalle').innerHTML='<p style="color:#64748b;font-size:.78rem;text-align:center;margin-top:.5rem">Los días en morado tienen protocolo PSH programado. Pulsa para ver el detalle.</p>';
+  // Leyenda
+  document.getElementById('psh-cal-detalle').innerHTML=`<div style="display:flex;gap:1rem;justify-content:center;margin-top:.6rem;flex-wrap:wrap;font-size:.7rem;color:#94a3b8">
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f59e0b;vertical-align:middle;margin-right:.3rem"></span>Pendiente</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#10b981;vertical-align:middle;margin-right:.3rem"></span>Realizado</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#ef4444;vertical-align:middle;margin-right:.3rem"></span>Anulado</span>
+  </div><p style="color:#64748b;font-size:.74rem;text-align:center;margin-top:.5rem">Pulsa un día para ver el detalle de los protocolos.</p>`;
 }
 
 function verDiaPsh(fechaStr){
-  const lista=getPsh().filter(p=>p.protocolo_fecha===fechaStr);
+  let lista=getPsh().filter(p=>p.protocolo_fecha===fechaStr);
+  if(_filtroCalPsh!=='todos')lista=lista.filter(p=>_estadoProtocolo(p)===_filtroCalPsh);
   if(!lista.length)return;
   const [a,m,d]=fechaStr.split('-');
+  const estiloEstado={pendiente:{c:'#f59e0b',t:'Pendiente',i:'clock'},realizado:{c:'#10b981',t:'Realizado',i:'circle-check'},anulado:{c:'#ef4444',t:'Anulado',i:'ban'}};
   let html=`<div style="background:#1a0a2e;border:1px solid #7c3aed;border-radius:10px;padding:.8rem;margin-top:.5rem">
     <div style="color:#c084fc;font-weight:600;font-size:.85rem;margin-bottom:.5rem"><i class="ti ti-calendar-event"></i> Protocolos del ${d}/${m}/${a}</div>`;
   lista.forEach(p=>{
-    html+=`<div style="background:#0f172a;border-radius:8px;padding:.6rem;margin-bottom:.4rem;cursor:pointer" onclick="document.getElementById('psh-calendario-modal').style.display='none';openPshModal('${p.id}')">
-      <div style="color:#f1f5f9;font-weight:600;font-size:.82rem">${p.alias||'Sin alias'} ${p.protocolo_hora?'· '+p.protocolo_hora:''}</div>
+    const est=estiloEstado[_estadoProtocolo(p)]||estiloEstado.pendiente;
+    html+=`<div style="background:#0f172a;border-radius:8px;padding:.6rem;margin-bottom:.4rem;cursor:pointer;border-left:3px solid ${est.c}" onclick="document.getElementById('psh-calendario-modal').style.display='none';openPshModal('${p.id}')">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <span style="color:#f1f5f9;font-weight:600;font-size:.82rem;flex:1">${p.alias||'Sin alias'} ${p.protocolo_hora?'· '+p.protocolo_hora:''}</span>
+        <span style="background:${est.c}22;color:${est.c};font-size:.66rem;padding:.1rem .45rem;border-radius:5px;font-weight:600"><i class="ti ti-${est.i}" style="font-size:.7rem"></i> ${est.t}</span>
+      </div>
       <div style="color:#94a3b8;font-size:.72rem;margin-top:.2rem">Solicitado por: ${p.protocolo_solicitante||'—'}${p.protocolo_motivo?' · '+p.protocolo_motivo:''}</div>
+      ${p.protocolo_anotaciones?`<div style="color:#cbd5e1;font-size:.71rem;margin-top:.3rem;padding-top:.3rem;border-top:1px solid #1e293b"><i class="ti ti-note" style="font-size:.7rem;color:#64748b"></i> ${escHtml(p.protocolo_anotaciones)}</div>`:''}
     </div>`;
   });
   html+='</div>';
@@ -5899,7 +5974,8 @@ function openPshModal(id){
     return;
   }
   PSH_ALERTAS.forEach(a=>{const el=document.getElementById('psh-alerta-'+a);if(el)el.checked=false;});
-  ['psh-alias','psh-nombre-completo','psh-doc-tipo','psh-doc-num','psh-fnac','psh-nacionalidad','psh-otros-filiacion','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-radio','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id','psh-foto-url','psh-gedie-num','psh-gedie-estado','psh-gedie-obs','psh-ultima-fecha','psh-ultima-desc','psh-proxima-fecha','psh-proxima-desc','psh-protocolo-fecha','psh-protocolo-hora','psh-protocolo-solicitante','psh-protocolo-motivo'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  ['psh-alias','psh-nombre-completo','psh-doc-tipo','psh-doc-num','psh-fnac','psh-nacionalidad','psh-otros-filiacion','psh-edad','psh-sexo','psh-desc','psh-dir','psh-lat','psh-lon','psh-radio','psh-situacion','psh-fecha','psh-obs','psh-incs','psh-id','psh-foto-url','psh-gedie-num','psh-gedie-estado','psh-gedie-obs','psh-ultima-fecha','psh-ultima-desc','psh-proxima-fecha','psh-proxima-desc','psh-protocolo-fecha','psh-protocolo-hora','psh-protocolo-solicitante','psh-protocolo-motivo','psh-protocolo-anotaciones'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+  setProtocoloEstado('pendiente');
   const radioEl=document.getElementById('psh-radio');if(radioEl)radioEl.value='50';
   const sitEl=document.getElementById('psh-situacion');if(sitEl)sitEl.value='activo';
   const fechaEl=document.getElementById('psh-fecha');if(fechaEl)fechaEl.value=todayDate();
@@ -5951,6 +6027,8 @@ function openPshModal(id){
     document.getElementById('psh-protocolo-hora').value=p.protocolo_hora||'';
     document.getElementById('psh-protocolo-solicitante').value=p.protocolo_solicitante||'';
     document.getElementById('psh-protocolo-motivo').value=p.protocolo_motivo||'';
+    document.getElementById('psh-protocolo-anotaciones').value=p.protocolo_anotaciones||'';
+    setProtocoloEstado(p.protocolo_estado||'pendiente');
     if(document.getElementById('psh-lat'))document.getElementById('psh-lat').value=p.lat||''
     if(document.getElementById('psh-lon'))document.getElementById('psh-lon').value=p.lon||''
     if(document.getElementById('psh-radio'))document.getElementById('psh-radio').value=p.radio||50;
@@ -6027,6 +6105,8 @@ async function guardarPsh(){
     protocolo_hora:document.getElementById('psh-protocolo-hora').value,
     protocolo_solicitante:document.getElementById('psh-protocolo-solicitante').value.trim(),
     protocolo_motivo:document.getElementById('psh-protocolo-motivo').value.trim(),
+    protocolo_estado:document.getElementById('psh-protocolo-estado')?.value||'pendiente',
+    protocolo_anotaciones:document.getElementById('psh-protocolo-anotaciones')?.value.trim()||'',
     fotoUrl,alertas,contactos,archivos,ubicaciones,protocolos,derivaciones,
     updated:new Date().toISOString()
   };
