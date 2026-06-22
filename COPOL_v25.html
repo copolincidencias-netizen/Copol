@@ -555,7 +555,8 @@ select option{background:#111827;color:#e2e8f0}
       <i class="ti ti-menu-2" style="font-size:20px"></i>
     </button>
     <div class="navtabs" id="navtabs-menu">
-      <button class="ntab active" onclick="showP('dashboard')"><i class="ti ti-dashboard"></i> Inicio</button>
+      <button class="ntab active" onclick="showP('miturno')"><i class="ti ti-clipboard-list"></i> Mi Turno</button>
+      <button class="ntab" onclick="showP('dashboard')"><i class="ti ti-dashboard"></i> Inicio</button>
       <button class="ntab" onclick="showP('nueva')"><i class="ti ti-plus"></i> Nueva</button>
       <button class="ntab" onclick="showP('listado')"><i class="ti ti-list"></i> Listado</button>
       <button class="ntab ao-psh" onclick="showP('psh')"><i class="ti ti-map-pin-heart"></i> PSH</button>
@@ -586,7 +587,13 @@ select option{background:#111827;color:#e2e8f0}
   </div>
 
   <!-- DASHBOARD -->
-  <div class="panel active" id="panel-dashboard">
+  <!-- MI TURNO -->
+  <div class="panel active" id="panel-miturno">
+    <div class="sec-hdr"><div><h2><span class="live-dot"></span>Mi Turno</h2><p>Resumen operativo de tu turno actual</p></div></div>
+    <div id="miturno-content"></div>
+  </div>
+
+  <div class="panel" id="panel-dashboard">
     <div class="sec-hdr"><div><h2><span class="live-dot"></span>Tablón operativo</h2><p id="dash-sub">Incidencias activas y pendientes de asignar</p></div></div>
     <div id="alarm-strip-dash" style="display:none" class="alarm-strip"><i class="ti ti-alarm alarm-icon"></i><span id="alarm-strip-msg"></span></div>
     <div id="alarm-strip-rec" style="display:none;cursor:pointer" class="alarm-strip alarm-strip-rec" onclick="abrirRecurrentes()" title="Ver detalle de incidencias recurrentes"><i class="ti ti-repeat"></i><span id="alarm-strip-rec-msg"></span><i class="ti ti-chevron-right" style="margin-left:auto"></i></div>
@@ -2161,7 +2168,7 @@ function loginAs(u){
   var syncEl = document.getElementById('sync-indicator');
   if(syncEl) syncEl.style.display = isAdmin ? 'flex' : 'none';
   initTheme();
-  showP('dashboard');
+  showP('miturno');
   updateIaStatus();
   if(isAdmin)loadGeminiKeyFirebase();
   logAudit('login','','Sesión iniciada como '+roleLabel);
@@ -2232,6 +2239,7 @@ function showP(name){
   document.getElementById('panel-'+name).classList.add('active');
   document.querySelectorAll('.ntab').forEach(t=>{if((t.getAttribute('onclick')||'').includes("'"+name+"'"))t.classList.add('active')});
   if(name==='dashboard')renderDash();
+  if(name==='miturno')renderMiTurno();
   if(name==='nueva')poblarCallejeroDatalist();
   if(name==='listado')renderLst();
   if(name==='historico')renderHist();
@@ -2261,6 +2269,99 @@ function showP(name){
 // ════════════════════════════════════════════════
 //  DASHBOARD
 // ════════════════════════════════════════════════
+function renderMiTurno(){
+  const cont=document.getElementById('miturno-content');
+  if(!cont)return;
+  const hoyStr=new Date().toISOString().slice(0,10);
+  const ahora=new Date();
+  const todas=getInc().filter(i=>i&&i.id&&i.id.startsWith('INC'));
+
+  // Incidencias activas (no cerradas ni anuladas)
+  const activas=todas.filter(i=>i.est!=='cerrada'&&i.est!=='anulado');
+  const prioritarias=activas.filter(i=>i.prioridad==='prioritaria');
+  const sinAsignar=activas.filter(i=>!i.asi);
+  // Incidencias de hoy
+  const hoyInc=todas.filter(i=>i.fec===hoyStr);
+
+  // Protocolos PSH
+  const psh=getPsh();
+  const protocolosHoy=psh.filter(p=>p.protocolo_fecha===hoyStr);
+  const protocolosPendientesHoy=protocolosHoy.filter(p=>(p.protocolo_estado||'pendiente')==='pendiente');
+  // Protocolos pendientes vencidos (fecha pasada y aún pendiente)
+  const protocolosVencidos=psh.filter(p=>p.protocolo_fecha&&p.protocolo_fecha<hoyStr&&(p.protocolo_estado||'pendiente')==='pendiente');
+
+  let html='';
+
+  // ── KPIs ──
+  html+=`<div class="sum-grid" style="margin-bottom:1rem">
+    <div class="sum-item"><div class="num">${activas.length}</div><div class="lbl">Activas</div></div>
+    <div class="sum-item"><div class="num" style="color:${prioritarias.length?'#f87171':'#e2e8f0'}">${prioritarias.length}</div><div class="lbl">Prioritarias</div></div>
+    <div class="sum-item"><div class="num" style="color:${sinAsignar.length?'#fbbf24':'#e2e8f0'}">${sinAsignar.length}</div><div class="lbl">Sin asignar</div></div>
+    <div class="sum-item"><div class="num">${hoyInc.length}</div><div class="lbl">Registradas hoy</div></div>
+  </div>`;
+
+  // ── Protocolos vencidos (alerta roja) ──
+  if(protocolosVencidos.length){
+    html+=`<div style="background:#450a0a;border:1px solid #ef4444;border-radius:10px;padding:.8rem;margin-bottom:.8rem">
+      <div style="color:#fca5a5;font-weight:600;font-size:.85rem;margin-bottom:.5rem"><i class="ti ti-alert-triangle"></i> ${protocolosVencidos.length} protocolo${protocolosVencidos.length>1?'s':''} PSH pendiente${protocolosVencidos.length>1?'s':''} VENCIDO${protocolosVencidos.length>1?'S':''}</div>`;
+    protocolosVencidos.slice(0,5).forEach(p=>{
+      const [a,m,d]=(p.protocolo_fecha||'').split('-');
+      html+=`<div onclick="openPshModal('${p.id}')" style="background:#1a0a0a;border-radius:7px;padding:.5rem .65rem;margin-bottom:.3rem;cursor:pointer">
+        <span style="color:#f1f5f9;font-weight:600;font-size:.8rem">${escHtml(p.alias||'Sin alias')}</span>
+        <span style="color:#fca5a5;font-size:.72rem;margin-left:.5rem">— era el ${d}/${m}/${a}</span>
+      </div>`;
+    });
+    html+='</div>';
+  }
+
+  // ── Protocolos de hoy ──
+  if(protocolosHoy.length){
+    html+=`<div style="background:#1a0a2e;border:1px solid #7c3aed55;border-radius:10px;padding:.8rem;margin-bottom:.8rem">
+      <div style="color:#c084fc;font-weight:600;font-size:.85rem;margin-bottom:.5rem"><i class="ti ti-calendar-event"></i> Protocolos PSH de hoy (${protocolosHoy.length})${protocolosPendientesHoy.length?` · ${protocolosPendientesHoy.length} pendiente${protocolosPendientesHoy.length>1?'s':''}`:''}</div>`;
+    protocolosHoy.forEach(p=>{
+      const est=(p.protocolo_estado||'pendiente');
+      const estCol={pendiente:'#f59e0b',realizado:'#10b981',anulado:'#ef4444'}[est];
+      const estTxt={pendiente:'Pendiente',realizado:'Realizado',anulado:'Anulado'}[est];
+      html+=`<div onclick="openPshModal('${p.id}')" style="background:#0f172a;border-radius:7px;padding:.5rem .65rem;margin-bottom:.3rem;cursor:pointer;border-left:3px solid ${estCol};display:flex;align-items:center;gap:.5rem">
+        <span style="color:#f1f5f9;font-weight:600;font-size:.8rem;flex:1">${escHtml(p.alias||'Sin alias')}${p.protocolo_hora?' · '+p.protocolo_hora:''}</span>
+        <span style="background:${estCol}22;color:${estCol};font-size:.66rem;padding:.1rem .45rem;border-radius:5px;font-weight:600">${estTxt}</span>
+      </div>`;
+    });
+    html+='</div>';
+  }
+
+  // ── Prioritarias activas ──
+  if(prioritarias.length){
+    html+=`<div class="report-sec" style="margin-bottom:.8rem"><div class="dash-hdr"><h3 style="color:#f87171"><i class="ti ti-alert-triangle"></i> Prioritarias activas</h3></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>ID</th><th>Hora</th><th>Dirección</th><th>Tipo</th><th>Estado</th></tr></thead><tbody>`;
+    prioritarias.forEach(i=>{
+      html+=`<tr class="alarm-row" style="cursor:pointer" onclick="abrirModalEst('${i.id}')">
+        <td style="color:#3b82f6;font-weight:600">${i.id}</td><td>${i.hor||'—'}</td>
+        <td>${escHtml(i.dir||'')}</td><td>${escHtml(tipoL(i.tip))}</td>
+        <td><span class="sbadge s-${i.est}">${i.est}</span></td></tr>`;
+    });
+    html+='</tbody></table></div></div>';
+  }
+
+  // ── Sin asignar ──
+  if(sinAsignar.length){
+    html+=`<div class="report-sec"><div class="dash-hdr"><h3 style="color:#fbbf24"><i class="ti ti-user-question"></i> Pendientes de asignar</h3></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>ID</th><th>Hora</th><th>Dirección</th><th>Tipo</th></tr></thead><tbody>`;
+    sinAsignar.slice(0,10).forEach(i=>{
+      html+=`<tr style="cursor:pointer" onclick="abrirModalEst('${i.id}')">
+        <td style="color:#3b82f6;font-weight:600">${i.id}</td><td>${i.hor||'—'}</td>
+        <td>${escHtml(i.dir||'')}</td><td>${escHtml(tipoL(i.tip))}</td></tr>`;
+    });
+    html+='</tbody></table></div></div>';
+  }
+
+  if(!prioritarias.length&&!sinAsignar.length&&!protocolosHoy.length&&!protocolosVencidos.length){
+    html+='<div style="padding:2rem;text-align:center;color:#475569"><i class="ti ti-circle-check" style="font-size:2rem;color:#10b981;display:block;margin-bottom:.5rem"></i>Todo al día. No hay incidencias prioritarias, sin asignar ni protocolos pendientes.</div>';
+  }
+
+  cont.innerHTML=html;
+}
+
 function renderDash(){
   const all=getInc();
   const inc=all.filter(i=>i.est==='abierta'||i.est==='asignada');
@@ -2495,7 +2596,7 @@ function renderLst(){
       <td>${(i.files&&i.files.length)?`<button class="abtn ae" onclick="verAdj('${i.id}')"><i class="ti ti-paperclip"></i>${i.files.length}</button>`:'—'}</td>
       <td>
         <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
-        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
+        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:(puedeBorrarInc(i)?`<button class="abtn ad" title="Eliminar duplicado (disponible 10 min)" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:'')}
       </td>
     </tr>`}).join(''):'<tr><td colspan="14" style="text-align:center;color:#334155;padding:2rem">Sin resultados — prueba a limpiar los filtros</td></tr>';
 }
@@ -2535,7 +2636,7 @@ function renderHist(){
       <td>${i.ini}</td>
       <td>
         <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
-        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
+        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:(puedeBorrarInc(i)?`<button class="abtn ad" title="Eliminar duplicado (disponible 10 min)" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:'')}
       </td>
     </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;color:#334155;padding:2rem">No hay incidencias cerradas</td></tr>';
 }
@@ -2574,7 +2675,7 @@ function renderPrio(){
       <td>
         <button class="abtn ac" title="Cerrar" onclick="abrirCierre('${i.id}')"><i class="ti ti-circle-check"></i></button>
         <button class="abtn ae" title="Modificar" onclick="abrirModalEst('${i.id}')"><i class="ti ti-edit"></i></button>
-        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:''}
+        ${ia?`<button class="abtn ad" title="Eliminar" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:(puedeBorrarInc(i)?`<button class="abtn ad" title="Eliminar duplicado (disponible 10 min)" onclick="elimInc('${i.id}')"><i class="ti ti-trash"></i></button>`:'')}
       </td>
     </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;color:#334155;padding:2rem">No hay incidencias prioritarias activas</td></tr>';
 }
@@ -2697,11 +2798,41 @@ async function guardarEstado(){
   updatePrioDot();
   setTimeout(()=>{closeModal('modal-est');renderLst();renderPrio();renderDash();},900);
 }
+// ¿Puede el agente (rol user) borrar esta incidencia? Solo si es duplicada y reciente (<10 min)
+const VENTANA_BORRADO_AGENTE_MS = 10*60*1000; // 10 minutos
+function esDuplicadaReciente(inc){
+  if(!inc)return false;
+  // Debe haberse creado hace menos de 10 minutos
+  const ts=inc.creadoTs|| (inc.fec?new Date(inc.fec+'T'+(inc.hor||'00:00')).getTime():0);
+  if(!ts)return false;
+  if(Date.now()-ts > VENTANA_BORRADO_AGENTE_MS) return false;
+  // Debe existir OTRA incidencia con misma dirección normalizada y mismo tipo
+  const kDir=_normDireccion(inc.dir);
+  const kTip=(inc.tip||'');
+  return getInc().some(o=>o.id!==inc.id && o.id&&o.id.startsWith('INC') && _normDireccion(o.dir)===kDir && (o.tip||'')===kTip);
+}
+function puedeBorrarInc(inc){
+  if(!CU)return false;
+  if(CU.role==='admin'||CU.role==='superadmin')return true; // admin siempre
+  // Agente: solo duplicadas recientes
+  if(CU.role==='user')return esDuplicadaReciente(inc);
+  return false;
+}
+
 function elimInc(id){
-  if(!confirm('¿Eliminar incidencia '+id+'?'))return;
   const inc=getInc();const i=inc.find(x=>x.id===id);
+  // Verificar permiso (protege también si alguien fuerza la llamada)
+  if(!puedeBorrarInc(i)){
+    alert('No tienes permiso para eliminar esta incidencia. Los agentes solo pueden borrar duplicados dentro de los primeros 10 minutos.');
+    return;
+  }
+  const esAgente=CU&&CU.role==='user';
+  const msg=esAgente
+    ? '¿Eliminar esta incidencia duplicada '+id+'?\n\nSolo debes borrar duplicados del mismo suceso.'
+    : '¿Eliminar incidencia '+id+'?';
+  if(!confirm(msg))return;
   deleteOneInc(id);
-  logAudit('eliminar',id,i?(tipoL(i.tip)+' — '+i.dir):'');
+  logAudit('eliminar',id,(i?(tipoL(i.tip)+' — '+i.dir):'')+(esAgente?' [duplicado/agente]':''));
   renderLst();renderPrio();renderDash();updatePrioDot();
 }
 
@@ -3494,6 +3625,7 @@ async function guardar(){
     res:document.getElementById('f-res').value,
     notas:document.getElementById('f-notas').value.trim(),
     by:CU.user,
+    creadoTs:Date.now(),
     files:filesSubidos
   };
   saveOneInc(newInc);
@@ -4591,33 +4723,11 @@ async function solicitarNotif(){
     notifPermission=(p==='granted');
   }
 }
-// Web Audio beep generator (no asset needed)
-function beep(freq,dur,vol,type){
-  try{
-    const ctx=new (window.AudioContext||window.webkitAudioContext)();
-    const osc=ctx.createOscillator(),g=ctx.createGain();
-    osc.type=type||'sine';osc.frequency.value=freq;
-    g.gain.setValueAtTime(vol||0.15,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+dur);
-    osc.connect(g);g.connect(ctx.destination);
-    osc.start();osc.stop(ctx.currentTime+dur);
-  }catch(e){}
-}
-function soundAlta(){
-  // Urgent: 3 high beeps
-  beep(880,0.18,0.18,'square');
-  setTimeout(()=>beep(660,0.18,0.18,'square'),220);
-  setTimeout(()=>beep(880,0.25,0.18,'square'),440);
-}
-function soundNormal(){
-  // Soft single beep
-  beep(660,0.15,0.10,'sine');
-}
-function soundStale(){
-  // Two-tone reminder
-  beep(440,0.2,0.12,'triangle');
-  setTimeout(()=>beep(523,0.2,0.12,'triangle'),250);
-}
+// Alarma acústica DESACTIVADA (a petición del usuario). Funciones vacías para no romper llamadas.
+function beep(){}
+function soundAlta(){}
+function soundNormal(){}
+function soundStale(){}
 function notificarPrioritario(inc){
   if(notifPermission&&'Notification' in window){
     new Notification('⚠️ COPOL — Incidencia Prioritaria',{
