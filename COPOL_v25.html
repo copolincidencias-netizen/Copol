@@ -2842,9 +2842,9 @@ function elimInc(id){
 function initMap(){
   if(!mapInst){
     mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
-      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains:'abcd',maxZoom:20,crossOrigin:'anonymous'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      subdomains:'abc',maxZoom:19,crossOrigin:'anonymous'
     }).addTo(mapInst);
   }
   updateMap();
