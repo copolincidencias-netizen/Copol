@@ -1331,7 +1331,6 @@ select option{background:#111827;color:#e2e8f0}
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Desde</label><input type="date" class="map-inp" id="mp-des" onchange="updateMap()"></div>
         <div><label style="font-size:.68rem;color:#64748b;display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.4px">Hasta</label><input type="date" class="map-inp" id="mp-has" onchange="updateMap()"></div>
         <button class="btn-map" onclick="updateMap()"><i class="ti ti-flame"></i> Actualizar</button>
-        <button class="btn-map" id="btn-satellite" onclick="toggleMapLayer()" style="background:#0f4c81" title="Cambiar entre callejero y satelite"><i class="ti ti-satellite"></i> Satelite</button>
         <button class="btn-map" id="btn-toggle-labels" onclick="toggleMapLabels()" style="background:#1e3a5f" title="Mostrar/ocultar etiquetas INC"><i class="ti ti-tag"></i> Etiquetas</button>
         <button class="btn-map" id="btn-solo-recurrentes" onclick="toggleMapRecurrentes()" style="background:#1e3a5f" title="Mostrar solo incidencias en direcciones recurrentes"><i class="ti ti-repeat"></i> Recurrentes</button>
         <button class="btn-print" onclick="printMapa()"><i class="ti ti-printer"></i> Imprimir</button>
@@ -2842,10 +2841,26 @@ function elimInc(id){
 function initMap(){
   if(!mapInst){
     mapInst=L.map('heat-map',{preferCanvas:true}).setView([40.4168,-3.7038],12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    // Capas base disponibles
+    var capaCallejero=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
       attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       subdomains:'abc',maxZoom:19,crossOrigin:'anonymous'
-    }).addTo(mapInst);
+    });
+    var capaClaro=L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{
+      attribution:'&copy; OpenStreetMap, Humanitarian',
+      subdomains:'abc',maxZoom:19,crossOrigin:'anonymous'
+    });
+    var capaSatelite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+      attribution:'Tiles &copy; Esri',maxZoom:19,crossOrigin:'anonymous'
+    });
+    // Capa por defecto
+    capaCallejero.addTo(mapInst);
+    // Control de capas (icono arriba a la derecha)
+    L.control.layers({
+      '🗺️ Callejero':capaCallejero,
+      '☀️ Claro':capaClaro,
+      '🛰️ Satélite':capaSatelite
+    },{},{position:'topright',collapsed:true}).addTo(mapInst);
   }
   updateMap();
 }
